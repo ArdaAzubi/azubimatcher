@@ -1,0 +1,17 @@
+Empfohlener Betreff: AzubiMatch: Bewerbungsunterlagen wurden für Sie freigegeben
+
+Guten Tag {{recipient_name}},
+
+{{student_name}} hat Ihre Anfrage für {{matched_profession}} positiv beantwortet und die Unterlagen freigegeben.
+
+Freigegebene Dokumente:
+{{document_list}}
+
+Persönliche Nachricht des Bewerbers:
+{{release_note}}
+
+Portal:
+{{dashboard_url}}
+
+Viele Grüße
+{{support_name}}

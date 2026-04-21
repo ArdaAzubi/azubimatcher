@@ -1,0 +1,25 @@
+Betreff: AzubiMatch: Passende Auszubildende gezielter erreichen
+
+Guten Tag,
+
+wir bei AzubiMatch unterstützen Ausbildungsbetriebe dabei, offene Ausbildungsplätze strukturierter sichtbar zu machen, passendere Profile schneller zu erkennen und direkter mit Bewerbenden in Kontakt zu kommen.
+
+Unsere Plattform verbindet Reichweite, regionale Passung und klare Kontaktwege, damit Azubi-Recruiting planbarer wird und inklusive Ausbildung früh mitgedacht werden kann.
+
+Was Unternehmen davon haben:
+- Ausbildungsplätze für passende Zielgruppen sichtbarer machen
+- passendere Bewerberprofile schneller einordnen
+- direkter in erste Gespräche starten
+- inklusive Ausbildungsangebote transparenter kommunizieren
+
+So starten Sie:
+Unternehmensprofil anlegen, Ausbildungsplätze veröffentlichen, passende Treffer prüfen und mit AzubiMatch schneller in Gespräche starten.
+
+Zur Firmenseite:
+/firma/
+
+Freundliche Grüße
+AzubiMatch | Unternehmensservice
+
+Hinweis für den Versand:
+Der Link verweist jetzt auf den Livepfad /firma/ aus dem aktuellen AzubiMatch-WordPress-Export. Ansprechstelle in dieser Vorlage ist der Unternehmensservice von AzubiMatch.

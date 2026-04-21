@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!-- Empfohlener Betreff: AzubiMatch: Dein Sicherheitscode -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AzubiMatch OTC-Mail</title>
+</head>
+<body style="margin:0; padding:0; background:#edf2f1; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <div style="display:none; max-height:0; max-width:0; overflow:hidden; opacity:0; mso-hide:all; font-size:1px; line-height:1px; color:transparent; white-space:nowrap;">Dein Sicherheitscode für AzubiMatch ist da. Bitte nur im offiziellen AzubiMatch-Fenster eingeben.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#edf2f1; margin:0; padding:0 0 24px; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+    <tr>
+      <td align="center" style="padding:0;">
+        <table role="presentation" width="680" cellspacing="0" cellpadding="0" border="0" style="width:680px; max-width:680px; margin:0 auto; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt; background:#fffdfa; border:1px solid #d9ddd9; border-radius:24px; overflow:hidden; font-family:Georgia, 'Times New Roman', serif; color:#17212b;">
+          <tr>
+            <td style="padding:34px 36px; background:linear-gradient(135deg, #14324a, #0d7a64); color:#fcfffd;">
+              <div style="display:inline-block; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,0.14); font-size:27px; font-weight:700; margin-bottom:18px;">AzubiMatch</div>
+              <div style="font-size:13px; letter-spacing:0.09em; text-transform:uppercase; opacity:0.84; margin-bottom:12px;">Sicherer Zugang</div>
+              <h1 style="margin:0 0 12px; font-size:34px; line-height:1.12; font-weight:700;">Dein Sicherheitscode ist bereit.</h1>
+              <p style="margin:0; font-size:18px; line-height:1.65; color:rgba(252,255,253,0.88);">Mit diesem Code bestätigst du deinen Zugang oder setzt dein Passwort sicher zurück, ohne dass sensible Daten ungeschützt verschickt werden.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:34px 36px 18px; font-size:18px; line-height:1.7; color:#566273;">
+              <p style="margin:0 0 18px;">Hallo {{recipient_name}},</p>
+              <p style="margin:0 0 18px;">für <strong style="color:#17212b;">{{flow_label}}</strong> wurde soeben ein einmaliger Sicherheitscode angefordert.</p>
+              <p style="margin:0;">Gib diesen Code nur direkt im offiziellen AzubiMatch-Fenster ein. Teile ihn nicht per Chat, Telefon oder E-Mail.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 16px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fbfa; border:1px solid #d7e4df; border-radius:20px;">
+                <tr>
+                  <td align="center" style="padding:26px 22px;">
+                    <p style="margin:0 0 10px; font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:#0d7a64;">Einmalcode</p>
+                    <div style="display:inline-block; padding:16px 24px; border-radius:18px; background:#17212b; color:#ffffff; font-family:'Trebuchet MS', 'Segoe UI', Arial, sans-serif; font-size:34px; line-height:1; font-weight:700; letter-spacing:0.24em;">{{otp_code}}</div>
+                    <p style="margin:14px 0 0; font-size:15px; line-height:1.6; color:#6a7280;">{{expires_hint}}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 14px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#e2f1ec; border:1px solid #bfded4; border-radius:18px;">
+                <tr>
+                  <td style="padding:20px 22px; font-size:16px; line-height:1.7; color:#24594e;">
+                    <strong style="display:block; color:#0a5a4b; margin-bottom:8px;">Wichtig</strong>
+                    Wenn du diese Anforderung nicht selbst ausgelöst hast, kannst du diese E-Mail ignorieren. Dein Konto bleibt geschützt, solange du den Code nicht eingibst.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 36px 10px; font-size:16px; line-height:1.7; color:#566273;">
+              <p style="margin:0 0 12px;"><strong style="color:#17212b;">Kurzhinweis:</strong> {{message_line}}</p>
+              <p style="margin:0;">Falls du dich erneut anmelden musst, nutze diesen Link:<br><a href="{{login_url}}" style="color:#0d7a64; font-weight:700; text-decoration:none;">{{login_url}}</a></p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 36px 28px; font-size:17px; line-height:1.7; color:#566273;">
+              Viele Grüße<br>
+              <strong style="color:#17212b;">{{support_name}}</strong>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

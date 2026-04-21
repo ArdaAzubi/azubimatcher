@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ich biete einen Ausbildungsplatz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="portal-entry-page firma-entry-page startseite-page">
+  <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+  <div class="bg-grid" aria-hidden="true"></div>
+	<div class="bg-orb orb-one" aria-hidden="true"></div>
+	<div class="bg-orb orb-two" aria-hidden="true"></div>
+	<div class="start-wrapper index-layout portal-entry-wrapper">
+		<header class="index-topbar portal-entry-topbar">
+			<a href="index.html" class="index-brand">AzubiMatcher</a>
+      <div class="index-nav-cluster">
+        <details class="index-directory">
+          <summary>Seitenübersicht</summary>
+          <div class="index-directory-panel">
+            <div class="index-directory-group">
+              <span class="index-directory-title">Hauptseiten</span>
+              <a href="index.html">Start</a>
+              <a href="home.html">Plattform</a>
+              <a href="lehrberufe.html">Berufe</a>
+            </div>
+            <div class="index-directory-group">
+              <span class="index-directory-title">Portale</span>
+              <a href="bewerber.html">Bewerbende</a>
+              <a href="firma.html" aria-current="page">Unternehmen</a>
+              <a href="firma_praktikum.html">Schulpraktikum</a>
+              <a href="anmeldung.html">Anmeldung</a>
+            </div>
+            <div class="index-directory-group">
+              <span class="index-directory-title">Weitere Seiten</span>
+              <a href="trainings.html">Trainings</a>
+            </div>
+          </div>
+        </details>
+        <nav class="index-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="home.html">Plattform</a>
+          <a href="lehrberufe.html">Berufe</a>
+          <a href="bewerber.html">Bewerbende</a>
+          <a href="firma.html" aria-current="page">Unternehmen</a>
+        </nav>
+        <div class="index-meta-nav" aria-label="Sekundäre Navigation">
+          <a href="anmeldung.html">Anmeldung</a>
+          <a href="#firm-praktikum">Schulpraktikum</a>
+        </div>
+      </div>
+      <div class="index-topbar-actions">
+        <a href="anmeldung.html" class="btn primary index-login-btn">Anmelden oder registrieren</a>
+      </div>
+		</header>
+	<main id="main-content" class="hero portal-page firma-entry-layout portal-entry-main">
+	  <section class="firma-intro-band">
+	    <div class="firma-intro-copy">
+    <p class="eyebrow">FIRMENPORTAL</p>
+    <h1>Ausbildungsplätze anbieten</h1>
+    <p class="lead">Veröffentlichen Sie Ausbildungsplätze, finden Sie passende Kandidaten und starten Sie den Kontakt direkt. Wenn Ihr Betrieb Inklusion ernst nimmt, sollte das schon im Einstieg sichtbar werden, damit Menschen mit Behinderungen bessere Chancen auf einen passenden Ausbildungsplatz erhalten.</p>
+	    </div>
+	    <div class="firma-intro-brief">
+	      <p class="firma-intro-brief__label">Ablauf für Betriebe</p>
+	      <div class="firma-intro-brief__list">
+	        <div class="firma-intro-brief__item"><strong>1</strong><span>Firmenzugang anlegen und Angebot erfassen.</span></div>
+          <div class="firma-intro-brief__item"><strong>2</strong><span>Pflichtdokumente hochladen und inklusive Rahmenbedingungen klar beschreiben.</span></div>
+          <div class="firma-intro-brief__item"><strong>3</strong><span>Nach Freigabe passende Profile sehen und Kontakt anfragen, wenn Integration im Betrieb realistisch begleitet werden kann.</span></div>
+	      </div>
+	    </div>
+	  </section>
+
+    <section class="internship-access-card portal-internship-stage" id="firm-praktikum" aria-labelledby="firmInternshipMainStageHeading">
+      <p class="internship-access-card__eyebrow">Schulpraktikum direkt sichtbar</p>
+      <div class="internship-access-card__body">
+        <div class="internship-access-card__content">
+          <h2 id="firmInternshipMainStageHeading">Sie möchten auch Schulpraktikumsplätze sichtbar machen?</h2>
+          <p class="internship-access-card__copy">Dafür gibt es einen separaten Praktikumsbereich mit eigenem Fokus. Ihr Firmenzugang bleibt derselbe, aber Praktikum und Ausbildung bleiben im Auftritt sauber getrennt.</p>
+          <p class="internship-access-card__meta">So machen Sie frühe Praxiseinblicke sichtbar, ohne Ihr Ausbildungsprofil unnötig aufzuladen.</p>
+          <div class="portal-internship-stage__chips" aria-label="Vorteile des Praktikumsbereichs">
+            <span class="portal-internship-stage__chip">gleicher Firmenzugang</span>
+            <span class="portal-internship-stage__chip">separater Praktikumsfluss</span>
+            <span class="portal-internship-stage__chip">frühe Talente ansprechen</span>
+          </div>
+        </div>
+        <div class="actions internship-access-card__actions">
+          <a class="btn primary" href="firma_praktikum.html">Zum Schulpraktikumsbereich</a>
+        </div>
+      </div>
+    </section>
+
+	  <div class="firma-entry-grid">
+
+    <!-- Auth panel (shown until logged in) -->
+    <section class="panel portal-form firma-auth-card" id="firmAuthPanel">
+      <h2>Firmen-Anmeldung</h2>
+      <p>Zeigen Sie früh, wofür Ihr Betrieb steht. Gerade für Menschen mit Behinderungen ist wichtig, ob Ausbildungsplätze offen, anpassbar und im Team gut begleitet sind.</p>
+
+      <label class="form-label" for="firmAuthEmail">E-Mail-Adresse</label>
+
+      <input class="input" id="firmAuthEmail" type="email" placeholder="firma@beispiel.de">
+
+      <label class="form-label" for="firmAuthPassword">Passwort</label>
+      <div class="password-field">
+        <input class="input" id="firmAuthPassword" type="password" placeholder="Mindestens 6 Zeichen">
+        <button class="pw-toggle" type="button" data-target="firmAuthPassword" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+            <circle cx="12" cy="12" r="3.2"></circle>
+          </svg>
+        </button>
+      </div>
+
+
+      <div class="actions auth-actions">
+        <button id="btnFirmAuthLogin" class="btn primary">Anmelden</button>
+        <button id="btnFirmShowRegister" class="btn ghost small" type="button">Neu registrieren</button>
+        <button id="btnFirmForgotPassword" class="btn ghost small" type="button" hidden>Passwort vergessen</button>
+        <a class="btn ghost small link-btn" href="?forgot=1">Passwort vergessen?</a>
+        <a class="btn ghost link-btn back-home" href="index.html">Zurück</a>
+      </div>
+
+      <div id="firmRegisterBox" class="auth-register-extra" style="display: none;">
+        <label class="form-label" for="firmRegisterName">Firmenname</label>
+        <input class="input" id="firmRegisterName" type="text" placeholder="z. B. Mustermann GmbH">
+
+        <label class="form-label" for="firmAuthPasswordConfirm">Passwort bestätigen</label>
+        <div class="password-field">
+          <input class="input" id="firmAuthPasswordConfirm" type="password" placeholder="Passwort wiederholen">
+          <button class="pw-toggle" type="button" data-target="firmAuthPasswordConfirm" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+              <circle cx="12" cy="12" r="3.2"></circle>
+            </svg>
+          </button>
+        </div>
+
+        <label class="firma-checkbox-row" for="firmRegisterAGB">
+          <input type="checkbox" id="firmRegisterAGB" />
+          <span>
+            Ich akzeptiere die <a href="nutzungsbedingungen.html" target="_blank">Nutzungsbedingungen</a> und habe die <a href="datenschutzerklaerung.html" target="_blank">Datenschutzerklärung</a> gelesen.
+          </span>
+        </label>
+        <div class="actions auth-actions">
+          <button id="btnFirmAuthRegister" class="btn ghost" type="button">Registrierung abschließen</button>
+        </div>
+      </div>
+
+      <div id="firmVerifyBox" class="auth-register-extra" style="display: none;">
+        <h3 class="firma-verify-title">E-Mail-Adresse bestätigen</h3>
+        <p id="firmVerifyHint" class="status firma-verify-hint">Wir haben dir einen Bestätigungscode per E-Mail geschickt.</p>
+        <label class="form-label" for="firmEmailVerificationCode">Bestätigungscode</label>
+        <input class="input" id="firmEmailVerificationCode" type="text" placeholder="6-stelliger Code">
+        <div class="actions auth-actions">
+          <button id="btnFirmConfirmEmail" class="btn ghost" type="button">E-Mail bestätigen</button>
+          <button id="btnFirmResendVerification" class="btn ghost small" type="button">Code erneut senden</button>
+        </div>
+      </div>
+
+      <div id="firmPasswordResetBox" class="auth-register-extra" style="display: none;">
+        <h3>Passwort zurücksetzen</h3>
+        <p id="firmPasswordResetHint" class="status firma-verify-hint">Geben Sie oben Ihre registrierte E-Mail-Adresse ein. Wir senden einen Reset-Code, mit dem Sie ein neues Passwort setzen können.</p>
+        <label class="form-label" for="firmPasswordResetCode">Reset-Code</label>
+        <input class="input" id="firmPasswordResetCode" type="text" placeholder="6-stelliger Code">
+
+        <label class="form-label" for="firmPasswordResetNewPassword">Neues Passwort</label>
+        <div class="password-field">
+          <input class="input" id="firmPasswordResetNewPassword" type="password" placeholder="Mindestens 6 Zeichen">
+          <button class="pw-toggle" type="button" data-target="firmPasswordResetNewPassword" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+              <circle cx="12" cy="12" r="3.2"></circle>
+            </svg>
+          </button>
+        </div>
+
+        <label class="form-label" for="firmPasswordResetNewPasswordConfirm">Neues Passwort bestätigen</label>
+        <div class="password-field">
+          <input class="input" id="firmPasswordResetNewPasswordConfirm" type="password" placeholder="Passwort wiederholen">
+          <button class="pw-toggle" type="button" data-target="firmPasswordResetNewPasswordConfirm" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+              <circle cx="12" cy="12" r="3.2"></circle>
+            </svg>
+          </button>
+        </div>
+
+        <div class="actions auth-actions">
+          <button id="btnFirmConfirmPasswordReset" class="btn ghost" type="button">Neues Passwort speichern</button>
+          <button id="btnFirmResendPasswordReset" class="btn ghost small" type="button">Code erneut senden</button>
+        </div>
+      </div>
+
+      <p id="firmAuthStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Melde dich mit deiner E-Mail-Adresse und deinem Passwort an oder registriere dich neu.</p>
+    </section>
+
+    <!-- Firm portal (shown after login) -->
+    <section class="panel portal-form firma-portal-card" id="firmPortalPanel" style="display: none;">
+      <h2>Dein Ausbildungsangebot</h2>
+      <p class="firma-account-copy">Angemeldet als: <strong id="firmDisplayName"></strong> (<span id="firmDisplayEmail"></span>)</p>
+
+      <div id="verificationWarning" class="firma-verification-box firma-verification-box--warning">
+        <p>
+          <strong>⚠️ Hinweis:</strong> Sie können sich anmelden, aber noch keine Aktionen ausführen. Der Firmenzugang wird nach abgeschlossener Dokumentenprüfung vollständig freigeschaltet.
+        </p>
+      </div>
+
+      <div id="verificationSuccess" class="firma-verification-box firma-verification-box--success" style="display: none;">
+        <p>
+          <strong>✓ Firmenzugang freigegeben:</strong> Ihre Dokumente wurden bestätigt. Ihr Firmenprofil ist jetzt aktiv und Sie können passende Profile sehen.
+        </p>
+      </div>
+
+      <p class="portal-support-note">Je klarer Sie angeben, ob Ihr Ausbildungsplatz auch für Menschen mit Behinderungen geeignet oder anpassbar ist, desto fairer und präziser wird das Matching.</p>
+
+      <label class="form-label" for="firma">Firmenname <span class="required-mark">*</span></label>
+      <input class="input" id="firma" type="text" placeholder="Firmenname" required>
+
+      <label class="form-label" for="firmenlogo">Firmenlogo <span class="required-mark">*</span></label>
+      <input class="input" id="firmenlogo" type="file" accept=".jpg,.jpeg,.png,.svg" title="JPG, PNG, oder SVG (Max. 5 MB)" required>
+      <p id="firmenlogoStatus" class="firma-file-status">JPG, PNG oder SVG, max. 5 MB</p>
+
+      <label class="form-label" for="anrede">Anrede <span class="required-mark">*</span></label>
+      <select class="input" id="anrede" required>
+        <option value="">Bitte auswählen</option>
+        <option value="Herr">Herr</option>
+        <option value="Frau">Frau</option>
+        <option value="Divers">Divers</option>
+      </select>
+
+      <label class="form-label" for="ansprechpartner">Ansprechperson <span class="required-mark">*</span></label>
+      <input class="input" id="ansprechpartner" type="text" placeholder="Name" required>
+
+
+
+      <label class="form-label" for="plz">PLZ <span class="required-mark">*</span></label>
+      <input class="input number-visible" id="plz" type="text" placeholder="z. B. 45000" required oninput="autoFillCityByPLZ(this.value)">
+
+      <label class="form-label" for="ort">Ort <span class="required-mark">*</span></label>
+      <input class="input" id="ort" type="text" placeholder="z. B. Essen" required>
+
+      <label class="form-label" for="strasse">Straße <span class="required-mark">*</span></label>
+      <input class="input" id="strasse" type="text" placeholder="z. B. Hauptstr. 123" required>
+
+
+      <label class="form-label" for="matchUmkreis">Zeige Match im Umkreis an <span class="required-mark">*</span></label>
+      <select class="input" id="matchUmkreis" required>
+        <option value="5">5 km</option>
+        <option value="10">10 km</option>
+        <option value="25">25 km</option>
+        <option value="50">50 km</option>
+        <option value="100">100 km</option>
+        <option value="de" selected>Deutschlandweit</option>
+      </select>
+
+      <fieldset class="firm-plan-picker" aria-describedby="firmBillingPlanHint">
+        <legend class="form-label">Tarif auswählen <span class="required-mark">*</span></legend>
+        <label class="firm-plan-card">
+          <input type="radio" name="firmBillingPlan" value="basic" checked>
+          <span class="firm-plan-card__body">
+            <span class="firm-plan-card__head">
+              <span>
+                <strong class="firm-plan-card__title">Basic</strong>
+                <span class="firm-plan-card__price">49,99 € netto / Monat</span>
+              </span>
+              <span class="firm-plan-card__badge">4 Anfragen inklusive</span>
+            </span>
+            <span class="firm-plan-card__copy">Ausbildungs- und Praktikums-Matches sichtbar, 4 Kontaktanfragen pro Monat inklusive und bestätigte Termine als ICS exportierbar.</span>
+            <span class="firm-plan-card__meta">
+              <span class="firm-plan-card__chip">danach 13,00 € netto je weitere Anfrage</span>
+              <span class="firm-plan-card__chip">3 Monate Mindestlaufzeit</span>
+              <span class="firm-plan-card__chip">ICS für Termine + Praktikumsplanung</span>
+            </span>
+          </span>
+        </label>
+
+        <label class="firm-plan-card">
+          <input type="radio" name="firmBillingPlan" value="basic_plus">
+          <span class="firm-plan-card__body">
+            <span class="firm-plan-card__head">
+              <span>
+                <strong class="firm-plan-card__title">Basic +</strong>
+                <span class="firm-plan-card__price">109,00 € netto / Monat</span>
+              </span>
+              <span class="firm-plan-card__badge">9 Anfragen inklusive</span>
+            </span>
+            <span class="firm-plan-card__copy">Ausbildungs- und Praktikums-Matches sichtbar, 9 Kontaktanfragen pro Monat inklusive und Kalenderzugriff direkt im Kontaktverlauf.</span>
+            <span class="firm-plan-card__meta">
+              <span class="firm-plan-card__chip">danach 13,00 € netto je weitere Anfrage</span>
+              <span class="firm-plan-card__chip">3 Monate Mindestlaufzeit</span>
+              <span class="firm-plan-card__chip">Outlook + Google + ICS</span>
+            </span>
+          </span>
+        </label>
+
+        <label class="firm-plan-card">
+          <input type="radio" name="firmBillingPlan" value="pro">
+          <span class="firm-plan-card__body">
+            <span class="firm-plan-card__head">
+              <span>
+                <strong class="firm-plan-card__title">Pro</strong>
+                <span class="firm-plan-card__price">199,99 € netto / Monat</span>
+              </span>
+              <span class="firm-plan-card__badge">17 Anfragen inklusive</span>
+            </span>
+            <span class="firm-plan-card__copy">Ausbildungs- und Praktikums-Matches sichtbar, 17 Kontaktanfragen pro Monat inklusive und zentrale Terminübersicht im Firmenprofil.</span>
+            <span class="firm-plan-card__meta">
+              <span class="firm-plan-card__chip">danach 13,00 € netto je weitere Anfrage</span>
+              <span class="firm-plan-card__chip">3 Monate Mindestlaufzeit</span>
+              <span class="firm-plan-card__chip">Terminübersicht + Belegungskalender</span>
+            </span>
+          </span>
+        </label>
+
+        <label class="firm-plan-card">
+          <input type="radio" name="firmBillingPlan" value="pro_plus">
+          <span class="firm-plan-card__body">
+            <span class="firm-plan-card__head">
+              <span>
+                <strong class="firm-plan-card__title">Pro +</strong>
+                <span class="firm-plan-card__price">249,99 € netto / Monat</span>
+              </span>
+              <span class="firm-plan-card__badge">22 Anfragen inklusive</span>
+            </span>
+            <span class="firm-plan-card__copy">Ausbildungs- und Praktikums-Matches sichtbar, 22 Kontaktanfragen pro Monat inklusive und kompletter Kalender-Workflow für Interviews und Praktika.</span>
+            <span class="firm-plan-card__meta">
+              <span class="firm-plan-card__chip">weitere Anfragen auf Anfrage</span>
+              <span class="firm-plan-card__chip">3 Monate Mindestlaufzeit</span>
+              <span class="firm-plan-card__chip">zentrale Übersicht + alle Exportwege</span>
+            </span>
+          </span>
+        </label>
+
+        <div class="firm-plan-card firm-plan-card--inquiry" aria-label="Ultimate auf Anfrage">
+          <span class="firm-plan-card__body">
+            <span class="firm-plan-card__head">
+              <span>
+                <strong class="firm-plan-card__title">Ultimate</strong>
+                <span class="firm-plan-card__price">Auf Anfrage</span>
+              </span>
+              <span class="firm-plan-card__badge">Individuell</span>
+            </span>
+            <span class="firm-plan-card__copy">Für größeren Bedarf, besondere Volumina oder individuelle Konditionen stimmen wir das Ultimate-Abo direkt mit Ihrem Betrieb ab.</span>
+            <span class="firm-plan-card__meta">
+              <span class="firm-plan-card__chip">persönliche Preisabstimmung</span>
+              <span class="firm-plan-card__chip">größeres Anfragevolumen</span>
+              <span class="firm-plan-card__chip">Support auf Anfrage</span>
+            </span>
+          </span>
+        </div>
+
+        <input type="radio" name="firmBillingPlan" value="internship" hidden aria-hidden="true" tabindex="-1">
+        <input type="radio" name="firmBillingPlan" value="no_subscription" hidden aria-hidden="true" tabindex="-1">
+      </fieldset>
+      <p id="firmBillingPlanHint" class="portal-support-note portal-support-note--compact">Der gewählte Tarif steuert Monatsgrundpreis, Anfragekontingent, Kalenderfunktionen und welche Matchbereiche für Ihren Betrieb sichtbar sind. Upgrades sind jederzeit möglich. Downgrades greifen nur zum Vertragsende. Kündigungen laufen mit 14 Tagen Frist und werden bis zum Wirksamkeitsdatum anteilig berechnet. Vor dem Abschluss eines Monatstarifs bestätigen Sie Preis und AGB in einem separaten Schritt.</p>
+
+      <label class="form-label" for="ihkMitgliedsnummer">IHK Mitgliedsnummer <span class="required-mark">*</span></label>
+      <input class="input number-visible" id="ihkMitgliedsnummer" type="text" placeholder="z. B. 123456789" required>
+
+      <label class="form-label">Ausbildungsberufe <span class="required-mark">*</span></label>
+      <div class="beruf-add-wrapper">
+        <input class="input" id="berufInput" type="text" placeholder="z. B. Mechatroniker/in" required>
+        <button class="btn primary small" id="btnAddBeruf" type="button">Hinzufügen</button>
+      </div>
+      <div id="berufliste" class="beruf-list"></div>
+
+
+	      <label class="form-label" for="platzBehindert">Bietet Ihr Betrieb Ausbildungsplätze, die auch für Menschen mit Behinderungen geeignet oder anpassbar sind? <span class="required-mark">*</span></label>
+      <select class="input" id="platzBehindert" required>
+        <option value="">Bitte auswählen</option>
+        <option value="Ja">Ja</option>
+        <option value="Nein">Nein</option>
+      </select>
+        <p class="portal-support-note portal-support-note--compact">Die Angabe hilft Bewerbenden, Betriebe mit echter Offenheit für Teilhabe und Integration schneller zu erkennen.</p>
+
+      <label class="form-label" for="startdatum">Startdatum <span class="required-mark">*</span></label>
+      <input class="input" id="startdatum" type="date" required>
+
+      <label class="form-label" for="gewerbeanmeldung">Gewerbeanmeldung <span class="required-mark">*</span></label>
+      <input class="input" id="gewerbeanmeldung" type="file" accept=".pdf,.jpg,.jpeg,.png" title="PDF, JPG, oder PNG (Max. 5 MB)" required>
+      <p id="gewerbeanmeldungStatus" class="firma-file-status">PDF, JPG oder PNG, max. 5 MB</p>
+
+      <label class="form-label" for="ausbildungDerAusbilder">Ausbildung der Ausbilder <span class="required-mark">*</span></label>
+      <input class="input" id="ausbildungDerAusbilder" type="file" accept=".pdf,.jpg,.jpeg,.png" title="PDF, JPG, oder PNG (Max. 5 MB)" required>
+      <p id="ausbildungDerAusbilderStatus" class="firma-file-status">PDF, JPG oder PNG, max. 5 MB</p>
+
+      <div class="actions">
+        <button id="saveFirma" class="btn primary">Profil speichern</button>
+        <!-- <button id="findMatches" class="btn ghost" type="button">Passende Bewerber finden</button> -->
+        <a id="firmPortalProfileLink" class="btn ghost" href="firma_profil.html">Zu meinem Profil</a>
+        <button id="btnFirmLogout" class="btn ghost" type="button">Abmelden</button>
+        <a class="btn primary cta-btn firma-home-cta" href="index.html">Zur Startseite</a>
+      </div>
+      <div class="actions">
+
+      </div>
+      <!-- firma-profil-actions entfernt: Bearbeiten und Abmelden -->
+      <p id="firmaStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Noch nicht gespeichert.</p>
+
+    <section class="internship-access-card" aria-labelledby="firmInternshipAccessHeading" style="margin-top:1.5rem;">
+      <p class="internship-access-card__eyebrow">Schulpraktikum</p>
+      <div class="internship-access-card__body">
+        <div class="internship-access-card__content">
+          <h3 id="firmInternshipAccessHeading">Optionalen Praktikumsbereich separat pflegen</h3>
+          <p class="internship-access-card__copy">Damit Ihr Ausbildungsprofil schlank bleibt, verwalten Sie Schulpraktikumsplätze in einem eigenen Bereich. Der Firmenzugang bleibt derselbe.</p>
+          <p class="internship-access-card__meta">Öffnen Sie den Bereich, wenn Ihr Betrieb einen eigenen Kanal für Schulpraktikumsplätze pflegen soll.</p>
+        </div>
+        <div class="actions internship-access-card__actions">
+          <a class="btn ghost" href="firma_praktikum.html">Zum Schulpraktikumsbereich</a>
+        </div>
+      </div>
+    </section>
+    </section>
+
+    <section class="panel portal-form firma-match-card" id="matchPanel" style="display: none;">
+      <h2>Passende Profile</h2>
+      <div id="matchList" class="result-list"></div>
+    </section>
+	  </div>
+  </main>
+	</div>
+
+  <script src="privacy-settings.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

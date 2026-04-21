@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!-- Empfohlener Betreff: AzubiMatch intern: Neues Sofort-Match nach Registrierung -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AzubiMatch interne Match-Benachrichtigung</title>
+</head>
+<body style="margin:0; padding:0; background:#eef1f6; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <div style="display:none; max-height:0; max-width:0; overflow:hidden; opacity:0; mso-hide:all; font-size:1px; line-height:1px; color:transparent; white-space:nowrap;">Eine neue Registrierung hat sofort sichtbare Matches erzeugt.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef1f6; margin:0; padding:0 0 24px; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+    <tr>
+      <td align="center" style="padding:0;">
+        <table role="presentation" width="680" cellspacing="0" cellpadding="0" border="0" style="width:680px; max-width:680px; margin:0 auto; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt; background:#ffffff; border:1px solid #d7dde8; border-radius:20px; overflow:hidden; font-family:Georgia, 'Times New Roman', serif; color:#1d2735;">
+          <tr>
+            <td style="padding:30px 36px; background:linear-gradient(135deg, #1d3557, #0f766e); color:#f8fbff;">
+              <div style="display:inline-block; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,0.15); font-size:28px; font-weight:700; margin-bottom:18px;">AzubiMatch</div>
+              <div style="font-size:13px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.84; margin-bottom:14px;">Interne Match-Meldung</div>
+              <h1 style="margin:0 0 12px; font-size:32px; line-height:1.15; font-weight:700;">Neue Registrierung mit sofort sichtbaren Matches.</h1>
+              <p style="margin:0; font-size:18px; line-height:1.6; color:rgba(248,251,255,0.88);">Diese Nachricht ist für das interne Team gedacht und fasst den ersten relevanten Treffer direkt zusammen.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 36px 16px; font-size:18px; line-height:1.7; color:#556173;">
+              <p style="margin:0 0 18px;">Hallo {{recipient_name}},</p>
+              <p style="margin:0;">eine neue Registrierung hat direkt <strong style="color:#1d2735;">{{match_count}} sichtbare Matches</strong> erzeugt.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc; border:1px solid #d7dde8; border-radius:16px;">
+                <tr>
+                  <td style="padding:22px 24px; font-size:16px; line-height:1.7; color:#1d2735;">
+                    <p style="margin:0 0 10px; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:#0f766e;">Auslöser</p>
+                    <p style="margin:0 0 8px;"><strong>Typ:</strong> {{trigger_type}}</p>
+                    <p style="margin:0 0 8px;"><strong>Name:</strong> {{registrant_name}}</p>
+                    <p style="margin:0 0 8px;"><strong>E-Mail:</strong> {{registrant_email}}</p>
+                    <p style="margin:0;"><strong>Top-Match:</strong> {{top_match_reference}}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 12px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#edf7f6; border:1px solid #cbe6e3; border-radius:16px;">
+                <tr>
+                  <td style="padding:22px 24px; font-size:16px; line-height:1.7; color:#1d2735;">
+                    <p style="margin:0 0 8px;"><strong>Beruf:</strong> {{top_match_profession}}</p>
+                    <p style="margin:0 0 8px;"><strong>Ort:</strong> {{top_match_city}}</p>
+                    <p style="margin:0 0 8px;"><strong>Distanz:</strong> {{top_match_distance}}</p>
+                    <p style="margin:0;"><strong>Match-Typ:</strong> {{top_match_label}}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 36px 18px;">
+              <a href="{{dashboard_url}}" style="display:inline-block; padding:15px 24px; background:#1d3557; color:#ffffff; text-decoration:none; font-size:17px; font-weight:700; border-radius:999px;">Dashboard öffnen</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 24px; font-size:15px; line-height:1.7; color:#556173;">
+              Anmeldung: <a href="{{login_url}}" style="color:#0f766e; font-weight:700; text-decoration:none;">{{login_url}}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 28px; font-size:17px; line-height:1.7; color:#556173;">
+              Viele Grüße<br>
+              <strong style="color:#1d2735;">{{support_name}}</strong>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

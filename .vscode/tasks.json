@@ -1,0 +1,169 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Strato WordPress Theme",
+			"type": "shell",
+			"command": "node",
+				"$ErrorActionPreference = 'Stop'; Import-Module Posh-SSH; $hostName = '5020151202.ssh.w2.strato.hosting'; $userName = 'su128810'; $password = ConvertTo-SecureString 'ArdamlA009' -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential($userName, $password); $localThemeDir = 'C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato'; $remoteThemesDir = '/home/www/public/wp-content/themes'; $themeSlug = 'azubimatch-strato'; $stamp = Get-Date -Format 'yyyyMMddHHmmss'; $tempSlug = $themeSlug + '_tmp_' + $stamp; $localTempDir = Join-Path (Split-Path $localThemeDir -Parent) $tempSlug; if (Test-Path $localTempDir) { Remove-Item $localTempDir -Recurse -Force; }; Copy-Item $localThemeDir $localTempDir -Recurse; $sftp = $null; $ssh = $null; try { $sftp = New-SFTPSession -ComputerName $hostName -Credential $credential -AcceptKey; $ssh = New-SSHSession -ComputerName $hostName -Credential $credential -AcceptKey; Set-SFTPItem -SessionId $sftp.SessionId -Path $localTempDir -Destination $remoteThemesDir -Recurse; $verify = Invoke-SSHCommand -SessionId $ssh.SessionId -Command (\"find '\" + $remoteThemesDir + \"/\" + $tempSlug + \"' -type f | wc -l\"); $count = (($verify.Output | Select-Object -Last 1) | Out-String).Trim(); if (-not $count -or $count -eq '0') { throw 'REMOTE_UPLOAD_EMPTY'; }; $switchCommand = \"cd '\" + $remoteThemesDir + \"'; find . -maxdepth 1 -mindepth 1 -type d \\\( -name '\" + $themeSlug + \"_backup_*' -o -name '\" + $themeSlug + \"_tmp_*' \\\) ! -name '\" + $tempSlug + \"' -exec rm -rf {} +; if [ -d '\" + $themeSlug + \"' ]; then rm -rf '\" + $themeSlug + \"'; fi; mv '\" + $tempSlug + \"' '\" + $themeSlug + \"'; find '\" + $themeSlug + \"' -type d -exec chmod 755 {} \\\;; find '\" + $themeSlug + \"' -type f -exec chmod 644 {} \\\;; echo ACTIVE:\" + $themeSlug + \"; echo OLD_THEMES_REMOVED:yes; find '\" + $themeSlug + \"' -type f | wc -l\"; $switch = Invoke-SSHCommand -SessionId $ssh.SessionId -Command $switchCommand; $switch.Output | ForEach-Object { Write-Output $_ }; } finally { if ($sftp) { Remove-SFTPSession -SessionId $sftp.SessionId | Out-Null }; if ($ssh) { Remove-SSHSession -SessionId $ssh.SessionId | Out-Null }; if (Test-Path $localTempDir) { Remove-Item $localTempDir -Recurse -Force; } }"
+				".\\tools\\build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Remove temp Strato zip",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$path='C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato-wp.zip'; if (Test-Path $path) { Remove-Item $path -Force -ErrorAction SilentlyContinue }; if (Test-Path $path) { Rename-Item $path ('azubimatch-strato-wp-' + [DateTime]::Now.ToString('yyyyMMddHHmmss') + '.zip') -ErrorAction SilentlyContinue }; if (Test-Path $path) { Write-Error 'STILL_EXISTS' } else { Write-Output 'REMOVED_OR_RENAMED' }"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Remove temp Strato zip via cmd",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"if exist \"C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato-wp.zip\" del /f /q \"C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato-wp.zip\" && (if exist \"C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato-wp.zip\" (echo STILL_EXISTS & exit /b 1) else (echo REMOVED)) else echo MISSING"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Rebuild Strato WordPress Theme",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".\\tools\\build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Rebuild Strato WordPress Theme After Zip Fix",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".\\tools\\build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Rebuild Strato WordPress Theme With Internship Main Pages",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"tools/build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Rebuild Strato WordPress Theme After Student Copy Update",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"tools/build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Rebuild Strato WordPress Theme After Company Copy Update",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"tools/build_strato_wordpress_theme.mjs"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Deploy corrected logo theme to Strato",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"$ErrorActionPreference = 'Stop'; Import-Module Posh-SSH; $hostName = '5020151202.ssh.w2.strato.hosting'; $userName = 'su128810'; $password = ConvertTo-SecureString 'ArdamlA009' -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential($userName, $password); $localThemeDir = 'C:\\Users\\ardao\\Desktop\\azubi-match\\dist\\strato-wordpress\\azubimatch-strato'; $remoteThemesDir = '/home/www/public/wp-content/themes'; $themeSlug = 'azubimatch-strato'; $stamp = Get-Date -Format 'yyyyMMddHHmmss'; $tempSlug = $themeSlug + '_tmp_' + $stamp; $backupSlug = $themeSlug + '_backup_' + $stamp; $localTempDir = Join-Path (Split-Path $localThemeDir -Parent) $tempSlug; if (Test-Path $localTempDir) { Remove-Item $localTempDir -Recurse -Force; }; Copy-Item $localThemeDir $localTempDir -Recurse; $sftp = $null; $ssh = $null; try { $sftp = New-SFTPSession -ComputerName $hostName -Credential $credential -AcceptKey; $ssh = New-SSHSession -ComputerName $hostName -Credential $credential -AcceptKey; Set-SFTPItem -SessionId $sftp.SessionId -Path $localTempDir -Destination $remoteThemesDir -Recurse; $verify = Invoke-SSHCommand -SessionId $ssh.SessionId -Command (\"find '\" + $remoteThemesDir + \"/\" + $tempSlug + \"' -type f | wc -l\"); $count = (($verify.Output | Select-Object -Last 1) | Out-String).Trim(); if (-not $count -or $count -eq '0') { throw 'REMOTE_UPLOAD_EMPTY'; }; $switchCommand = \"cd '\" + $remoteThemesDir + \"'; if [ -d '\" + $themeSlug + \"' ]; then mv '\" + $themeSlug + \"' '\" + $backupSlug + \"'; fi; mv '\" + $tempSlug + \"' '\" + $themeSlug + \"'; find '\" + $themeSlug + \"' -type d -exec chmod 755 {} \\;; find '\" + $themeSlug + \"' -type f -exec chmod 644 {} \\;; echo ACTIVE:\" + $themeSlug + \"; echo BACKUP:\" + $backupSlug + \"; find '\" + $themeSlug + \"' -type f | wc -l\"; $switch = Invoke-SSHCommand -SessionId $ssh.SessionId -Command $switchCommand; $switch.Output | ForEach-Object { Write-Output $_ }; } finally { if ($sftp) { Remove-SFTPSession -SessionId $sftp.SessionId | Out-Null }; if ($ssh) { Remove-SSHSession -SessionId $ssh.SessionId | Out-Null }; if (Test-Path $localTempDir) { Remove-Item $localTempDir -Recurse -Force; } }"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Upload replacement logo to Strato",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\ardao\\AppData\\Local\\Temp\\azubimatch_upload_logo.ps1"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Upload replacement logo to Strato after delete",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\ardao\\AppData\\Local\\Temp\\azubimatch_upload_logo.ps1"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Deploy current WordPress theme to Strato",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\ardao\\AppData\\Local\\Temp\\azubimatch_deploy_theme_20260415.ps1"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Verify current Strato theme",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\ardao\\AppData\\Local\\Temp\\azubimatch_verify_theme_20260415.ps1"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Smoke check live Strato site",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\ardao\\AppData\\Local\\Temp\\azubimatch_live_smoke_20260415.ps1"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

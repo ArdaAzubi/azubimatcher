@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schulpraktikum für Unternehmen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="portal-entry-page firma-entry-page firm-profile-page startseite-page">
+  <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+  <div class="bg-grid profile-grid-muted" aria-hidden="true"></div>
+  <div class="bg-orb orb-one" aria-hidden="true"></div>
+  <div class="bg-orb orb-two" aria-hidden="true"></div>
+  <div class="start-wrapper index-layout portal-entry-wrapper">
+    <header class="index-topbar portal-entry-topbar profile-topbar">
+      <a href="index.html" class="index-brand">AzubiMatcher</a>
+      <nav class="index-nav" aria-label="Seitennavigation">
+        <a href="index.html">Startseite</a>
+        <a href="firma.html">Firmen-Portal</a>
+        <a href="firma_profil.html">Firmenprofil</a>
+        <a href="firma_praktikum.html" aria-current="page">Schulpraktikum</a>
+      </nav>
+      <a href="firma.html" class="btn primary index-login-btn">Zum Ausbildungsbereich</a>
+    </header>
+
+    <main id="main-content" class="hero portal-page portal-entry-main internship-page-main">
+      <div id="firmInternshipWorkspace" class="internship-page-stack">
+        <div class="profil-account-bar">
+          <div class="profil-account-left">
+            <span class="profil-account-greeting">Schulpraktikum: <strong id="firmDisplayName"></strong></span>
+            <span class="profil-account-email-chip" id="firmDisplayEmail"></span>
+          </div>
+          <div class="profil-account-actions">
+            <a href="firma.html" class="btn ghost small">Ausbildungsportal</a>
+            <a href="firma_profil.html" class="btn ghost small">Firmenprofil</a>
+            <button id="firmInternshipLogout" class="btn primary small" type="button">Abmelden</button>
+          </div>
+        </div>
+
+        <section class="panel portal-form internship-page-hero">
+          <div class="internship-page-hero__copy">
+            <p class="eyebrow">Schulpraktikumsplätze</p>
+            <h1><span class="title-stack"><span class="title-stack__line">Praktikumsplätze separat</span><span class="title-stack__line title-stack__line--offset">vom Ausbildungsprofil</span></span></h1>
+            <p>Hier ergänzen Sie bei Bedarf einen eigenen Bereich für Schulpraktikumsplätze. Ihr Ausbildungsprofil bleibt dadurch schlank, während Praktikum und Ausbildung technisch sauber getrennt bleiben.</p>
+            <p>Der Bereich ist sinnvoll, wenn Ihr Betrieb Schulpraktikumsplätze über einen eigenen Kanal sichtbar machen und getrennt vom Ausbildungsprofil pflegen möchte.</p>
+          </div>
+          <div class="internship-page-hero__pill">Eigener Bereich für Schulpraktikumsplätze</div>
+        </section>
+
+        <section class="panel portal-form internship-access-card internship-access-card--support">
+          <p class="internship-access-card__eyebrow">Status</p>
+          <div class="internship-access-card__content">
+            <h2>Freigabe und Basisdaten</h2>
+            <p id="firmInternshipReleaseNote" class="internship-access-card__copy">Der Praktikumsbereich wird vorbereitet.</p>
+          </div>
+        </section>
+
+        <section class="panel portal-form internship-access-card internship-access-card--support internship-business-value-card">
+          <p class="internship-access-card__eyebrow">Wichtig für Ihren Betrieb</p>
+          <div class="internship-access-card__body">
+            <div class="internship-access-card__content">
+              <h2>Warum Sie das Praktikumsangebot unbedingt nutzen sollten</h2>
+              <p class="internship-access-card__copy">Ein Schulpraktikum ist für Unternehmen weit mehr als ein Zusatzangebot. Sie lernen potenzielle Auszubildende früh kennen, zeigen Präsenz bei Schulen und gewinnen direkten Zugang zu motivierten Jugendlichen aus Ihrer Region.</p>
+              <p class="internship-access-card__meta">Unsere klare Empfehlung: Nehmen Sie dieses Angebot unbedingt an und pflegen Sie Ihren Praktikumsbereich aktiv. So erhöhen Sie Ihre Sichtbarkeit, bauen früh Vertrauen auf und schaffen eine starke Grundlage für spätere Ausbildungsbewerbungen.</p>
+            </div>
+            <div class="internship-business-value-card__points">
+              <span class="portal-internship-stage__chip">Frühe Nachwuchsgewinnung</span>
+              <span class="portal-internship-stage__chip">Mehr Sichtbarkeit bei Schulen</span>
+              <span class="portal-internship-stage__chip">Direkte Kontakte zu passenden Schülern</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="firmInternshipEntrySection" class="panel portal-form" aria-labelledby="firmInternshipHeading">
+          <p class="eyebrow">Eingabe</p>
+          <h2 id="firmInternshipHeading">Praktikumsbereich pflegen</h2>
+          <p class="portal-support-note">Firmenname, Ansprechperson, Ort und PLZ werden automatisch aus Ihrem Firmenprofil übernommen.</p>
+          <p class="portal-support-note internship-planning-note">Ergänzen Sie möglichst einen planbaren Zeitraum oder feste Tage. Sichtbare Praktikums-Matches entstehen nur, wenn der Zeitraum beider Seiten zusammenpasst.</p>
+          <p id="firmInternshipBaseInfo" class="status" role="status" aria-live="polite" aria-atomic="true">Basisdaten werden geladen.</p>
+
+          <div class="internship-form-accordion-group">
+            <details class="index-info-accordion internship-form-accordion" open>
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Praktikumsbereiche und Umkreis</span>
+                  <span class="internship-form-accordion__meta">Angebotsbereiche verwalten und Suchradius festlegen</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <label class="form-label">Praktikumsbereiche</label>
+                <div class="beruf-add-wrapper">
+                  <input class="input" id="firmInternshipBerufInput" type="text" placeholder="z. B. IT, Lager, Büro oder Handwerk">
+                  <button class="btn primary small" id="btnAddFirmInternshipBeruf" type="button">Hinzufügen</button>
+                </div>
+                <div id="firmInternshipBerufliste" class="beruf-list"></div>
+
+                <div class="firm-match-toolbar internship-form-accordion__toolbar-reset">
+                  <label class="firm-radius-filter" for="firmInternshipUmkreis">
+                    <span>Praktikums-Umkreis</span>
+                    <select id="firmInternshipUmkreis" class="input">
+                      <option value="5">5 km</option>
+                      <option value="10">10 km</option>
+                      <option value="25">25 km</option>
+                      <option value="50">50 km</option>
+                      <option value="100">100 km</option>
+                      <option value="de">Deutschlandweit</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <details class="index-info-accordion internship-form-accordion">
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Zeitraum und planbare Tage</span>
+                  <span class="internship-form-accordion__meta">Kalenderfenster und feste Betriebstage festlegen</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <div class="internship-fixed-date-panel internship-form-accordion__panel-reset">
+                  <span class="form-label">Festes Datum</span>
+                  <p class="portal-support-note">Markieren Sie hier Start und Ende des Praktikumszeitraums direkt im Kalender.</p>
+                  <div class="internship-calendar-grid internship-form-accordion__calendar-grid">
+                    <div>
+                      <label class="form-label" for="firmInternshipStartDate">Startdatum</label>
+                      <input class="input" id="firmInternshipStartDate" type="date">
+                    </div>
+                    <div>
+                      <label class="form-label" for="firmInternshipEndDate">Enddatum</label>
+                      <input class="input" id="firmInternshipEndDate" type="date">
+                    </div>
+                  </div>
+                </div>
+
+                <label class="form-label" for="firmInternshipZeitraum">Zusätzlicher Zeit-Hinweis</label>
+                <input class="input" id="firmInternshipZeitraum" type="text" placeholder="z. B. Blockpraktikum vor den Sommerferien oder nur nach Rücksprache mit der Schule">
+
+                <div class="internship-weekday-panel internship-weekday-panel--firm internship-form-accordion__panel-reset">
+                  <span class="form-label">Planbare Tage im Betrieb</span>
+                  <div class="internship-weekday-grid" role="group" aria-label="Planbare Tage im Betrieb">
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="monday"><span>Mo</span></label>
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="tuesday"><span>Di</span></label>
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="wednesday"><span>Mi</span></label>
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="thursday"><span>Do</span></label>
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="friday"><span>Fr</span></label>
+                    <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipDays" value="saturday"><span>Sa</span></label>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="index-info-accordion internship-form-accordion">
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Zielgruppe und Kurzinfo</span>
+                  <span class="internship-form-accordion__meta">Geeignete Klassenstufen und Zusatzhinweise ergänzen</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <label class="form-label" for="firmInternshipKlassenstufen">Geeignete Klassenstufen</label>
+                <input class="input" id="firmInternshipKlassenstufen" type="text" placeholder="z. B. ab Klasse 8 oder 9 bis EF">
+
+                <label class="form-label" for="firmInternshipHinweis">Kurzinfo für Schüler</label>
+                <textarea class="input" id="firmInternshipHinweis" rows="4" placeholder="Welche Einblicke, Aufgaben oder Rahmenbedingungen bietet Ihr Schulpraktikum?"></textarea>
+              </div>
+            </details>
+          </div>
+
+          <div class="actions">
+            <button id="saveFirmInternship" class="btn primary" type="button">Schulpraktikumsbereich speichern</button>
+            <a class="btn ghost" href="firma_profil.html">Zum Ausbildungsprofil</a>
+          </div>
+          <p id="firmInternshipStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Noch kein separates Schulpraktikumsangebot gespeichert.</p>
+        </section>
+
+        <section id="firmInternshipMatchSection" class="panel portal-form" style="display:none;">
+          <p class="eyebrow">Matches</p>
+          <h2>Passende Schülerprofile für Schulpraktika</h2>
+          <p class="portal-support-note">Dieser Pool ist vom Ausbildungs-Matching getrennt und zeigt nur passende Schülerprofile für Ihren Praktikumsbereich.</p>
+          <div class="firm-match-toolbar">
+            <label class="firm-radius-filter" for="firmInternshipMatchRadiusSelect">
+              <span>Umkreis für Schulpraktikumsprofile</span>
+              <select id="firmInternshipMatchRadiusSelect" class="input">
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+                <option value="de">Deutschlandweit</option>
+              </select>
+            </label>
+          </div>
+          <div id="firmInternshipMatchHint" class="firm-profile-hint" style="display:none;"></div>
+          <div id="firmInternshipMatches"></div>
+        </section>
+
+        <section id="firmInternshipCalendarSection" class="panel portal-form">
+          <p class="eyebrow">Terminkalender</p>
+          <h2>Praktikumsplanung und Übersicht</h2>
+          <p class="portal-support-note">Wenn Zeitraum und feste Tage zwischen Betrieb und Schüler zusammenpassen, können Sie passende Profile hier in Ihren Kalender übernehmen, Ihre Praktikumsplatz-Belegung auslesen und je nach Tarif Einträge für Outlook, Google Calendar oder als ICS-Datei exportieren.</p>
+
+          <div class="internship-form-accordion-group internship-calendar-accordion-group">
+            <details class="index-info-accordion internship-form-accordion" open>
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Kalendereintrag planen</span>
+                  <span class="internship-form-accordion__meta">Ausgewähltes Match prüfen und direkt in den Kalender übernehmen</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <div id="firmInternshipCalendarPlanner" class="internship-calendar-planner internship-form-accordion__panel-reset">
+                  <div class="internship-calendar-planner__summary">
+                    <p class="internship-calendar-planner__eyebrow">Ausgewähltes Match</p>
+                    <h3 id="firmInternshipCalendarStudentName">Noch kein Match ausgewählt</h3>
+                    <p id="firmInternshipCalendarAvailability" class="internship-calendar-planner__meta">Wählen Sie unten in einem Match „In Kalender planen“.</p>
+                  </div>
+
+                  <input id="firmInternshipCalendarEntryId" type="hidden">
+                  <input id="firmInternshipCalendarStudentId" type="hidden">
+                  <input id="firmInternshipCalendarStudentNameValue" type="hidden">
+                  <input id="firmInternshipCalendarProfessionValue" type="hidden">
+
+                  <div class="internship-fixed-date-panel internship-form-accordion__panel-reset">
+                    <span class="form-label">Festes Datum</span>
+                    <p class="portal-support-note">Markieren Sie hier Start und Ende des geplanten Kalendereintrags.</p>
+                    <div class="internship-calendar-grid internship-form-accordion__calendar-grid">
+                      <div>
+                        <label class="form-label" for="firmInternshipCalendarStartDate">Startdatum</label>
+                        <input class="input" id="firmInternshipCalendarStartDate" type="date">
+                      </div>
+                      <div>
+                        <label class="form-label" for="firmInternshipCalendarEndDate">Enddatum</label>
+                        <input class="input" id="firmInternshipCalendarEndDate" type="date">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="internship-weekday-panel internship-weekday-panel--firm internship-form-accordion__panel-reset">
+                    <span class="form-label">Eingeplante Tage</span>
+                    <div class="internship-weekday-grid" role="group" aria-label="Eingeplante Tage">
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="monday"><span>Mo</span></label>
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="tuesday"><span>Di</span></label>
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="wednesday"><span>Mi</span></label>
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="thursday"><span>Do</span></label>
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="friday"><span>Fr</span></label>
+                      <label class="internship-weekday-option"><input type="checkbox" name="firmInternshipCalendarDays" value="saturday"><span>Sa</span></label>
+                    </div>
+                  </div>
+
+                  <label class="form-label" for="firmInternshipCalendarNote">Notiz zur Planung</label>
+                  <textarea class="input" id="firmInternshipCalendarNote" rows="3" placeholder="z. B. Einsatz in der IT-Abteilung, Ansprechpartner im Betrieb oder Rückmeldung der Schule"></textarea>
+
+                  <label class="internship-process-checkbox" for="firmInternshipCalendarProcessComplete">
+                    <input type="checkbox" id="firmInternshipCalendarProcessComplete">
+                    <span>Der Praktikumsbewerbungsprozess zwischen Betrieb und Schüler ist abgeschlossen.</span>
+                  </label>
+
+                  <div class="actions">
+                    <button id="saveFirmInternshipCalendarEntry" class="btn primary" type="button">Kalendereintrag speichern</button>
+                    <button id="resetFirmInternshipCalendarPlanner" class="btn ghost" type="button">Auswahl zurücksetzen</button>
+                  </div>
+                  <div id="firmInternshipCalendarExportActions" class="internship-match-actions" hidden>
+                    <a id="firmInternshipCalendarOutlookLink" class="btn ghost small" href="#" target="_blank" rel="noopener noreferrer" hidden>In Outlook eintragen</a>
+                    <a id="firmInternshipCalendarGoogleLink" class="btn ghost small" href="#" target="_blank" rel="noopener noreferrer" hidden>In Google Calendar eintragen</a>
+                    <button id="downloadFirmInternshipCalendarIcs" class="btn ghost small" type="button" hidden>ICS laden</button>
+                  </div>
+                  <p id="firmInternshipCalendarPlanNote" class="firm-profile-hint" style="display:none;" hidden></p>
+                  <p id="firmInternshipCalendarStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Wählen Sie unten ein Match aus, um die Planung zu übernehmen.</p>
+                </div>
+              </div>
+            </details>
+
+            <details class="index-info-accordion internship-form-accordion">
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Geplante Praktikantinnen und Praktikanten</span>
+                  <span class="internship-form-accordion__meta">Bereits gespeicherte Kalendereinträge kompakt einsehen und verwalten</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <div id="firmInternshipCalendarEntries" class="internship-calendar-list internship-form-accordion__panel-reset">
+                  <p class="status">Noch keine Praktikantinnen oder Praktikanten im Kalender geplant.</p>
+                </div>
+              </div>
+            </details>
+
+            <details class="index-info-accordion internship-form-accordion">
+              <summary>
+                <span class="internship-form-accordion__summary">
+                  <span class="internship-form-accordion__title">Belegungskalender des Betriebs</span>
+                  <span class="internship-form-accordion__meta">Gespeicherte Praktikumsplätze nach Monat und Auslastung lesen</span>
+                </span>
+              </summary>
+              <div class="index-info-accordion__body internship-form-accordion__body">
+                <div id="firmInternshipOccupancyCalendar" class="internship-form-accordion__panel-reset">
+                  <p class="status">Noch keine gespeicherten Praktikumsbelegungen vorhanden.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="panel portal-form internship-access-card internship-access-card--support">
+          <p class="internship-access-card__eyebrow">Zurück zum Kernprofil</p>
+          <div class="internship-access-card__body">
+            <div class="internship-access-card__content">
+              <h2>Ausbildung und Praktikum bewusst getrennt halten</h2>
+              <p class="internship-access-card__copy">Ausbildungsberufe, Pflichtdokumente und Bewerber-Matches bleiben im Hauptprofil. Der Schulpraktikumsbereich ist Ihr eigener Kanal für Praktikumsplätze.</p>
+            </div>
+            <div class="actions internship-access-card__actions">
+              <a class="btn ghost" href="firma.html">Ausbildungsportal öffnen</a>
+              <a class="btn primary" href="firma_profil.html">Firmenprofil öffnen</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="privacy-settings.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

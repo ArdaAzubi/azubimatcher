@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Illustration einer Kauffrau fuer Bueromanagement an Schreibtisch, Laptop und Kalenderboard">
+  <defs>
+    <linearGradient id="bm-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5f9ff"/>
+      <stop offset="100%" stop-color="#eef7f2"/>
+    </linearGradient>
+    <linearGradient id="bm-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3158d4"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#bm-bg)"/>
+  <circle cx="118" cy="96" r="84" fill="#dbeafe" opacity="0.82"/>
+  <circle cx="696" cy="92" r="76" fill="#dcfce7" opacity="0.74"/>
+  <rect x="56" y="62" width="688" height="356" rx="32" fill="#ffffff" opacity="0.92"/>
+  <g transform="translate(86 106)">
+    <rect x="26" y="22" width="200" height="138" rx="24" fill="#eef4ff" stroke="#d8e5ff" stroke-width="4"/>
+    <rect x="54" y="50" width="62" height="48" rx="12" fill="#3158d4" opacity="0.18"/>
+    <rect x="130" y="50" width="68" height="16" rx="8" fill="#a7c0f8"/>
+    <rect x="130" y="76" width="46" height="16" rx="8" fill="#a7c0f8"/>
+    <rect x="54" y="114" width="144" height="16" rx="8" fill="#c6d8fb"/>
+    <rect x="294" y="194" width="224" height="54" rx="24" fill="#edf4ff"/>
+    <path d="M332 216 h112" fill="none" stroke="#3158d4" stroke-width="10" stroke-linecap="round"/>
+    <path d="M462 216 h26" fill="none" stroke="#22c55e" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="356" cy="250" r="20" fill="#20396f"/>
+    <circle cx="450" cy="250" r="20" fill="#20396f"/>
+    <circle cx="542" cy="82" r="40" fill="#ffd8bf"/>
+    <path d="M508 82 C512 46 530 22 560 22 C586 22 604 46 604 78 V100 C590 90 572 86 552 86 C536 86 522 86 508 82" fill="#24408d"/>
+    <path d="M490 160 C504 118 534 98 574 98 C612 98 642 118 656 166 L510 166 Z" fill="url(#bm-accent)"/>
+    <path d="M524 146 L486 190" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M594 144 L642 146" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M554 166 V252" fill="none" stroke="#2c3652" stroke-width="18" stroke-linecap="round"/>
+    <path d="M528 252 L504 316" fill="none" stroke="#2c3652" stroke-width="18" stroke-linecap="round"/>
+    <path d="M576 252 L606 316" fill="none" stroke="#2c3652" stroke-width="18" stroke-linecap="round"/>
+    <rect x="606" y="122" width="74" height="90" rx="18" fill="#ffffff" stroke="#d7e4fb" stroke-width="4"/>
+    <rect x="626" y="142" width="34" height="10" rx="5" fill="#3158d4"/>
+    <rect x="626" y="162" width="26" height="10" rx="5" fill="#a7c0f8"/>
+    <rect x="626" y="182" width="32" height="10" rx="5" fill="#22c55e" opacity="0.8"/>
+  </g>
+</svg>

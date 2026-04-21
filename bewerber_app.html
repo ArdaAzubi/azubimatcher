@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AzubiMatcher als Bewerber-App: Profil, Freigaben, Nachrichten, Kontakte und nächste Schritte in einer kompakten mobilen Ansicht.">
+  <meta name="theme-color" content="#0f4c81">
+  <title>AzubiMatcher – Bewerber-App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mobile-app-page student-mobile-app-page startseite-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb orb-one" aria-hidden="true"></div>
+  <div class="bg-orb orb-two" aria-hidden="true"></div>
+  <div class="bg-orb orb-three" aria-hidden="true"></div>
+
+  <div class="mobile-app-shell student-mobile-app-shell" id="studentMobileAppWorkspace">
+    <header class="index-topbar mobile-app-topbar student-mobile-app-topbar">
+      <a href="app.html" class="index-brand">AzubiMatcher</a>
+      <div class="mobile-app-topbar-actions">
+        <a id="studentMobileAppHubLink" href="app.html" class="btn ghost small">Zum App-Start</a>
+        <a id="studentMobileAppPortalLink" href="bewerber.html" class="btn ghost small">Zum Bewerberportal</a>
+      </div>
+    </header>
+
+    <main class="student-mobile-app-main">
+      <section class="student-mobile-app-hero">
+        <div class="student-mobile-app-hero__copy">
+          <p class="mobile-app-eyebrow">Bewerber-App</p>
+          <h1 id="studentMobileAppTitle">AzubiMatcher für Bewerbende</h1>
+          <p id="studentMobileAppLead" class="student-mobile-app-lead">Dein Kurzprofil, Firmenanfragen, Nachrichten und nächste Schritte in einer kompakten mobilen Ansicht.</p>
+          <div id="studentMobileAppChips" class="student-mobile-app-chip-row">
+            <span class="student-mobile-app-chip">Wird geladen</span>
+          </div>
+        </div>
+
+        <div class="student-mobile-app-hero__preview" aria-hidden="true">
+          <div class="student-mobile-app-phone">
+            <div class="student-mobile-app-phone__top"></div>
+            <div class="student-mobile-app-phone__screen">
+              <p class="student-mobile-app-phone__label">Heute wichtig</p>
+              <div id="studentMobileAppPhonePreview" class="student-mobile-app-phone__content">
+                <p class="status">App-Vorschau wird geladen.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="student-mobile-app-layout">
+        <div class="student-mobile-app-column">
+          <section class="student-mobile-app-card">
+            <div class="student-mobile-app-card__head">
+              <div>
+                <p class="student-mobile-app-card__eyebrow">Schnellzugriff</p>
+                <h2 class="student-mobile-app-card__title">Was du mobil sofort öffnen kannst</h2>
+              </div>
+              <p class="student-mobile-app-card__copy">Kurze Wege zu Profil, Freigaben, Nachrichten und Praktikum.</p>
+            </div>
+            <div id="studentMobileAppActions" class="student-mobile-app-action-grid">
+              <p class="status">Aktionen werden geladen.</p>
+            </div>
+          </section>
+
+          <section class="student-mobile-app-card">
+            <div class="student-mobile-app-card__head">
+              <div>
+                <p class="student-mobile-app-card__eyebrow">Kurzprofil</p>
+                <h2 class="student-mobile-app-card__title">Dein aktueller Stand</h2>
+              </div>
+              <p class="student-mobile-app-card__copy">Wunschberuf, Unterlagen und Matching-Status auf einen Blick.</p>
+            </div>
+            <div id="studentMobileAppProfileSummary" class="student-mobile-app-summary-stack">
+              <p class="status">Profil wird geladen.</p>
+            </div>
+          </section>
+        </div>
+
+        <div class="student-mobile-app-column">
+          <section class="student-mobile-app-card">
+            <div class="student-mobile-app-card__head">
+              <div>
+                <p class="student-mobile-app-card__eyebrow">Heute priorisieren</p>
+                <h2 class="student-mobile-app-card__title">Was gerade offen ist</h2>
+              </div>
+              <p class="student-mobile-app-card__copy">Firmenanfragen, Nachrichten oder Check-ins, die du zuerst ansehen solltest.</p>
+            </div>
+            <div id="studentMobileAppQueue" class="student-mobile-app-summary-stack">
+              <p class="status">Offene Punkte werden geladen.</p>
+            </div>
+          </section>
+
+          <section class="student-mobile-app-card">
+            <div class="student-mobile-app-card__head">
+              <div>
+                <p class="student-mobile-app-card__eyebrow">Kontakte</p>
+                <h2 class="student-mobile-app-card__title">Aktive Firmenbeziehungen</h2>
+              </div>
+              <p class="student-mobile-app-card__copy">Sobald Unterlagen freigegeben sind, behältst du hier direkte Kontakte mobil im Blick.</p>
+            </div>
+            <div id="studentMobileAppContacts" class="student-mobile-app-summary-stack">
+              <p class="status">Kontakte werden geladen.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-app-dock student-mobile-app-dock" aria-label="Bewerber-App Schnellnavigation">
+      <a id="studentMobileAppDockDashboard" href="bewerber_app.html" aria-current="page">Dashboard</a>
+      <a id="studentMobileAppDockProfile" href="bewerber_profil.html">Profil</a>
+      <a id="studentMobileAppDockRequests" href="bewerber_profil.html?section=requests">Freigaben</a>
+      <a id="studentMobileAppDockPraktikum" href="bewerber_praktikum.html">Praktikum</a>
+    </nav>
+  </div>
+
+  <script src="privacy-settings.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

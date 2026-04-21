@@ -1,0 +1,15 @@
+<?php
+return [
+  // Optionaler Schutz für Server-zu-Server-Aufrufe. Für Browser-Fetches im gleichen Ursprung meist leer lassen.
+  'apiKey' => '',
+  // Valide Absenderadresse Ihrer Domain, z. B. no-reply@azubimatch.de
+  'fromEmail' => 'info@azubimatcher.com',
+  // Sichtbarer Absendername
+  'fromName' => 'AzubiMatch',
+  // SMTP-Zugangsdaten (leer lassen = PHP mail() wird verwendet)
+  'smtpHost' => 'smtp.strato.de',
+  'smtpPort' => 587,
+  'smtpEncryption' => 'tls',
+  'smtpUser' => 'info@azubimatcher.com',
+  'smtpPassword' => ''
+];

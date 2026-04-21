@@ -1,0 +1,27 @@
+Betreff: AzubiMatch: Es gibt bereits passende Ausbildungs-Matches für dich
+
+Hallo {{recipient_name}},
+
+nach deiner Registrierung gibt es bei AzubiMatch bereits {{match_count}} sichtbare Matches im gemeinsamen Umkreis.
+
+Dein aktuell wichtigster Treffer:
+- Firma: {{top_match_name}}
+- Ausbildungsberuf: {{top_match_profession}}
+- Ort: {{top_match_city}}
+- Match-Typ: {{top_match_label}}
+- Distanz: {{top_match_distance}}
+- Dein Umkreis: {{radius_label}}
+
+{{inclusion_hint}}
+
+Öffne jetzt dein Bewerberprofil, prüfe die Treffer und lege deine nächsten Schritte fest:
+{{dashboard_url}}
+
+Wenn deine Sitzung bereits beendet ist, melde dich hier erneut an:
+{{login_url}}
+
+Viele Grüße
+{{support_name}}
+
+Verwendete EmailJS-Felder:
+recipient_name, recipient_email, match_count, top_match_name, top_match_profession, top_match_city, top_match_distance, top_match_label, radius_label, inclusion_hint, dashboard_url, login_url, support_name

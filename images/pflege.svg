@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Illustration einer Pflegefachkraft mit Herzsymbol, Dokumentation und betreuter Person">
+  <defs>
+    <linearGradient id="pf-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eefcf7"/>
+      <stop offset="100%" stop-color="#eef6ff"/>
+    </linearGradient>
+    <linearGradient id="pf-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#pf-bg)"/>
+  <circle cx="112" cy="92" r="84" fill="#d1fae5" opacity="0.8"/>
+  <circle cx="696" cy="92" r="76" fill="#dbeafe" opacity="0.74"/>
+  <rect x="56" y="62" width="688" height="356" rx="32" fill="#ffffff" opacity="0.92"/>
+  <g transform="translate(84 108)">
+    <rect x="26" y="34" width="162" height="200" rx="24" fill="#effcf6" stroke="#d1fae5" stroke-width="4"/>
+    <rect x="54" y="58" width="106" height="132" rx="18" fill="#ffffff" stroke="#dbeafe" stroke-width="4"/>
+    <path d="M84 92 h46" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"/>
+    <path d="M108 68 v48" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round"/>
+    <rect x="76" y="132" width="64" height="12" rx="6" fill="#bfdbfe"/>
+    <rect x="76" y="156" width="50" height="12" rx="6" fill="#bfdbfe"/>
+    <circle cx="344" cy="92" r="38" fill="#ffd8bf"/>
+    <path d="M312 90 C314 58 330 34 358 34 C382 34 400 56 402 84 C394 108 378 122 348 122 C328 122 314 112 312 90" fill="#37519e"/>
+    <path d="M300 164 C312 124 340 102 378 102 C416 102 446 122 460 168 L318 168 Z" fill="url(#pf-accent)"/>
+    <path d="M334 148 L298 202" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M410 148 L470 172" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M368 168 V252" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M344 252 L320 316" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M392 252 L422 316" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="560" cy="104" r="36" fill="#ffd8bf"/>
+    <path d="M530 104 C532 74 548 52 574 52 C596 52 612 72 614 98 C606 120 592 132 564 132 C546 132 534 122 530 104" fill="#94a3b8"/>
+    <path d="M514 170 C526 138 550 120 582 120 C610 120 632 136 642 170 L530 170 Z" fill="#e2e8f0"/>
+    <path d="M538 106 c0 -22 28 -26 28 -4 c0 -22 28 -18 28 4 c0 14 -14 24 -28 34 c-14 -10 -28 -20 -28 -34 z" fill="#ef4444"/>
+  </g>
+</svg>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AzubiMatch für Bewerbende</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffaf4;
+      --panel-strong: #fff;
+      --text: #1e2430;
+      --muted: #5e6778;
+      --line: #ddd2c5;
+      --accent: #0d7a64;
+      --accent-strong: #0b5d4d;
+      --accent-soft: #dff4ec;
+      --warm: #f2c46d;
+      --shadow: 0 24px 64px rgba(32, 30, 28, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(242, 196, 109, 0.28), transparent 32%),
+        linear-gradient(180deg, #f7f1e9 0%, #efe5d8 100%);
+      color: var(--text);
+    }
+
+    .deck {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto 56px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .slide {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255, 250, 244, 0.98), rgba(255, 255, 255, 0.94));
+      border: 1px solid rgba(157, 135, 106, 0.18);
+      border-radius: 28px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      min-height: 620px;
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -120px auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13, 122, 100, 0.15), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(40px, 5vw, 68px);
+      line-height: 1.02;
+      max-width: 10ch;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.08;
+      margin-bottom: 18px;
+      max-width: 14ch;
+    }
+
+    .lead {
+      font-size: 21px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 52rem;
+    }
+
+    .hero-grid,
+    .two-col,
+    .cta-grid {
+      display: grid;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.2fr 0.8fr;
+      margin-top: 28px;
+    }
+
+    .two-col,
+    .cta-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .card {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .card h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .card p,
+    li {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      background: #173444;
+      color: #fef9f2;
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 42px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      align-items: start;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .step-number {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .quote {
+      padding: 24px;
+      border-left: 5px solid var(--warm);
+      background: rgba(242, 196, 109, 0.15);
+      border-radius: 20px;
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1.5;
+      margin-top: 24px;
+      max-width: 46rem;
+    }
+
+    .footer-note {
+      position: absolute;
+      left: 40px;
+      bottom: 30px;
+      color: #7a746c;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .brand-box {
+      padding: 28px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #123b4f, #0d6a58);
+      color: #fffdf8;
+      min-height: 100%;
+    }
+
+    .brand-box img {
+      width: 220px;
+      max-width: 100%;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .brand-box p {
+      color: rgba(255, 253, 248, 0.84);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .cta {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .slide {
+        min-height: auto;
+        padding: 28px;
+      }
+
+      .hero-grid,
+      .two-col,
+      .cta-grid,
+      .stat-row {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-note {
+        position: static;
+        margin-top: 28px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .deck {
+        width: 100%;
+        margin: 0;
+      }
+
+      .slide {
+        break-after: page;
+        box-shadow: none;
+        border-radius: 0;
+        border: 0;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <section class="slide">
+      <span class="eyebrow">Präsentation für Bewerbende</span>
+      <h1>AzubiMatch zeigt dir Ausbildungsplätze, die wirklich zu dir passen.</h1>
+      <p class="lead">AzubiMatch ist eine Plattform für Jugendliche und junge Erwachsene, die eine Ausbildung suchen. Statt endlos Stellen zu durchsuchen, bekommst du sichtbarere Treffer, klarere Informationen und schnellere Wege zum ersten Kontakt mit Betrieben.</p>
+      <div class="hero-grid">
+        <div>
+          <div class="stat-row">
+            <div class="stat">
+              <strong>1</strong>
+              Profil statt Bewerbungschaos
+            </div>
+            <div class="stat">
+              <strong>2</strong>
+              Matching nach Beruf und Region
+            </div>
+            <div class="stat">
+              <strong>3</strong>
+              Direkter Kontakt zu Betrieben
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge">einfacher Einstieg</span>
+            <span class="badge">inklusive Ausbildung</span>
+            <span class="badge">fokussierte Suche</span>
+            <span class="badge">mehr Orientierung</span>
+          </div>
+        </div>
+        <aside class="brand-box">
+          <img src="../images/Logo Azubimatcher.svg" alt="AzubiMatch Logo">
+          <p>Die Plattform verbindet Ausbildungsinteressen, regionale Verfügbarkeit und klare Berufsinformationen in einem Ablauf, der für Bewerbende leicht verständlich bleibt.</p>
+          <p>Besonders wichtig: AzubiMatch denkt Inklusion von Anfang an mit und macht passende Ausbildungsumfelder besser sichtbar.</p>
+        </aside>
+      </div>
+      <div class="footer-note">Folie 1 von 4</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Dein Nutzen</span>
+      <h2>Warum sich AzubiMatch für Bewerbende lohnt</h2>
+      <div class="two-col">
+        <article class="card">
+          <h3>Weniger Suchen, mehr passende Treffer</h3>
+          <p>AzubiMatch hilft dir dabei, Ausbildungsberufe und Betriebe zu finden, die besser zu deinen Interessen, deinem Standort und deinem Profil passen.</p>
+        </article>
+        <article class="card">
+          <h3>Mehr Klarheit vor der Bewerbung</h3>
+          <p>Du siehst schneller, worum es im Beruf geht, welche Anforderungen wichtig sind und welche Chancen der Betrieb bietet.</p>
+        </article>
+        <article class="card">
+          <h3>Direkterer Kontakt</h3>
+          <p>Wenn es passt, kommst du schneller ins Gespräch. Das spart Zeit und macht den Bewerbungsprozess konkreter.</p>
+        </article>
+        <article class="card">
+          <h3>Inklusion wird sichtbar</h3>
+          <p>AzubiMatch soll Menschen mit Behinderungen bessere Orientierung geben und Betriebe motivieren, Integration früh mitzudenken.</p>
+        </article>
+      </div>
+      <div class="quote">"Ich will nicht hunderte Anzeigen durchsuchen, sondern verstehen, welche Ausbildung für mich realistisch und spannend ist." Genau für diesen Einstieg ist AzubiMatch gedacht.</div>
+      <div class="footer-note">Folie 2 von 4</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">So funktioniert es</span>
+      <h2>Vier einfache Schritte bis zum ersten passenden Kontakt</h2>
+      <div class="timeline">
+        <article class="step">
+          <div class="step-number">1</div>
+          <div>
+            <h3>Profil anlegen</h3>
+            <p>Du hinterlegst Interessen, Berufswünsche, Standort und wichtige Angaben, damit passende Ausbildungsangebote besser erkannt werden können.</p>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-number">2</div>
+          <div>
+            <h3>Berufe entdecken</h3>
+            <p>Du bekommst einen besseren Überblick über Berufsbilder, Anforderungen und mögliche Einsatzbereiche.</p>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-number">3</div>
+          <div>
+            <h3>Passende Ausbildungsplätze finden</h3>
+            <p>AzubiMatch zeigt dir Betriebe, bei denen Beruf, Region und Rahmenbedingungen besser zusammenpassen.</p>
+          </div>
+        </article>
+        <article class="step">
+          <div class="step-number">4</div>
+          <div>
+            <h3>Direkt in Kontakt gehen</h3>
+            <p>Du kannst früh Rückfragen klären und ohne unnötige Umwege den nächsten Schritt Richtung Ausbildung gehen.</p>
+          </div>
+        </article>
+      </div>
+      <div class="footer-note">Folie 3 von 4</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Mail-geeignetes Finale</span>
+      <h2>Die Kernaussage für die Bewerbungskommunikation</h2>
+      <div class="cta-grid">
+        <article class="card">
+          <h3>Kurzform für die Ansprache</h3>
+          <ul>
+            <li>AzubiMatch hilft dir, passende Ausbildungsplätze schneller zu finden.</li>
+            <li>Du bekommst mehr Orientierung zu Berufen, Betrieben und realistischen Chancen.</li>
+            <li>Die Plattform setzt auf direkte Kontakte statt unklarer Bewerbungswege.</li>
+            <li>Inklusion und faire Teilhabe werden bewusst mitgedacht.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Call to Action</h3>
+          <p>Jetzt Profil anlegen, Berufe entdecken und die Ausbildungsplätze sehen, die besser zu deinen Interessen und deiner Situation passen.</p>
+          <a class="cta" href="../bewerber.html">Zur Bewerberseite</a>
+        </article>
+      </div>
+      <div class="quote">Diese Datei kann direkt im Browser präsentiert, als PDF gedruckt oder als inhaltliche Vorlage für Mailings und Beratungsgespräche genutzt werden.</div>
+      <div class="footer-note">Folie 4 von 4</div>
+    </section>
+  </main>
+</body>
+</html>

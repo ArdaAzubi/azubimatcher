@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AzubiMatcher – Informationen für Unternehmen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f1e8;
+      --bg-soft: #fffaf4;
+      --panel: rgba(255, 255, 255, 0.82);
+      --surface: #ffffff;
+      --surface-alt: #f7faff;
+      --surface-accent: #edf6ff;
+      --text: #15253b;
+      --muted: #5c6980;
+      --line: rgba(21, 37, 59, 0.12);
+      --accent: #0f46b6;
+      --accent-dark: #0b3387;
+      --accent-soft: rgba(15, 70, 182, 0.1);
+      --teal: #0f766e;
+      --teal-soft: rgba(15, 118, 110, 0.12);
+      --amber: #c67a18;
+      --amber-soft: rgba(198, 122, 24, 0.12);
+      --shadow-sm: 0 16px 34px rgba(18, 31, 53, 0.08);
+      --shadow-md: 0 26px 58px rgba(18, 31, 53, 0.12);
+      --shadow-lg: 0 38px 90px rgba(11, 28, 58, 0.18);
+      --radius-sm: 18px;
+      --radius-md: 26px;
+      --radius-lg: 34px;
+      --font-body: "Sora", "Segoe UI", sans-serif;
+      --font-display: "Fraunces", Georgia, serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      line-height: 1.7;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(15, 70, 182, 0.12), transparent 34%),
+        radial-gradient(circle at 100% 12%, rgba(15, 118, 110, 0.11), transparent 28%),
+        linear-gradient(180deg, #fbf6ef 0%, #f6f1e8 38%, #fffdf9 100%);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 24px;
+      background: rgba(250, 246, 239, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(21, 37, 59, 0.08);
+    }
+
+    .topnav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .topnav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .topnav-brand:hover {
+      text-decoration: none;
+    }
+
+    .topnav-brand__mark {
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #1b66d1);
+      color: #fff;
+      font-size: 0.92rem;
+      box-shadow: 0 14px 28px rgba(15, 70, 182, 0.28);
+    }
+
+    .topnav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .topnav-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(21, 37, 59, 0.1);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .topnav-links a:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+      border-color: rgba(15, 70, 182, 0.24);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topnav-links a.cta-ok {
+      background: linear-gradient(135deg, var(--teal), #11998e);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(15, 118, 110, 0.24);
+    }
+
+    .topnav-links a.cta-ok:hover {
+      background: linear-gradient(135deg, #0c645d, #0f8b80);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 42px 24px 36px;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(4px);
+    }
+
+    .hero::before {
+      width: 320px;
+      height: 320px;
+      right: -80px;
+      top: 18px;
+      background: radial-gradient(circle, rgba(15, 118, 110, 0.22), transparent 70%);
+    }
+
+    .hero::after {
+      width: 420px;
+      height: 420px;
+      left: -140px;
+      top: -80px;
+      background: radial-gradient(circle, rgba(15, 70, 182, 0.18), transparent 74%);
+    }
+
+    .hero-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      gap: 28px;
+      align-items: stretch;
+      padding: 28px;
+      border-radius: 36px;
+      background:
+        linear-gradient(135deg, rgba(7, 39, 101, 0.96) 0%, rgba(16, 73, 164, 0.94) 42%, rgba(19, 114, 145, 0.92) 100%);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-copy,
+    .hero-panel {
+      animation: riseIn 780ms ease both;
+    }
+
+    .hero-panel {
+      animation-delay: 140ms;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+      color: #fff;
+      padding: 6px 2px 4px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy h1 {
+      margin: 0;
+      max-width: 12ch;
+      font-family: var(--font-display);
+      font-size: clamp(2.7rem, 5vw, 4.8rem);
+      font-weight: 700;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-sub {
+      margin: 0;
+      max-width: 640px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 1.04rem;
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 52px;
+      padding: 0 24px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: #fff;
+      color: var(--accent);
+      font-size: 0.94rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+      box-shadow: 0 18px 30px rgba(8, 27, 66, 0.18);
+    }
+
+    .hero-cta:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 24px 36px rgba(8, 27, 66, 0.22);
+    }
+
+    .hero-cta--ghost {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .hero-cta--ghost:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .hero-proof {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-proof span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .hero-proof span::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #fbbf24;
+      box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.15);
+    }
+
+    .hero-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 24px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      color: var(--text);
+    }
+
+    .hero-panel__eyebrow,
+    .section-heading__eyebrow {
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero-panel h2,
+    .section-heading h2,
+    .support-band__content h2,
+    .faq-aside h3,
+    .modal h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-panel h2 {
+      font-size: clamp(1.6rem, 3vw, 2.15rem);
+    }
+
+    .hero-panel__text {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.7;
+    }
+
+    .hero-price-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero-price-card {
+      padding: 18px 18px 16px;
+      border-radius: 22px;
+      background: var(--surface);
+      border: 1px solid rgba(21, 37, 59, 0.08);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-price-card--accent {
+      background: linear-gradient(135deg, rgba(198, 122, 24, 0.12), rgba(255, 255, 255, 0.96));
+      border-color: rgba(198, 122, 24, 0.16);
+    }
+
+    .hero-price-card__label {
+      display: inline-flex;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-price-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.85rem;
+      line-height: 1;
+    }
+
+    .hero-price-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .hero-ledger {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(15, 70, 182, 0.08), rgba(15, 118, 110, 0.08));
+      border: 1px solid rgba(15, 70, 182, 0.14);
+    }
+
+    .hero-ledger__head,
+    .hero-ledger__item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .hero-ledger__head span,
+    .hero-ledger__item span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .hero-ledger__head strong,
+    .hero-ledger__item strong {
+      font-size: 0.98rem;
+    }
+
+    .hero-flow {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-flow__item {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid rgba(21, 37, 59, 0.08);
+    }
+
+    .hero-flow__item:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .hero-flow__item span {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .hero-flow__item p {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .content {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 38px 24px 92px;
+    }
+
+    .content-section {
+      margin-top: 56px;
+    }
+
+    .section-heading {
+      display: grid;
+      gap: 12px;
+      max-width: 760px;
+      margin-bottom: 24px;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .signal-grid,
+    .feature-grid,
+    .billing-grid,
+    .steps-grid,
+    .pricing-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .signal-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: -18px;
+    }
+
+    .signal-card,
+    .feature-card,
+    .billing-card,
+    .step-card,
+    .price-card,
+    .support-band,
+    .faq-aside,
+    .faq-list details,
+    .modal {
+      box-shadow: var(--shadow-sm);
+    }
+
+    .signal-card,
+    .feature-card,
+    .billing-card,
+    .step-card,
+    .price-card,
+    .faq-aside {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-md);
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      animation: riseIn 760ms ease both;
+    }
+
+    .signal-card:hover,
+    .feature-card:hover,
+    .billing-card:hover,
+    .step-card:hover,
+    .price-card:hover,
+    .faq-aside:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(15, 70, 182, 0.16);
+    }
+
+    .signal-grid .signal-card:nth-child(2),
+    .feature-grid .feature-card:nth-child(2),
+    .billing-grid .billing-card:nth-child(2),
+    .steps-grid .step-card:nth-child(2),
+    .pricing-grid .price-card:nth-child(2) {
+      animation-delay: 80ms;
+    }
+
+    .signal-grid .signal-card:nth-child(3),
+    .feature-grid .feature-card:nth-child(3),
+    .billing-grid .billing-card:nth-child(3),
+    .steps-grid .step-card:nth-child(3),
+    .pricing-grid .price-card:nth-child(3) {
+      animation-delay: 160ms;
+    }
+
+    .signal-card {
+      padding: 24px 22px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 249, 255, 0.9));
+    }
+
+    .signal-card__label,
+    .feature-card__tag,
+    .billing-card__label,
+    .step-card__label,
+    .price-card__tier {
+      display: inline-flex;
+      width: fit-content;
+      max-width: 100%;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .signal-card__label,
+    .feature-card__tag--accent,
+    .billing-card__label--accent,
+    .price-card__tier--accent {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .feature-card__tag--teal,
+    .billing-card__label--teal,
+    .price-card__tier--teal,
+    .step-card__label--teal {
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+
+    .feature-card__tag--amber,
+    .billing-card__label--amber,
+    .price-card__tier--amber,
+    .step-card__label--amber {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .step-card__label--accent {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .signal-card strong {
+      display: block;
+      margin: 16px 0 8px;
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.02;
+    }
+
+    .signal-card p,
+    .feature-card p,
+    .billing-card p,
+    .step-card p,
+    .price-card p,
+    .faq-aside p,
+    .support-band__content p,
+    .details-body p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(249, 252, 255, 0.9));
+    }
+
+    .feature-card__icon {
+      width: 52px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      background: var(--surface-accent);
+      box-shadow: inset 0 0 0 1px rgba(15, 70, 182, 0.08);
+    }
+
+    .feature-card__icon--teal {
+      background: rgba(15, 118, 110, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.08);
+    }
+
+    .feature-card__icon--amber {
+      background: rgba(198, 122, 24, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(198, 122, 24, 0.08);
+    }
+
+    .feature-card h3,
+    .billing-card h3,
+    .step-card h3,
+    .price-card h3,
+    .faq-aside h3 {
+      margin: 0;
+      font-size: 1.14rem;
+      line-height: 1.35;
+    }
+
+    .feature-card__meta {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .feature-card__meta::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .billing-grid,
+    .steps-grid,
+    .pricing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .billing-card,
+    .step-card,
+    .price-card {
+      padding: 26px 24px;
+    }
+
+    .billing-card__number,
+    .step-card__number {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), #2e6ad8);
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 800;
+      box-shadow: 0 14px 28px rgba(15, 70, 182, 0.22);
+    }
+
+    .billing-card__number--teal,
+    .step-card__number--teal {
+      background: linear-gradient(135deg, var(--teal), #139387);
+      box-shadow: 0 14px 28px rgba(15, 118, 110, 0.2);
+    }
+
+    .billing-card__number--amber,
+    .step-card__number--amber {
+      background: linear-gradient(135deg, #c67a18, #e49a31);
+      box-shadow: 0 14px 28px rgba(198, 122, 24, 0.22);
+    }
+
+    .billing-note {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(15, 70, 182, 0.08), rgba(15, 118, 110, 0.08));
+      border: 1px solid rgba(15, 70, 182, 0.12);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .price-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.94));
+    }
+
+    .price-card--spotlight {
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.09), rgba(255, 255, 255, 0.98));
+      border-color: rgba(15, 118, 110, 0.18);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08), var(--shadow-sm);
+    }
+
+    .price-card__amount {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .price-card__amount strong {
+      font-size: clamp(2rem, 3.4vw, 2.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+
+    .price-card__amount span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .price-card ul {
+      margin: 2px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .price-card li + li {
+      margin-top: 8px;
+    }
+
+    .support-band {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 22px;
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(13, 53, 129, 0.98), rgba(16, 112, 137, 0.94));
+      color: #fff;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .support-band::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.14), transparent 26%),
+        radial-gradient(circle at 86% 100%, rgba(255, 255, 255, 0.14), transparent 30%);
+      pointer-events: none;
+    }
+
+    .support-band__content,
+    .support-band__aside {
+      position: relative;
+      z-index: 1;
+    }
+
+    .support-band__content {
+      display: grid;
+      gap: 14px;
+    }
+
+    .support-band__content h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #fff;
+    }
+
+    .support-band__content p {
+      color: rgba(255, 255, 255, 0.84);
+      max-width: 620px;
+    }
+
+    .support-points {
+      display: grid;
+      gap: 10px;
+      margin: 2px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .support-points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.92rem;
+    }
+
+    .support-points li::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      margin-top: 0.5em;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: #fbbf24;
+    }
+
+    .support-band__aside {
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding: 22px;
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .support-band__aside p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.94rem;
+    }
+
+    .support-band__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .support-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: #fff;
+      color: var(--accent);
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .support-cta:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 18px 30px rgba(9, 28, 64, 0.22);
+    }
+
+    .support-cta--ghost {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.28);
+      color: #fff;
+    }
+
+    .faq-layout {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .faq-aside {
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(249, 251, 255, 0.92));
+    }
+
+    .faq-aside__pill {
+      display: inline-flex;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .faq-list details {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+    }
+
+    .faq-list summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .faq-list summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-list summary::after {
+      content: "+";
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 1.2rem;
+      font-weight: 500;
+      flex: 0 0 auto;
+    }
+
+    .faq-list details[open] summary::after {
+      content: "−";
+    }
+
+    .details-body {
+      padding: 0 20px 18px;
+    }
+
+    .page-footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px 36px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
+    .page-footer::before {
+      content: "";
+      display: block;
+      margin-bottom: 24px;
+      border-top: 1px solid rgba(21, 37, 59, 0.12);
+    }
+
+    .page-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .page-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(15, 23, 42, 0.56);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 640px;
+      position: relative;
+      padding: 34px 32px 28px;
+      border-radius: 30px;
+      border: 1px solid rgba(21, 37, 59, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96));
+      animation: riseIn 220ms ease;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(21, 37, 59, 0.1);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+    }
+
+    .modal-close:hover {
+      transform: translateY(-1px);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .modal-sub {
+      margin: 10px 0 22px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .form-row--full {
+      grid-column: 1 / -1;
+    }
+
+    .form-row label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-row input,
+    .form-row textarea,
+    .form-row select {
+      width: 100%;
+      border: 1px solid rgba(21, 37, 59, 0.12);
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      resize: vertical;
+    }
+
+    .form-row input:focus,
+    .form-row textarea:focus,
+    .form-row select:focus {
+      border-color: rgba(15, 70, 182, 0.3);
+      box-shadow: 0 0 0 4px rgba(15, 70, 182, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .form-row textarea {
+      min-height: 120px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn-send,
+    .btn-cancel {
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+    }
+
+    .btn-send {
+      flex: 1 1 220px;
+      background: linear-gradient(135deg, var(--accent), #2d6ad8);
+      color: #fff;
+      box-shadow: 0 18px 30px rgba(15, 70, 182, 0.22);
+    }
+
+    .btn-send:hover,
+    .btn-cancel:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(21, 37, 59, 0.12);
+      color: var(--muted);
+    }
+
+    .mailto-hint {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .hero-shell,
+      .support-band,
+      .faq-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid,
+      .billing-grid,
+      .steps-grid,
+      .pricing-grid,
+      .signal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topnav {
+        padding-inline: 16px;
+      }
+
+      .hero,
+      .content,
+      .page-footer {
+        padding-inline: 16px;
+      }
+
+      .hero-shell,
+      .support-band,
+      .modal {
+        padding: 22px;
+      }
+
+      .topnav-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .topnav-links {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .hero-copy h1 {
+        max-width: none;
+      }
+
+      .signal-grid,
+      .feature-grid,
+      .billing-grid,
+      .steps-grid,
+      .pricing-grid,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .support-band__actions,
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero-cta,
+      .support-cta,
+      .btn-send,
+      .btn-cancel {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav" aria-label="Seitennavigation">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">
+        <span class="topnav-brand__mark">AM</span>
+        <span>AzubiMatcher</span>
+      </a>
+      <div class="topnav-links">
+        <a href="#leistungen">Leistungen</a>
+        <a href="#preise">Preise</a>
+        <a href="#faq">FAQ</a>
+        <a class="cta-ok" href="firma.html">Jetzt Betrieb anlegen</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" role="banner">
+    <div class="hero-shell">
+      <div class="hero-copy">
+        <div>
+          <div class="hero-badge">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm.75 4.75a.75.75 0 0 0-1.5 0v4.5c0 .199.079.39.22.53l2.5 2.5a.75.75 0 1 0 1.06-1.06l-2.28-2.28V6.75z" fill="currentColor"/></svg>
+            Für Unternehmen
+          </div>
+          <h1>Ausbildungsplätze sichtbar machen und Kontaktanfragen planbar steuern.</h1>
+          <p class="hero-sub">AzubiMatcher bietet vier Abo-Stufen für Unternehmen: Basic für 49,99 € mit 4 Anfragen pro Monat, Basic + für 109,00 € mit 9 Anfragen, Pro für 199,99 € mit 17 Anfragen und Pro + für 249,99 € mit 22 Anfragen. Weitere Anfragen kosten in Basic bis Pro jeweils 13,00 €; bei Pro + und Ultimate erfolgt die Abstimmung auf Anfrage.</p>
+        </div>
+
+        <div class="hero-actions">
+          <a class="hero-cta" href="firma.html">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12m6-6H4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Betrieb anlegen
+          </a>
+          <button class="hero-cta hero-cta--ghost" type="button" data-open-price-modal>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm2 0v.01L10 11l6-5.99V5H4zm0 2.4V15h12V7.4l-5.45 4.9a1 1 0 0 1-1.1 0L4 7.4z" fill="currentColor"/></svg>
+            Preisanfrage senden
+          </button>
+        </div>
+
+        <div class="hero-proof" aria-label="Wichtige Preisfakten">
+          <span>Basic ab 49,99 € / Monat</span>
+          <span>4 bis 22 Anfragen inklusive</span>
+          <span>Ultimate auf Anfrage</span>
+        </div>
+      </div>
+
+      <aside class="hero-panel" aria-label="Preislogik und Monatsübersicht">
+        <p class="hero-panel__eyebrow">Transparente Tariflogik</p>
+        <h2>Vier Abo-Stufen plus Ultimate auf Anfrage.</h2>
+        <p class="hero-panel__text">Die Pakete decken kleine bis größere Recruiting-Volumina ab. Basic bis Pro + enthalten klare Anfragekontingente; Ultimate wird individuell für höheren Bedarf abgestimmt.</p>
+
+        <div class="hero-price-stack">
+          <article class="hero-price-card">
+            <span class="hero-price-card__label">Basic</span>
+            <strong>49,99 €</strong>
+            <p>4 Anfragen pro Monat inklusive, danach 13,00 € netto je weitere Anfrage.</p>
+          </article>
+          <article class="hero-price-card hero-price-card--accent">
+            <span class="hero-price-card__label">Pro +</span>
+            <strong>249,99 €</strong>
+            <p>22 Anfragen pro Monat inklusive; weitere Anfragen und Ultimate stimmen wir individuell mit Ihrem Betrieb ab.</p>
+          </article>
+        </div>
+
+        <div class="hero-ledger" aria-label="Beispiel für Monatsübersicht">
+          <div class="hero-ledger__head">
+            <span>Beispiel Monatsstand</span>
+            <strong>Transparent</strong>
+          </div>
+          <div class="hero-ledger__item">
+            <span>Freigegebene Kontakte im Überblick</span>
+            <strong>April</strong>
+          </div>
+          <div class="hero-ledger__item">
+            <span>1 Anfrage noch offen</span>
+            <strong>0 €</strong>
+          </div>
+        </div>
+
+        <div class="hero-flow">
+          <div class="hero-flow__item">
+            <span>1</span>
+            <p>Anfrage an passende Bewerbende senden</p>
+          </div>
+          <div class="hero-flow__item">
+            <span>2</span>
+            <p>Bewerbende entscheiden über die Unterlagenfreigabe</p>
+          </div>
+          <div class="hero-flow__item">
+            <span>3</span>
+            <p>Enthaltene Anfragen nutzen und Mehrbedarf transparent ergänzen</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <main class="content" id="main-content">
+    <section class="signal-grid" aria-label="Schnellüberblick für Unternehmen">
+      <article class="signal-card">
+        <span class="signal-card__label">Basic Einstieg</span>
+        <strong>49,99 €</strong>
+        <p>4 Anfragen pro Monat inklusive. Ideal für kleinere Teams oder einen kompakten Einstieg.</p>
+      </article>
+      <article class="signal-card">
+        <span class="signal-card__label">Pro +</span>
+        <strong>249,99 €</strong>
+        <p>22 Anfragen pro Monat inklusive. Weitere Anfragen werden individuell mit Ihrem Betrieb abgestimmt.</p>
+      </article>
+      <article class="signal-card">
+        <span class="signal-card__label">Ultimate</span>
+        <strong>Auf Anfrage</strong>
+        <p>Für höheres Volumen, Sonderkonditionen oder besondere Partnerschaften stimmen wir ein individuelles Paket ab.</p>
+      </article>
+    </section>
+
+    <section class="content-section" id="leistungen">
+      <div class="section-heading">
+        <p class="section-heading__eyebrow">Leistungen</p>
+        <h2>Was Ihr Betrieb nach Freischaltung nutzen kann</h2>
+        <p>Die Seite erklärt nicht nur Preise, sondern zeigt klar, welchen Nutzen Unternehmen mit einem passenden Tarif direkt aus dem Portal ziehen können.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--teal">In jedem Abo</span>
+          <div class="feature-card__icon feature-card__icon--teal" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2zm-1 14.5l6-6-1.41-1.42L11 13.67l-2.59-2.58L7 12.5l4 4z" fill="#0f766e"/></svg>
+          </div>
+          <h3>Betriebsprofil mit klarer Positionierung</h3>
+          <p>Name, Branche, Standort, Beschreibung und Kontaktdaten lassen sich schnell anlegen und wirken für Bewerbende sofort professionell.</p>
+          <span class="feature-card__meta">Nach Freischaltung im Portal sichtbar</span>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--teal">In jedem Abo</span>
+          <div class="feature-card__icon feature-card__icon--teal" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-2 14H8v-2h4v2zm4-4H8v-2h8v2zm0-4H8V6h6v2z" fill="#0f766e"/></svg>
+          </div>
+          <h3>Ausbildungsplätze laufend veröffentlichen</h3>
+          <p>Sie können beliebig viele Ausbildungsberufe mit Anforderungen, Startterminen und Besonderheiten einstellen und aktuell halten.</p>
+          <span class="feature-card__meta">Ideal für mehrere Berufe und Standorte</span>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--accent">Matching</span>
+          <div class="feature-card__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" stroke="#0f46b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Passende Bewerbende schneller erkennen</h3>
+          <p>AzubiMatcher gleicht Beruf, Schulabschluss und Region ab, damit Ihr Team sich auf tatsächlich relevante Profile konzentrieren kann.</p>
+          <span class="feature-card__meta">Weniger Streuverlust im Recruiting</span>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--amber">Kontakt</span>
+          <div class="feature-card__icon feature-card__icon--amber" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-4 4-1-4z" stroke="#c67a18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Direkte Kontaktanfragen mit klarer Kostenregel</h3>
+          <p>Je nach Paket sind monatliche Anfragen bereits enthalten. Basic bis Pro rechnen zusätzliche Anfragen mit 13,00 € netto ab; Pro + und Ultimate stimmen wir individuell mit Ihrem Betrieb ab.</p>
+          <span class="feature-card__meta">Kosten entstehen nur bei echtem Fortschritt</span>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--accent">Organisation</span>
+          <div class="feature-card__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke="#0f46b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Praktika und Gespräche sauber vorbereiten</h3>
+          <p>Auch Praktikumsplanung und Terminkoordination lassen sich über das Portal strukturieren, ohne dass Ihr Team neue Prozesse aufbauen muss.</p>
+          <span class="feature-card__meta">Planung direkt im bestehenden Ablauf</span>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-card__tag feature-card__tag--teal">Vertrauen</span>
+          <div class="feature-card__icon feature-card__icon--teal" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622C17.176 19.29 21 14.591 21 9c0-1.042-.133-2.052-.382-3.016z" stroke="#0f766e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Professioneller Auftritt für Bewerbende</h3>
+          <p>Ein gepflegtes, verifiziertes Profil signalisiert Seriosität und kann die Bereitschaft zur Unterlagenfreigabe deutlich erhöhen.</p>
+          <span class="feature-card__meta">Mehr Vertrauen in der ersten Kontaktphase</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <p class="section-heading__eyebrow">Kostenlogik</p>
+        <h2>So funktioniert die Tariflogik</h2>
+        <p>Sie wählen das Paket, das zu Ihrem Anfragevolumen passt. Enthaltene Kontaktanfragen laufen über das Monatsabo; zusätzlicher Bedarf wird in Basic bis Pro mit 13,00 € pro weiterer Anfrage abgebildet, bei Pro + und Ultimate nach Abstimmung.</p>
+      </div>
+
+      <div class="billing-grid">
+        <article class="billing-card">
+          <span class="billing-card__label billing-card__label--accent">Schritt 1</span>
+          <div class="billing-card__number" aria-hidden="true">1</div>
+          <h3>Passendes Abo auswählen</h3>
+          <p>Basic, Basic +, Pro und Pro + decken 4 bis 22 Anfragen pro Monat ab. Ultimate planen wir individuell mit Ihrem Betrieb.</p>
+        </article>
+
+        <article class="billing-card">
+          <span class="billing-card__label billing-card__label--amber">Schritt 2</span>
+          <div class="billing-card__number billing-card__number--amber" aria-hidden="true">2</div>
+          <h3>Bewerbende entscheiden selbst</h3>
+          <p>Die angefragte Person sieht Ihr Kurzprofil und kann die Unterlagen freigeben oder ablehnen. Ohne Freigabe bleibt die Position kostenfrei.</p>
+        </article>
+
+        <article class="billing-card">
+          <span class="billing-card__label billing-card__label--teal">Schritt 3</span>
+          <div class="billing-card__number billing-card__number--teal" aria-hidden="true">3</div>
+          <h3>Mehrbedarf sauber ergänzen</h3>
+          <p>In Basic bis Pro kostet jede weitere Anfrage 13,00 € netto. Bei Pro + und Ultimate stimmen wir zusätzliche Volumina individuell mit Ihrem Betrieb ab.</p>
+        </article>
+      </div>
+
+      <div class="billing-note">Ihre Monatsübersicht zeigt enthaltene und zusätzliche Anfragen sowie offene und freigegebene Kontakte transparent und nachvollziehbar im Überblick.</div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <p class="section-heading__eyebrow">Ablauf</p>
+        <h2>In drei Schritten mit dem Portal starten</h2>
+        <p>Die Seite soll Unternehmen Sicherheit geben. Deshalb ist der Weg vom Einstieg bis zum ersten relevanten Kontakt bewusst kurz gehalten.</p>
+      </div>
+
+      <div class="steps-grid">
+        <article class="step-card">
+          <span class="step-card__label step-card__label--teal">Start</span>
+          <div class="step-card__number step-card__number--teal" aria-hidden="true">1</div>
+          <h3>Firmenkonto anlegen und Tarif wählen</h3>
+          <p>Registrieren Sie Ihren Betrieb und starten Sie direkt mit Basic, Basic +, Pro oder Pro +. Ultimate planen wir individuell mit Ihnen.</p>
+        </article>
+
+        <article class="step-card">
+          <span class="step-card__label step-card__label--accent">Profil</span>
+          <div class="step-card__number" aria-hidden="true">2</div>
+          <h3>Betriebsprofil ausfüllen</h3>
+          <p>Tragen Sie Berufe, Anforderungen und Besonderheiten ein. Ein klares Profil verbessert die Qualität der Treffer spürbar.</p>
+        </article>
+
+        <article class="step-card">
+          <span class="step-card__label step-card__label--amber">Kontakt</span>
+          <div class="step-card__number step-card__number--amber" aria-hidden="true">3</div>
+          <h3>Mit passenden Profilen arbeiten</h3>
+          <p>Sie sehen passende Bewerbende, senden Anfragen gezielt aus und arbeiten innerhalb Ihres Kontingents oder mit transparent abgestimmtem Mehrbedarf.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="content-section" id="preise">
+      <div class="section-heading">
+        <p class="section-heading__eyebrow">Preise</p>
+        <h2>Preisübersicht für Unternehmen</h2>
+        <p>Die Abo-Stufen decken unterschiedliche Recruiting-Volumina ab. Ultimate wird individuell kalkuliert und gemeinsam mit Ihrem Betrieb abgestimmt.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <article class="price-card">
+          <span class="price-card__tier price-card__tier--teal">Basic</span>
+          <div class="price-card__amount">
+            <strong>49,99 €</strong>
+            <span>pro Monat · 4 Anfragen</span>
+          </div>
+          <p>Für kleinere Recruiting-Volumina mit klarem Monatsbudget und direktem Zugriff auf Ausbildungs- und Praktikums-Matches.</p>
+          <ul>
+            <li>4 Anfragen pro Monat inklusive</li>
+            <li>13,00 € netto je weitere Anfrage</li>
+            <li>Ausbildung + Praktikum</li>
+            <li>3 Monate Mindestlaufzeit</li>
+          </ul>
+        </article>
+
+        <article class="price-card price-card--spotlight">
+          <span class="price-card__tier price-card__tier--amber">Basic +</span>
+          <div class="price-card__amount">
+            <strong>109,00 €</strong>
+            <span>pro Monat · 9 Anfragen</span>
+          </div>
+          <p>Der passende Tarif für Teams, die regelmäßig mit mehreren Profilanfragen pro Monat arbeiten und ein größeres Kontingent brauchen.</p>
+          <ul>
+            <li>9 Anfragen pro Monat inklusive</li>
+            <li>13,00 € netto je weitere Anfrage</li>
+            <li>Ausbildung + Praktikum</li>
+            <li>3 Monate Mindestlaufzeit</li>
+          </ul>
+        </article>
+
+        <article class="price-card">
+          <span class="price-card__tier price-card__tier--accent">Pro</span>
+          <div class="price-card__amount">
+            <strong>199,99 €</strong>
+            <span>pro Monat · 17 Anfragen</span>
+          </div>
+          <p>Für größere Recruiting-Bedarfe mit deutlich erweitertem Anfragekontingent und klar kalkulierbaren Zusatzkosten.</p>
+          <ul>
+            <li>17 Anfragen pro Monat inklusive</li>
+            <li>13,00 € netto je weitere Anfrage</li>
+            <li>Ausbildung + Praktikum</li>
+            <li>3 Monate Mindestlaufzeit</li>
+          </ul>
+        </article>
+
+        <article class="price-card">
+          <span class="price-card__tier price-card__tier--teal">Pro +</span>
+          <div class="price-card__amount">
+            <strong>249,99 €</strong>
+            <span>pro Monat · 22 Anfragen</span>
+          </div>
+          <p>Für hohes Anfragevolumen mit großem Inklusivkontingent und individueller Abstimmung, sobald darüber hinaus zusätzlicher Bedarf entsteht.</p>
+          <ul>
+            <li>22 Anfragen pro Monat inklusive</li>
+            <li>Weitere Anfragen auf Anfrage</li>
+            <li>Ausbildung + Praktikum</li>
+            <li>3 Monate Mindestlaufzeit</li>
+          </ul>
+        </article>
+
+        <article class="price-card">
+          <span class="price-card__tier price-card__tier--accent">Ultimate</span>
+          <div class="price-card__amount">
+            <strong>Auf Anfrage</strong>
+            <span>für größeres Volumen und individuelle Lösungen</span>
+          </div>
+          <p>Für Betriebe mit erweitertem Bedarf, mehrere Standorte, regionale Partner oder besondere Sichtbarkeitswünsche stimmen wir ein individuelles Paket ab.</p>
+          <ul>
+            <li>Individuelles Anfragevolumen</li>
+            <li>Persönliche Preisabstimmung</li>
+            <li>Partnerschaftslösungen und Sonderformate</li>
+            <li>Unverbindliche Preisanfrage per E-Mail</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="support-band" role="complementary" aria-label="Kontakt und Preisanfrage für Unternehmen">
+      <div class="support-band__content">
+        <p class="section-heading__eyebrow" style="color: rgba(255, 255, 255, 0.76);">Kontakt</p>
+        <h2>Fragen zu Tarifen, Anfragevolumen oder Sonderkonditionen?</h2>
+        <p>Wenn Sie prüfen möchten, wie AzubiMatcher für Ihren Betrieb, Ihre Region oder mehrere Standorte sinnvoll eingesetzt werden kann, unterstützt unser Team gerne bei der Einordnung.</p>
+        <ul class="support-points">
+          <li>Einordnung der passenden Tarife von Basic bis Pro + für Ihren Recruiting-Prozess</li>
+          <li>Klärung individueller Anforderungen für Partnerschaften oder Bildungsträger</li>
+          <li>Unterstützung bei Sichtbarkeit, Profilaufbau und Fragen zum Unternehmensauftritt</li>
+        </ul>
+      </div>
+
+      <div class="support-band__aside">
+        <p>Unser Support antwortet in der Regel innerhalb von ein bis zwei Werktagen und hilft auch bei individuellen Preis- oder Einsatzfragen weiter.</p>
+        <div class="support-band__actions">
+          <button class="support-cta" type="button" data-open-price-modal>Preisanfrage vorbereiten</button>
+          <a class="support-cta support-cta--ghost" href="mailto:support@azubimatcher.com">Direkt an support@azubimatcher.com</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq-layout" id="faq">
+      <aside class="faq-aside">
+        <span class="faq-aside__pill">Häufige Fragen</span>
+        <h3>Was Unternehmen vor dem Start wissen wollen</h3>
+        <p>Die häufigsten Rückfragen drehen sich um Kosten, Freigaben, Sichtbarkeit und den praktischen Einsatz im Alltag. Genau diese Punkte sind hier knapp und verständlich gesammelt.</p>
+      </aside>
+
+      <div class="faq-list">
+        <details>
+          <summary>Welcher Tarif passt zu meinem Bedarf?</summary>
+          <div class="details-body">
+            <p>Basic eignet sich für 4 Anfragen pro Monat, Basic + für 9, Pro für 17 und Pro + für 22 Anfragen. Wenn Ihr Bedarf darüber liegt oder Sie mehrere Standorte bzw. Sonderkonditionen abbilden möchten, ist Ultimate die passende Anfrageoption.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Wann fallen Zusatzkosten an?</summary>
+          <div class="details-body">
+            <p>Kontaktanfragen laufen zunächst im gewählten Paket. Sobald die angefragte Person ihre Unterlagen freigibt, wird die Anfrage als abrechenbare Position erfasst. Liegt Ihr Betrieb über dem enthaltenen Monatskontingent, kostet jede weitere Anfrage in Basic, Basic + und Pro 13,00 € netto; bei Pro + und Ultimate stimmen wir weitere Volumina individuell ab.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Wie nachvollziehbar ist die Monatsabrechnung?</summary>
+          <div class="details-body">
+            <p>Im Firmenprofil sehen Sie offene Anfragen, freigegebene Kontakte, enthaltene Kontingente und zusätzliche Positionen in der monatlichen Übersicht. Dadurch bleibt die Kostenentwicklung für Ihr Team jederzeit verständlich.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Welche Daten werden von meinem Betrieb gespeichert?</summary>
+          <div class="details-body">
+            <p>Gespeichert werden die Daten, die Sie selbst im Firmenprofil hinterlegen, etwa Firmenname, Kontaktdaten, Ausbildungsberufe und beschreibende Informationen. Weitere Details finden Sie in unserer <a href="datenschutzerklaerung.html">Datenschutzerklärung</a>.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Wie schnell ist mein Profil sichtbar?</summary>
+          <div class="details-body">
+            <p>Wir prüfen Ihre Unterlagen sorgfältig. Sobald alles vollständig und korrekt ist, schalten wir Ihr Profil frei, damit es im Matching sichtbar wird.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Können sich Betriebe auch ohne digitale Vorkenntnisse registrieren?</summary>
+          <div class="details-body">
+            <p>Ja. Die Seite ist bewusst so aufgebaut, dass Registrierung, Profilerstellung und das Arbeiten mit Kontaktanfragen ohne technische Vorkenntnisse möglich bleiben. Bei Fragen hilft der Support per E-Mail weiter.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>
+      <a href="impressum.html">Impressum</a> &nbsp;·&nbsp;
+      <a href="datenschutzerklaerung.html">Datenschutz</a> &nbsp;·&nbsp;
+      <a href="home.html">Über AzubiMatcher</a> &nbsp;·&nbsp;
+      <a href="firma.html">Jetzt registrieren</a>
+    </p>
+    <p style="margin-top: 8px;">© 2026 AzubiMatcher. Tarife von Basic bis Pro + sowie Ultimate auf Anfrage.</p>
+  </footer>
+
+  <div id="preisAnfrageModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <button class="modal-close" type="button" data-close-price-modal aria-label="Schließen">✕</button>
+      <h3 id="modalTitle">Preisanfrage stellen</h3>
+      <p class="modal-sub">Füllen Sie das Formular aus. Unser Team antwortet in der Regel innerhalb von ein bis zwei Werktagen und ordnet Ihren Bedarf passend ein.</p>
+
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="modalFirma">Firmenname *</label>
+          <input type="text" id="modalFirma" name="firma" placeholder="z. B. Muster GmbH" autocomplete="organization" required>
+        </div>
+        <div class="form-row">
+          <label for="modalName">Ansprechpartner *</label>
+          <input type="text" id="modalName" name="name" placeholder="Vor- und Nachname" autocomplete="name" required>
+        </div>
+        <div class="form-row">
+          <label for="modalEmail">E-Mail-Adresse *</label>
+          <input type="email" id="modalEmail" name="email" placeholder="name@beispiel.de" autocomplete="email" required>
+        </div>
+        <div class="form-row">
+          <label for="modalPaket">Interesse an</label>
+          <select id="modalPaket" name="paket">
+            <option value="basic">Basic</option>
+            <option value="basic_plus">Basic +</option>
+            <option value="pro">Pro</option>
+            <option value="pro_plus">Pro +</option>
+            <option value="ultimate">Ultimate / individuelles Paket</option>
+            <option value="partnerschaft">Partnerschaft / Bildungsträger</option>
+            <option value="sonstige">Sonstiges / Allgemeine Frage</option>
+          </select>
+        </div>
+        <div class="form-row form-row--full">
+          <label for="modalNachricht">Ihre Nachricht</label>
+          <textarea id="modalNachricht" name="nachricht" placeholder="Beschreiben Sie kurz Ihren Bedarf, Ihre Fragen oder zu welchen Leistungen und Konditionen Sie weitere Informationen wünschen …"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-send" id="btnSendMail" type="button">Anfrage per E-Mail senden</button>
+        <button class="btn-cancel" type="button" data-close-price-modal>Abbrechen</button>
+      </div>
+      <p class="mailto-hint">Oder direkt schreiben: <a href="mailto:support@azubimatcher.com">support@azubimatcher.com</a></p>
+    </div>
+  </div>
+
+  <script>
+    var preisModal = document.getElementById('preisAnfrageModal');
+    var lastModalTrigger = null;
+
+    function openPriceModal(trigger) {
+      lastModalTrigger = trigger || document.activeElement;
+      preisModal.classList.add('open');
+      window.requestAnimationFrame(function () {
+        document.getElementById('modalFirma').focus();
+      });
+    }
+
+    function closePriceModal() {
+      preisModal.classList.remove('open');
+      if (lastModalTrigger && typeof lastModalTrigger.focus === 'function') {
+        lastModalTrigger.focus();
+      }
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-open-price-modal]'), function (button) {
+      button.addEventListener('click', function () {
+        openPriceModal(button);
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-close-price-modal]'), function (button) {
+      button.addEventListener('click', function () {
+        closePriceModal();
+      });
+    });
+
+    document.getElementById('btnSendMail').addEventListener('click', function () {
+      var firma = document.getElementById('modalFirma').value.trim();
+      var name = document.getElementById('modalName').value.trim();
+      var email = document.getElementById('modalEmail').value.trim();
+      var paket = document.getElementById('modalPaket').value;
+      var nachricht = document.getElementById('modalNachricht').value.trim();
+
+      if (!firma || !name || !email) {
+        alert('Bitte füllen Sie Firmenname, Ansprechpartner und E-Mail-Adresse aus.');
+        return;
+      }
+
+      var paketLabel = {
+        basic: 'Basic',
+        basic_plus: 'Basic +',
+        pro: 'Pro',
+        pro_plus: 'Pro +',
+        ultimate: 'Ultimate / individuelles Paket',
+        partnerschaft: 'Partnerschaft / Bildungsträger',
+        sonstige: 'Sonstiges / Allgemeine Frage'
+      }[paket] || paket;
+
+      var subject = 'Preisanfrage von ' + firma + ' – ' + paketLabel;
+      var body = [
+        'Hallo AzubiMatcher-Team,',
+        '',
+        'ich möchte gerne eine unverbindliche Preisanfrage stellen.',
+        '',
+        'Firmenname:       ' + firma,
+        'Ansprechpartner:  ' + name,
+        'E-Mail:           ' + email,
+        'Interesse an:     ' + paketLabel,
+        '',
+        nachricht ? ('Nachricht:\n' + nachricht) : '',
+        '',
+        'Mit freundlichen Grüßen',
+        name
+      ].filter(function (line, index, lines) {
+        return !(line === '' && lines[index - 1] === '');
+      }).join('\n');
+
+      var mailto = 'mailto:support@azubimatcher.com'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+
+      window.location.href = mailto;
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closePriceModal();
+      }
+    });
+
+    preisModal.addEventListener('click', function (event) {
+      if (event.target === preisModal) {
+        closePriceModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

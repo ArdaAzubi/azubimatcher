@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Illustration einer zahnmedizinischen Fachangestellten an Behandlungsstuhl mit Zahnmodell">
+  <defs>
+    <linearGradient id="zf-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eefbff"/>
+      <stop offset="100%" stop-color="#f3f4ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#zf-bg)"/>
+  <circle cx="118" cy="92" r="84" fill="#cffafe" opacity="0.78"/>
+  <circle cx="694" cy="88" r="76" fill="#e0e7ff" opacity="0.72"/>
+  <rect x="56" y="62" width="688" height="356" rx="32" fill="#ffffff" opacity="0.92"/>
+  <g transform="translate(80 106)">
+    <path d="M84 210 h156 c18 0 32 -14 32 -32 v-28 c0 -18 -14 -32 -32 -32 h-58 l-32 -48 h-44 v48 h-22 c-18 0 -32 14 -32 32 v28 c0 18 14 32 32 32 z" fill="#8dd3ff"/>
+    <path d="M168 210 v40" fill="none" stroke="#5bb7f6" stroke-width="10" stroke-linecap="round"/>
+    <path d="M120 250 h96" fill="none" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+    <path d="M268 84 c0 -32 18 -48 52 -48 c34 0 54 18 54 48 c0 48 -32 82 -54 122 c-24 -42 -52 -74 -52 -122 z" fill="#ffffff" stroke="#8dd3ff" stroke-width="6"/>
+    <path d="M318 72 v46" fill="none" stroke="#8dd3ff" stroke-width="8" stroke-linecap="round"/>
+    <path d="M294 96 c18 8 30 8 48 0 c18 8 30 8 48 0" fill="none" stroke="#8dd3ff" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="514" cy="82" r="40" fill="#ffd8bf"/>
+    <path d="M480 82 C482 46 498 22 528 22 C554 22 574 46 576 78 V100 C560 90 542 86 522 86 C506 86 490 86 480 82" fill="#24408d"/>
+    <path d="M468 158 C480 118 510 98 548 98 C586 98 616 118 630 166 L486 166 Z" fill="#06b6d4"/>
+    <path d="M500 146 L460 198" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M580 146 L642 122" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M538 166 V252" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M514 252 L486 316" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M562 252 L594 316" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="644" cy="120" r="16" fill="#93c5fd"/>
+    <path d="M644 104 v32 M628 120 h32" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>

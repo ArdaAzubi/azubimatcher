@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AzubiMatcher als Handy-App: Bewerberzugang und Firmenzugang mit direktem Zugriff auf Profil, Nachrichten, Freigaben und wichtige Infos.">
+  <meta name="theme-color" content="#0f4c81">
+  <title>AzubiaMtcher – Handy-App für Bewerbende und Unternehmen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mobile-app-page startseite-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb orb-one" aria-hidden="true"></div>
+  <div class="bg-orb orb-two" aria-hidden="true"></div>
+  <div class="bg-orb orb-three" aria-hidden="true"></div>
+
+  <div class="mobile-app-shell" id="mobileAppWorkspace">
+    <header class="index-topbar mobile-app-topbar">
+      <a href="index.html" class="index-brand">AzubiMatcher</a>
+      <div class="mobile-app-topbar-actions">
+        <a href="home.html" class="btn ghost small">Zur Plattform</a>
+      </div>
+    </header>
+
+    <main class="mobile-app-main">
+      <section class="mobile-app-hero">
+        <div class="mobile-app-hero-copy">
+          <p class="mobile-app-eyebrow">AzubiMatcher fürs Handy</p>
+          <h1>Firmenzugang und Bewerberzugang in einer mobilen App</h1>
+          <p class="mobile-app-hero-text">Öffne Profile, Nachrichten, Freigaben und wichtige Infos direkt auf dem Smartphone. Bewerbende und Unternehmen nutzen denselben mobilen Einstieg, bleiben aber in klar getrennten Bereichen.</p>
+        </div>
+        <div class="mobile-app-hero-side">
+          <div id="mobileAppInstallCard" class="mobile-app-install-card" hidden>
+            <p class="mobile-app-install-card__eyebrow">Startbildschirm</p>
+            <h2>AzubiMatcher wie eine App nutzen</h2>
+            <p id="mobileAppInstallHint">Lege AzubiMatcher auf deinen Startbildschirm, damit Profil, Nachrichten und Firmenkontakt mit einem Tipp erreichbar sind.</p>
+            <button id="mobileAppInstallButton" class="btn primary" type="button" hidden>App installieren</button>
+          </div>
+          <div class="mobile-app-hero-actions">
+            <a href="anmeldung.html" class="btn ghost">Anmeldung öffnen</a>
+            <a href="lehrberufe.html#berufswahlomat" class="btn ghost">Berufswahlomat starten</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="mobile-app-tabs" aria-label="Mobile Bereiche" role="tablist">
+        <button id="mobileAppStudentTab" class="mobile-app-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="mobileAppStudentPanel" data-mobile-app-tab="student">Bewerbende</button>
+        <button id="mobileAppFirmTab" class="mobile-app-tab" type="button" role="tab" aria-selected="false" aria-controls="mobileAppFirmPanel" data-mobile-app-tab="firm">Unternehmen</button>
+      </section>
+
+      <section id="mobileAppStudentPanel" class="mobile-app-role-panel" role="tabpanel" aria-labelledby="mobileAppStudentTab">
+        <p class="status">Bewerberzugang wird geladen.</p>
+      </section>
+
+      <section id="mobileAppFirmPanel" class="mobile-app-role-panel" role="tabpanel" aria-labelledby="mobileAppFirmTab" hidden>
+        <p class="status">Firmenzugang wird geladen.</p>
+      </section>
+
+      <section class="mobile-app-feature-grid" aria-label="Vorteile der Handy-App">
+        <article class="mobile-app-feature-card">
+          <p class="mobile-app-feature-card__eyebrow">Direkt im Zugriff</p>
+          <h2>Profil und Postfach mit einem Tipp</h2>
+          <p>Die App führt Bewerbende direkt zu Profil, Nachrichten, Freigaben und Firmenkontakten. Unternehmen springen unmittelbar in Matches, Profil und Nachrichtenbereich.</p>
+        </article>
+        <article class="mobile-app-feature-card">
+          <p class="mobile-app-feature-card__eyebrow">Sauber getrennt</p>
+          <h2>Zwei Rollen, ein mobiler Einstieg</h2>
+          <p>Bewerberzugang und Firmenzugang bleiben getrennt, laufen aber in einer mobilen Oberfläche. So wird der Handy-Zugang einfacher, ohne Prozesse zu vermischen.</p>
+        </article>
+        <article class="mobile-app-feature-card">
+          <p class="mobile-app-feature-card__eyebrow">Für unterwegs</p>
+          <h2>Nachrichten und Infos schnell erreichbar</h2>
+          <p>Neue Rückmeldungen, offene Anfragen, freigegebene Kontakte und Statushinweise bleiben auf dem Smartphone deutlich sichtbarer als im normalen Browser-Menü.</p>
+        </article>
+      </section>
+    </main>
+
+    <nav class="mobile-app-dock" aria-label="Schnellnavigation">
+      <a href="app.html" aria-current="page">App</a>
+      <a href="bewerber.html">Bewerbende</a>
+      <a href="firma.html">Unternehmen</a>
+      <a href="lehrberufe.html">Berufe</a>
+    </nav>
+  </div>
+
+  <script src="privacy-settings.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

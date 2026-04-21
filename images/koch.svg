@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Illustration eines Kochs mit Pfanne, Topf und angerichteten Zutaten">
+  <defs>
+    <linearGradient id="ko-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#f4f8ff"/>
+    </linearGradient>
+    <linearGradient id="ko-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#ko-bg)"/>
+  <circle cx="118" cy="92" r="84" fill="#fed7aa" opacity="0.72"/>
+  <circle cx="694" cy="88" r="74" fill="#dbeafe" opacity="0.72"/>
+  <rect x="56" y="62" width="688" height="356" rx="32" fill="#ffffff" opacity="0.92"/>
+  <g transform="translate(86 108)">
+    <rect x="34" y="186" width="242" height="62" rx="24" fill="#edf2ff"/>
+    <path d="M78 214 h128" fill="none" stroke="#24408d" stroke-width="10" stroke-linecap="round"/>
+    <path d="M218 214 h24" fill="none" stroke="#f97316" stroke-width="10" stroke-linecap="round"/>
+    <rect x="320" y="96" width="144" height="96" rx="18" fill="#ffedd5" stroke="#fed7aa" stroke-width="4"/>
+    <circle cx="354" cy="126" r="12" fill="#22c55e"/>
+    <circle cx="392" cy="126" r="12" fill="#f97316"/>
+    <circle cx="430" cy="126" r="12" fill="#ef4444"/>
+    <rect x="346" y="148" width="92" height="18" rx="9" fill="#fdba74"/>
+    <circle cx="532" cy="82" r="42" fill="#ffd8bf"/>
+    <path d="M496 80 C498 46 518 22 548 22 C576 22 596 46 596 78 V98 C580 90 562 86 542 86 C526 86 510 86 496 80" fill="#1f3b7a"/>
+    <path d="M488 48 C488 28 502 14 520 14 C524 4 536 -2 548 0 C556 -8 572 -6 578 6 C598 8 612 24 610 44 Z" fill="#ffffff"/>
+    <path d="M478 160 C492 118 524 98 566 98 C606 98 636 118 650 170 L500 170 Z" fill="url(#ko-accent)"/>
+    <path d="M516 144 L474 204" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M594 144 L644 180" fill="none" stroke="#ffd8bf" stroke-width="16" stroke-linecap="round"/>
+    <path d="M552 170 V254" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M526 254 L500 318" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M576 254 L608 318" fill="none" stroke="#2d344e" stroke-width="18" stroke-linecap="round"/>
+    <path d="M632 178 h48 c18 0 30 18 24 34 l-8 18 h-42 c-22 0 -34 -24 -22 -42 z" fill="#334155"/>
+    <path d="M652 184 c8 -18 20 -30 36 -36" fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

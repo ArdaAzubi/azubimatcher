@@ -1,0 +1,19 @@
+Hallo {{recipient_name}},
+
+deine Registrierung war erfolgreich – dein Zugang zu AzubiMatcher ist jetzt aktiv.
+
+AzubiMatcher bringt Bewerbende und Unternehmen zusammen, die wirklich zueinander passen: nach Region, Beruf, Interessen und Anforderungen.
+
+Deine nächsten Schritte:
+1. Melde dich mit deinen Zugangsdaten an
+2. Vervollständige dein Profil
+3. Entdecke passende Treffer und nimm Kontakt auf
+
+Jetzt anmelden:
+{{login_url}}
+
+Viele Grüße
+{{support_name}}
+
+Verwendete Felder für EmailJS:
+recipient_name, recipient_email, login_url, support_name

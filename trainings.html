@@ -1,0 +1,403 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bewerbungstrainings und Lebenslauf-Hilfe bei AzubiMatcher. Erstelle deinen Lebenslauf online und informiere dich über Trainings zu Bewerbung, Gesprächsvorbereitung und Selbstpräsentation.">
+  <title>Bewerbungs-Trainings – AzubiMatcher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="trainings-page startseite-page trainings-landing-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb orb-one" aria-hidden="true"></div>
+  <div class="bg-orb orb-two" aria-hidden="true"></div>
+
+  <div class="start-wrapper index-layout trainings-layout">
+    <header class="index-topbar trainings-topbar">
+      <a href="index.html" class="index-brand">AzubiMatcher</a>
+      <div class="index-nav-cluster">
+        <details class="index-directory">
+          <summary>Seitenübersicht</summary>
+          <div class="index-directory-panel">
+            <div class="index-directory-group">
+              <span class="index-directory-title">Hauptseiten</span>
+              <a href="index.html">Start</a>
+              <a href="home.html">Plattform</a>
+              <a href="lehrberufe.html">Berufe</a>
+            </div>
+            <div class="index-directory-group">
+              <span class="index-directory-title">Portale</span>
+              <a href="bewerber.html">Bewerbende</a>
+              <a href="firma.html">Unternehmen</a>
+              <a href="anmeldung.html">Anmeldung</a>
+            </div>
+            <div class="index-directory-group">
+              <span class="index-directory-title">Weitere Seiten</span>
+              <a href="trainings.html" aria-current="page">Trainings</a>
+            </div>
+          </div>
+        </details>
+        <nav class="index-nav" aria-label="Seitennavigation">
+          <a href="index.html">Start</a>
+          <a href="home.html">Plattform</a>
+          <a href="lehrberufe.html">Berufe</a>
+          <a href="bewerber.html">Bewerbende</a>
+          <a href="firma.html">Unternehmen</a>
+        </nav>
+        <div class="index-meta-nav" aria-label="Sekundäre Navigation">
+          <a href="anmeldung.html">Anmeldung</a>
+        </div>
+      </div>
+      <div class="index-topbar-actions">
+        <a href="bewerber.html" class="btn primary index-login-btn">Zum Portal für Bewerbende</a>
+      </div>
+    </header>
+
+    <main class="trainings-main">
+      <section class="trainings-hero-panel">
+        <div class="trainings-hero-copy">
+          <p class="index-kicker">Bewerbung und Vorbereitung</p>
+          <h1 class="trainings-title"><span class="title-stack"><span class="title-stack__line">Trainings, Tipps und</span><span class="title-stack__line title-stack__line--offset">Lebenslauf-Hilfe für den</span><span class="title-stack__line title-stack__line--offset-strong">Weg zum Ausbildungsplatz</span></span></h1>
+          <p class="trainings-lead">Die Seite bündelt praktische Unterstützung für Bewerbende. Du kannst deinen Lebenslauf online vorbereiten und bekommst einen Überblick über Trainingsangebote, die dich auf Bewerbung und Gespräch vorbereiten.</p>
+        </div>
+        <div class="trainings-overview-grid">
+          <article class="trainings-overview-card">
+            <p class="trainings-overview-label">Lebenslauf</p>
+            <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Direkt online</span><span class="title-stack__line title-stack__line--offset">vorbereiten</span></span></h2>
+            <p>Die wichtigsten Daten lassen sich strukturiert erfassen und im Portal speichern.</p>
+          </article>
+          <article class="trainings-overview-card">
+            <p class="trainings-overview-label">Training</p>
+            <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Gezielt auf Gespräche</span><span class="title-stack__line title-stack__line--offset">vorbereiten</span></span></h2>
+            <p>Von Unterlagen-Check bis Selbstpräsentation werden die zentralen Schritte abgedeckt.</p>
+          </article>
+          <article class="trainings-overview-card">
+            <p class="trainings-overview-label">Sicherheit</p>
+            <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Mit mehr Klarheit</span><span class="title-stack__line title-stack__line--offset">auftreten</span></span></h2>
+            <p>Strukturierte Vorbereitung reduziert Unsicherheit und verbessert die Qualität der Bewerbung.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="lebenslaufFormContainer" class="lebenslauf-form-outer trainings-cv-panel">
+    <button type="button" id="lebenslaufFormToggle" class="lebenslauf-form-toggle" aria-expanded="false" aria-controls="lebenslaufFormBody">
+      <h2 class="lebenslauf-form-title">Lebenslauf online erstellen</h2>
+      <span class="lebenslauf-form-toggle__icon" aria-hidden="true">▼</span>
+    </button>
+    <div id="lebenslaufFormBody" class="lebenslauf-form-body" hidden>
+    <form id="lebenslaufForm" class="lebenslauf-form">
+      <div class="lebenslauf-form-row">
+        <div class="lebenslauf-form-group">
+          <label for="ll_name">Vollständiger Name *</label>
+          <input type="text" id="ll_name" name="ll_name" required>
+        </div>
+        <div class="lebenslauf-form-group">
+          <label for="ll_email">E-Mail *</label>
+          <input type="email" id="ll_email" name="ll_email" required>
+        </div>
+      </div>
+      <div class="lebenslauf-form-row">
+        <div class="lebenslauf-form-group">
+          <label for="ll_geburtsdatum">Geburtsdatum *</label>
+          <input type="date" id="ll_geburtsdatum" name="ll_geburtsdatum" required>
+        </div>
+        <div class="lebenslauf-form-group">
+          <label for="ll_telefon">Telefon</label>
+          <input type="text" id="ll_telefon" name="ll_telefon">
+        </div>
+      </div>
+      <div class="lebenslauf-form-row">
+        <div class="lebenslauf-form-group">
+          <label for="ll_adresse">Adresse *</label>
+          <input type="text" id="ll_adresse" name="ll_adresse" required>
+        </div>
+        <div class="lebenslauf-form-group">
+          <label for="ll_plz">PLZ / Ort *</label>
+          <input type="text" id="ll_plz" name="ll_plz" required>
+        </div>
+      </div>
+      <div class="lebenslauf-form-group-full">
+        <label for="ll_ausbildung">Schul-/Ausbildung *</label>
+        <textarea id="ll_ausbildung" name="ll_ausbildung" rows="2" required placeholder="z. B. Realschule Musterstadt, Abschluss 2024"></textarea>
+      </div>
+      <div class="lebenslauf-form-group-full">
+        <label for="ll_beruf">Berufswunsch / angestrebte Ausbildung *</label>
+        <input type="text" id="ll_beruf" name="ll_beruf" required>
+      </div>
+      <div class="lebenslauf-form-group-full">
+        <label for="ll_berufserfahrung">Praktika / Berufserfahrung</label>
+        <textarea id="ll_berufserfahrung" name="ll_berufserfahrung" rows="2" placeholder="z. B. Praktikum bei ..."></textarea>
+      </div>
+      <div class="lebenslauf-form-group-full">
+        <label for="ll_kenntnisse">Kenntnisse & Fähigkeiten</label>
+        <textarea id="ll_kenntnisse" name="ll_kenntnisse" rows="2" placeholder="z. B. MS Office, Teamfähigkeit, Englisch ..."></textarea>
+      </div>
+      <div class="lebenslauf-form-row">
+        <div class="lebenslauf-form-group">
+          <label for="ll_sprachen">Sprachen</label>
+          <input type="text" id="ll_sprachen" name="ll_sprachen" placeholder="z. B. Deutsch (Muttersprache), Englisch (gut)">
+        </div>
+        <div class="lebenslauf-form-group">
+          <label for="ll_hobbys">Hobbys / Interessen</label>
+          <input type="text" id="ll_hobbys" name="ll_hobbys" placeholder="Optional">
+        </div>
+      </div>
+      <div style="margin-top:1.7em;text-align:center;">
+        <button type="submit" class="btn primary lebenslauf-form-btn">Lebenslauf speichern</button>
+      </div>
+      <div id="lebenslaufStatus" class="lebenslauf-form-status">Lebenslauf gespeichert!</div>
+    </form>
+    </div>
+      </section>
+      <script src="privacy-settings.js"></script>
+      <script>
+        // Lebenslauf speichern
+        function readStudentAuth() {
+          if (window.AzubiMatchPrivacy && typeof window.AzubiMatchPrivacy.readAuthSession === 'function') {
+            return window.AzubiMatchPrivacy.readAuthSession('azubimatch_student_auth');
+          }
+          try { return JSON.parse(localStorage.getItem('azubimatch_student_auth')||'null'); } catch(e) {}
+          return null;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          // Toggle
+          var toggleBtn = document.getElementById('lebenslaufFormToggle');
+          var formBody = document.getElementById('lebenslaufFormBody');
+          if (toggleBtn && formBody) {
+            toggleBtn.addEventListener('click', function() {
+              var isOpen = !formBody.hidden;
+              formBody.hidden = isOpen;
+              toggleBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+              var icon = toggleBtn.querySelector('.lebenslauf-form-toggle__icon');
+              if (icon) icon.textContent = isOpen ? '▼' : '▲';
+            });
+          }
+
+          const form = document.getElementById('lebenslaufForm');
+          if (!form) return;
+          // Vorbefüllen, falls vorhanden
+          let auth = readStudentAuth();
+          let allLebenslaeufe = JSON.parse(localStorage.getItem('azubimatch_lebenslaeufe')||'{}');
+          if (auth && allLebenslaeufe[auth.id]) {
+            const data = allLebenslaeufe[auth.id];
+            Object.keys(data).forEach(k => {
+              if (form[k]) form[k].value = data[k];
+            });
+          }
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let lebenslauf = {};
+            Array.from(form.elements).forEach(el => {
+              if (el.name) lebenslauf[el.name] = el.value;
+            });
+            if (!auth || !auth.id) {
+              alert('Du musst angemeldet sein, um deinen Lebenslauf zu speichern!');
+              return;
+            }
+            let all = JSON.parse(localStorage.getItem('azubimatch_lebenslaeufe')||'{}');
+            all[auth.id] = lebenslauf;
+            localStorage.setItem('azubimatch_lebenslaeufe', JSON.stringify(all));
+            document.getElementById('lebenslaufStatus').style.display = 'block';
+            setTimeout(()=>{document.getElementById('lebenslaufStatus').style.display='none';}, 2500);
+          });
+        });
+      </script>
+
+      <section class="training-list trainings-list-panel">
+    <div class="trainings-list-head">
+      <p class="trainings-list-kicker">Praxisnah aufgebaut</p>
+      <h2 class="trainings-list-title">Bewerbungs-Trainings bei AzubiMatcher</h2>
+      <p class="trainings-list-intro">Die Trainings sind so aufgebaut, dass du nicht nur allgemeine Tipps bekommst, sondern konkrete nächste Schritte für Unterlagen, Gespräche und Entscheidungen mitnehmen kannst.</p>
+    </div>
+    <ul>
+      <li class="training-card-item">
+        <details class="training-accordion" open>
+          <summary class="training-accordion-summary">
+            <span class="training-card-top">
+              <span class="training-badge">Unterlagen</span>
+              <span class="training-card-copy">
+                <span class="training-title">Bewerbungsunterlagen-Check</span>
+                <span class="training-desc">Wir gehen deine Bewerbung Schritt für Schritt durch und machen sichtbar, was schon überzeugt und was noch geschärft werden sollte.</span>
+              </span>
+            </span>
+          </summary>
+          <div class="training-accordion-panel">
+            <div class="training-accordion-panel-inner">
+              <div class="training-detail-grid">
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Darauf schauen wir</div>
+                  <ul class="training-detail-list">
+                    <li>Ob Lebenslauf, Anschreiben und Zeugnisse klar, vollständig und passend zur Stelle aufgebaut sind.</li>
+                    <li>Wie du Praktika, Schulprojekte und Stärken konkret statt zu allgemein beschreibst.</li>
+                    <li>Welche Formulierungen Motivation zeigen und welche Stellen noch unklar oder austauschbar wirken.</li>
+                  </ul>
+                </div>
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das nimmst du mit</div>
+                  <p class="training-outcome">Du gehst mit einer klaren To-do-Liste, einer besseren Struktur für deine Unterlagen und mehr Sicherheit in die nächste Bewerbung.</p>
+                </div>
+              </div>
+              <div class="training-actions">
+                <a href="#lebenslaufFormContainer" class="btn primary training-action-btn">Lebenslauf jetzt vorbereiten</a>
+                <a href="bewerber.html" class="training-action-link">Im Bewerberportal weiterarbeiten</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="training-card-item">
+        <details class="training-accordion">
+          <summary class="training-accordion-summary">
+            <span class="training-card-top">
+              <span class="training-badge">Gespräch</span>
+              <span class="training-card-copy">
+                <span class="training-title">Vorbereitung auf das Vorstellungsgespräch</span>
+                <span class="training-desc">Du übst typische Gesprächssituationen, damit du im Termin ruhig, ehrlich und gut vorbereitet auftrittst.</span>
+              </span>
+            </span>
+          </summary>
+          <div class="training-accordion-panel">
+            <div class="training-accordion-panel-inner">
+              <div class="training-detail-grid">
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das trainieren wir</div>
+                  <ul class="training-detail-list">
+                    <li>Eine kurze, verständliche Selbstvorstellung: Wer bist du, warum passt der Beruf zu dir und was interessiert dich daran?</li>
+                    <li>Typische Fragen zu Motivation, Stärken, Schwächen, Schulnoten oder Lücken ruhig beantworten.</li>
+                    <li>Eigene Rückfragen vorbereiten, damit du Interesse zeigst und den Betrieb besser einschätzen kannst.</li>
+                  </ul>
+                </div>
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das nimmst du mit</div>
+                  <p class="training-outcome">Du bekommst Formulierungshilfen, Gesprächsbeispiele und ein besseres Gefühl dafür, wie du authentisch statt auswendig gelernt wirkst.</p>
+                </div>
+              </div>
+              <div class="training-actions">
+                <a href="bewerber.html" class="btn primary training-action-btn">Gesprächsvorbereitung starten</a>
+                <a href="anmeldung.html" class="training-action-link">Anmelden oder registrieren</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="training-card-item">
+        <details class="training-accordion">
+          <summary class="training-accordion-summary">
+            <span class="training-card-top">
+              <span class="training-badge">Digital</span>
+              <span class="training-card-copy">
+                <span class="training-title">Online-Bewerbung & digitale Tools</span>
+                <span class="training-desc">Wir zeigen dir, wie du digitale Bewerbungen sauber, vollständig und professionell vorbereitest.</span>
+              </span>
+            </span>
+          </summary>
+          <div class="training-accordion-panel">
+            <div class="training-accordion-panel-inner">
+              <div class="training-detail-grid">
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Darum geht es</div>
+                  <ul class="training-detail-list">
+                    <li>Dokumente richtig benennen, in sinnvoller Reihenfolge hochladen und technische Fehler vermeiden.</li>
+                    <li>E-Mails, Formulare und Bewerbungsportale so nutzen, dass deine Bewerbung übersichtlich und zuverlässig ankommt.</li>
+                    <li>Digitale Gespräche oder Videocalls vorbereiten: Kamera, Ton, Hintergrund und Auftreten.</li>
+                  </ul>
+                </div>
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das nimmst du mit</div>
+                  <p class="training-outcome">Du weißt, wie du auch online ordentlich, verbindlich und gut vorbereitet wirkst, ohne an formalen Kleinigkeiten zu scheitern.</p>
+                </div>
+              </div>
+              <div class="training-actions">
+                <a href="anmeldung.html" class="btn primary training-action-btn">Konto anlegen und starten</a>
+                <a href="#lebenslaufFormContainer" class="training-action-link">Unterlagen direkt erfassen</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="training-card-item">
+        <details class="training-accordion">
+          <summary class="training-accordion-summary">
+            <span class="training-card-top">
+              <span class="training-badge">Auftreten</span>
+              <span class="training-card-copy">
+                <span class="training-title">Selbstpräsentation & Stärken erkennen</span>
+                <span class="training-desc">Du lernst, deine Stärken aus Schule, Alltag oder Praktika verständlich zu benennen und passend zum Ausbildungsberuf einzuordnen.</span>
+              </span>
+            </span>
+          </summary>
+          <div class="training-accordion-panel">
+            <div class="training-accordion-panel-inner">
+              <div class="training-detail-grid">
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Darauf arbeiten wir hin</div>
+                  <ul class="training-detail-list">
+                    <li>Eigene Beispiele finden, mit denen du Zuverlässigkeit, Teamfähigkeit oder Lernbereitschaft glaubwürdig zeigen kannst.</li>
+                    <li>Unsicherheiten abbauen und ruhiger darüber sprechen, was du kannst und wo du noch lernen möchtest.</li>
+                    <li>Besser erkennen, welche deiner Fähigkeiten zu handwerklichen, kaufmännischen oder sozialen Berufen passen.</li>
+                  </ul>
+                </div>
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das nimmst du mit</div>
+                  <p class="training-outcome">Du kannst klarer erklären, was du mitbringst, wofür du dich interessierst und warum gerade dieser Ausbildungsweg zu dir passt.</p>
+                </div>
+              </div>
+              <div class="training-actions">
+                <a href="lehrberufe.html" class="btn primary training-action-btn">Passende Berufe entdecken</a>
+                <a href="bewerber.html" class="training-action-link">Stärken im Portal festhalten</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+      <li class="training-card-item">
+        <details class="training-accordion">
+          <summary class="training-accordion-summary">
+            <span class="training-card-top">
+              <span class="training-badge">Orientierung</span>
+              <span class="training-card-copy">
+                <span class="training-title">Individuelle Beratung</span>
+                <span class="training-desc">Wenn du noch unsicher bist, ordnen wir gemeinsam deine Fragen und planen die nächsten sinnvollen Schritte.</span>
+              </span>
+            </span>
+          </summary>
+          <div class="training-accordion-panel">
+            <div class="training-accordion-panel-inner">
+              <div class="training-detail-grid">
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Wobei wir unterstützen</div>
+                  <ul class="training-detail-list">
+                    <li>Offene Fragen zu Berufen, Rückmeldungen, Absagen, Fristen oder fehlender Orientierung sortieren.</li>
+                    <li>Gemeinsam einen realistischen nächsten Schritt planen, statt an mehreren Baustellen gleichzeitig hängen zu bleiben.</li>
+                    <li>Bei Bedarf Unterstützung zu Sprache, Selbstorganisation oder Nervosität gezielt einbeziehen.</li>
+                  </ul>
+                </div>
+                <div class="training-detail-block">
+                  <div class="training-detail-title">Das nimmst du mit</div>
+                  <p class="training-outcome">Du erhältst eine persönliche Orientierung, die zu deiner Situation passt und dich konkret in Richtung Ausbildungsplatz weiterbringt.</p>
+                </div>
+              </div>
+              <div class="training-actions">
+                <a href="bewerber.html" class="btn primary training-action-btn">Beratung im Portal anstoßen</a>
+                <a href="home.html#stabilitaet" class="training-action-link">Weitere Unterstützung ansehen</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </li>
+    </ul>
+      </section>
+    </main>
+
+    <footer class="start-footer trainings-footer">
+      <span>© 2026 AzubiMatcher</span>
+      <div class="index-footer-links">
+          <a href="datenschutzerklaerung.html">Datenschutz</a>
+        <a href="#" data-open-privacy-settings>Privatsphäre & Cookies</a>
+          <a href="impressum.html">Impressum</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

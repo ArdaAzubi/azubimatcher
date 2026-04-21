@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Schulpraktikum für Bewerbende</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body class="portal-entry-page bewerber-entry-page student-profile-page startseite-page">
+	<a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+	<div class="bg-grid profile-grid-muted" aria-hidden="true"></div>
+	<div class="bg-orb orb-one" aria-hidden="true"></div>
+	<div class="bg-orb orb-two" aria-hidden="true"></div>
+	<div class="start-wrapper index-layout portal-entry-wrapper">
+		<header class="index-topbar portal-entry-topbar profile-topbar">
+			<a href="index.html" class="index-brand">AzubiMatcher</a>
+			<nav class="index-nav" aria-label="Seitennavigation">
+				<a href="index.html">Startseite</a>
+				<a href="bewerber.html">Ausbildungsportal</a>
+				<a href="bewerber_profil.html">Mein Profil</a>
+				<a href="bewerber_praktikum.html" aria-current="page">Schulpraktikum</a>
+			</nav>
+			<a href="bewerber.html" class="btn primary index-login-btn">Zum Ausbildungsbereich</a>
+		</header>
+
+		<main id="main-content" class="hero portal-page portal-entry-main internship-page-main">
+			<div id="studentInternshipWorkspace" class="internship-page-stack">
+				<div class="profil-account-bar">
+					<div class="profil-account-left">
+						<span class="profil-account-greeting">Schulpraktikum: <strong id="profileDisplayName"></strong></span>
+						<span class="profil-account-email-chip" id="profileDisplayEmail"></span>
+					</div>
+					<div class="profil-account-actions">
+						<a href="bewerber.html" class="btn ghost small">Ausbildungsportal</a>
+						<a href="bewerber_profil.html" class="btn ghost small">Mein Profil</a>
+						<button id="studentInternshipLogout" class="btn primary small" type="button">Abmelden</button>
+					</div>
+				</div>
+
+				<section class="panel portal-form internship-page-hero">
+					<div class="internship-page-hero__copy">
+						<p class="eyebrow">Schulpraktikum</p>
+						<h1><span class="title-stack"><span class="title-stack__line">Praktikum getrennt</span><span class="title-stack__line title-stack__line--offset">vom Ausbildungsprofil</span></span></h1>
+						<p>Hier verwaltest du deinen separaten Schulpraktikumsbereich, damit dein Ausbildungsprofil schlank und klar bleibt. Dein Konto und deine Basisdaten bleiben dieselben.</p>
+						<p>Dieser Bereich ist für Schülerinnen und Schüler, die gezielt einen Schulpraktikumsplatz suchen. Ausbildung und Schulpraktikum bleiben dabei bewusst getrennt.</p>
+					</div>
+					<div class="internship-page-hero__pill">Eigener Match-Pool nur für Schulpraktikum</div>
+				</section>
+
+				<section id="studentInternshipEntrySection" class="panel portal-form" aria-labelledby="studentInternshipHeading">
+					<p class="eyebrow">Eingabe</p>
+					<h2 id="studentInternshipHeading">Deinen Praktikumsbereich pflegen</h2>
+					<p class="portal-support-note">Basisdaten wie Name, Ort, PLZ und Schulangaben werden automatisch aus deinem Hauptprofil übernommen.</p>
+					<p class="portal-support-note internship-planning-note">Bitte gib mindestens einen Zeitraum, feste Tage oder eine Tageszeit an. Für sichtbare Praktikums-Matches brauchen beide Seiten einen passenden Zeitraum mit Start- und Enddatum.</p>
+					<p id="studentInternshipBaseInfo" class="status" role="status" aria-live="polite" aria-atomic="true">Basisdaten werden geladen.</p>
+					<div class="internship-form-accordion-group">
+						<details class="index-info-accordion internship-form-accordion" open>
+							<summary>
+								<span class="internship-form-accordion__summary">
+									<span class="internship-form-accordion__title">Praktikumsrahmen</span>
+									<span class="internship-form-accordion__meta">Bereich, Umkreis und Klassenstufe pflegen</span>
+								</span>
+							</summary>
+							<div class="index-info-accordion__body internship-form-accordion__body">
+								<div class="bewerber-inline-grid internship-form-accordion__grid">
+									<div>
+										<label class="form-label" for="studentInternshipBeruf">Gewünschter Praktikumsbereich</label>
+										<input class="input" id="studentInternshipBeruf" type="text" placeholder="z. B. IT, Büro, Handel oder Handwerk">
+									</div>
+									<div>
+										<label class="form-label" for="studentInternshipUmkreis">Umkreis für Praktikumsbetriebe</label>
+										<select class="input" id="studentInternshipUmkreis">
+											<option value="5">5 km</option>
+											<option value="10">10 km</option>
+											<option value="25">25 km</option>
+											<option value="50">50 km</option>
+											<option value="100">100 km</option>
+											<option value="de">Deutschlandweit</option>
+										</select>
+									</div>
+									<div>
+										<label class="form-label" for="studentInternshipKlassenstufe">Klassenstufe / Jahrgang</label>
+										<input class="input" id="studentInternshipKlassenstufe" type="text" placeholder="z. B. 9. Klasse, EF oder Q1">
+									</div>
+								</div>
+							</div>
+						</details>
+
+						<details class="index-info-accordion internship-form-accordion">
+							<summary>
+								<span class="internship-form-accordion__summary">
+									<span class="internship-form-accordion__title">Zeitraum, Tage und Tageszeit</span>
+									<span class="internship-form-accordion__meta">Kalenderzeitraum, Wochentage und Tageszeit auswählen</span>
+								</span>
+							</summary>
+							<div class="index-info-accordion__body internship-form-accordion__body">
+								<div class="bewerber-inline-grid internship-form-accordion__grid">
+									<div class="bewerber-form-section bewerber-form-section--full internship-fixed-date-panel internship-form-accordion__panel-reset">
+										<span class="form-label">Festes Datum</span>
+										<p class="portal-support-note">Markiere hier direkt Start und Ende deines Praktikumszeitraums im Kalender.</p>
+										<div class="internship-calendar-grid internship-form-accordion__calendar-grid">
+											<div>
+												<label class="form-label" for="studentInternshipStartDate">Startdatum</label>
+												<input class="input" id="studentInternshipStartDate" type="date">
+											</div>
+											<div>
+												<label class="form-label" for="studentInternshipEndDate">Enddatum</label>
+												<input class="input" id="studentInternshipEndDate" type="date">
+											</div>
+										</div>
+									</div>
+									<div>
+										<label class="form-label" for="studentInternshipZeitraum">Gewünschter Zeitraum</label>
+										<input class="input" id="studentInternshipZeitraum" type="text" placeholder="z. B. nur in den Herbstferien oder nach Schulvorgabe">
+									</div>
+									<div class="bewerber-form-section bewerber-form-section--full internship-weekday-panel internship-form-accordion__panel-reset">
+										<span class="form-label">Feste Tage für dein Praktikum</span>
+										<div class="internship-weekday-grid" role="group" aria-label="Feste Tage für das Praktikum">
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="monday"><span>Mo</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="tuesday"><span>Di</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="wednesday"><span>Mi</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="thursday"><span>Do</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="friday"><span>Fr</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipDays" value="saturday"><span>Sa</span></label>
+										</div>
+									</div>
+									<div class="bewerber-form-section bewerber-form-section--full internship-weekday-panel internship-form-accordion__panel-reset">
+										<span class="form-label">Mögliche Tageszeit</span>
+										<p class="portal-support-note">Wenn dein Praktikum auch nach der Schule möglich ist, markiere hier Nachmittags.</p>
+										<div class="internship-weekday-grid" role="group" aria-label="Mögliche Tageszeit für das Praktikum">
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipTimeSlots" value="morning"><span>Vormittags</span></label>
+											<label class="internship-weekday-option"><input type="checkbox" name="studentInternshipTimeSlots" value="afternoon"><span>Nachmittags</span></label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</details>
+
+						<details class="index-info-accordion internship-form-accordion">
+							<summary>
+								<span class="internship-form-accordion__summary">
+									<span class="internship-form-accordion__title">Kurzinfo für Betriebe</span>
+									<span class="internship-form-accordion__meta">Zusätzliche Hinweise und Erwartungen ergänzen</span>
+								</span>
+							</summary>
+							<div class="index-info-accordion__body internship-form-accordion__body">
+								<div class="bewerber-form-section bewerber-form-section--full internship-form-accordion__panel-reset">
+									<label class="form-label" for="studentInternshipHinweis">Kurzinfo für Betriebe</label>
+									<textarea class="input" id="studentInternshipHinweis" rows="4" placeholder="Was möchtest du im Praktikum kennenlernen oder was bringst du bereits mit?"></textarea>
+								</div>
+							</div>
+						</details>
+
+						<details class="index-info-accordion internship-form-accordion">
+							<summary>
+								<span class="internship-form-accordion__summary">
+									<span class="internship-form-accordion__title">Praktikumsbericht</span>
+									<span class="internship-form-accordion__meta">Erlebnisse, Aufgaben und Lernerfolge direkt im Praktikumsprofil festhalten</span>
+								</span>
+							</summary>
+							<div class="index-info-accordion__body internship-form-accordion__body">
+								<div class="bewerber-form-section bewerber-form-section--full internship-weekday-panel internship-form-accordion__panel-reset internship-report-panel">
+									<label class="form-label" for="studentInternshipReport">Dein Praktikumsbericht</label>
+									<p class="portal-support-note">Halte hier fest, was du gemacht hast, was du gelernt hast und welche Eindrücke oder Fragen du aus dem Praktikum mitnimmst. Der Bericht bleibt in deinem Praktikumsprofil gespeichert.</p>
+									<textarea class="input internship-report-textarea" id="studentInternshipReport" rows="10" placeholder="Zum Beispiel:
+
+Tag / Zeitraum:
+Aufgaben:
+Das habe ich gelernt:
+Das lief gut:
+Das möchte ich noch verbessern oder nachfragen:"></textarea>
+								</div>
+							</div>
+						</details>
+					</div>
+					<div class="actions">
+						<button id="saveStudentInternship" class="btn primary" type="button">Schulpraktikumsbereich speichern</button>
+						<a class="btn ghost" href="bewerber_profil.html">Zum Ausbildungsprofil</a>
+					</div>
+					<div id="studentInternshipSaveConfirmation" class="internship-save-confirmation" hidden tabindex="-1">
+						<p class="internship-save-confirmation__title">Dein Schulpraktikumsprofil wurde gespeichert.</p>
+						<p id="studentInternshipSaveConfirmationMeta" class="internship-save-confirmation__meta">Die Angaben stehen jetzt für passende Praktikumsbetriebe bereit.</p>
+					</div>
+					<p id="studentInternshipStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Noch kein separates Schulpraktikumsprofil gespeichert.</p>
+				</section>
+
+				<section id="studentInternshipMatchSection" class="panel portal-form" hidden>
+					<p class="eyebrow">Matches</p>
+					<h2>Passende Schulpraktikumsbetriebe</h2>
+					<p class="portal-support-note">Dieser Bereich läuft getrennt vom Ausbildungs-Matching und zeigt nur passende Praktikumsangebote.</p>
+					<div class="student-match-toolbar">
+						<label class="student-radius-filter" for="studentInternshipMatchRadiusSelect">
+							<span>Dein Praktikums-Umkreis</span>
+							<select id="studentInternshipMatchRadiusSelect" class="input">
+								<option value="5">5 km</option>
+								<option value="10">10 km</option>
+								<option value="25">25 km</option>
+								<option value="50">50 km</option>
+								<option value="100">100 km</option>
+								<option value="de">Deutschlandweit</option>
+							</select>
+						</label>
+						<p id="studentInternshipMatchMeta" class="student-match-meta"></p>
+					</div>
+					<div id="studentInternshipMatches">
+						<p class="student-empty-copy">Noch keine passenden Schulpraktikumsbetriebe mit passendem Zeitraum im aktuellen Umkreis.</p>
+					</div>
+				</section>
+
+				<section class="panel portal-form internship-access-card internship-access-card--support">
+					<p class="internship-access-card__eyebrow">Zurück zum Kernprofil</p>
+					<div class="internship-access-card__body">
+						<div class="internship-access-card__content">
+							<h2>Ausbildung und Praktikum bewusst getrennt halten</h2>
+							<p class="internship-access-card__copy">Wunschberuf, Unterlagen und Ausbildungs-Matches bleiben in deinem Hauptprofil. Der Schulpraktikumsbereich ist dein eigener Weg für Praktikumsplätze.</p>
+						</div>
+						<div class="actions internship-access-card__actions">
+							<a class="btn ghost" href="bewerber.html">Ausbildungsportal öffnen</a>
+							<a class="btn primary" href="bewerber_profil.html">Mein Profil öffnen</a>
+						</div>
+					</div>
+				</section>
+			</div>
+		</main>
+	</div>
+
+	<script src="privacy-settings.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+	<script src="discovery.js"></script>
+	<script src="script.js"></script>
+</body>
+</html>

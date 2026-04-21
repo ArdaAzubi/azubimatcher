@@ -1,0 +1,1019 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mein Profil</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+	<style>
+		body.student-profile-page {
+			min-height: 100vh;
+			background:
+				radial-gradient(circle at top left, rgba(191, 219, 254, 0.55), transparent 30%),
+				radial-gradient(circle at top right, rgba(224, 231, 255, 0.55), transparent 28%),
+				linear-gradient(180deg, #f8fbff 0%, #eef4ff 45%, #f8fafc 100%) !important;
+		}
+
+		.student-shell {
+			width: min(1180px, calc(100vw - 32px));
+			margin: 0 auto 3rem;
+		}
+
+		.student-dashboard {
+			display: grid;
+			grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.95fr);
+			gap: clamp(1rem, 2vw, 1.4rem);
+			align-items: start;
+		}
+
+		.student-main-column,
+		.student-sidebar-column {
+			grid-column: 1 / -1;
+		}
+
+		.student-main-column,
+		.student-sidebar-column,
+		.student-sticky-column,
+		.student-bottom-column {
+			display: flex;
+			flex-direction: column;
+			gap: 1.2rem;
+			min-width: 0;
+		}
+
+		.student-bottom-column {
+			grid-column: 1 / -1;
+		}
+
+		.student-sticky-column {
+			position: static;
+		}
+
+		.student-card {
+			padding: clamp(1rem, 2.2vw, 1.4rem);
+			background: rgba(255, 255, 255, 0.88);
+			border: 1px solid rgba(148, 163, 184, 0.2);
+			border-radius: 24px;
+			box-shadow: 0 24px 56px rgba(15, 23, 42, 0.08);
+			backdrop-filter: blur(14px);
+		}
+
+		.student-card-tight {
+			padding-top: calc(var(--ui-card-pad) - 0.1rem);
+			padding-bottom: calc(var(--ui-card-pad) - 0.1rem);
+		}
+
+		.student-section-label {
+			margin: 0 0 0.45rem;
+			font-size: var(--ui-font-xs);
+			font-weight: 700;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: #2563eb;
+		}
+
+		.student-section-title {
+			margin: 0;
+			font-family: 'Space Grotesk', 'Inter', sans-serif;
+			font-size: clamp(1.18rem, 1vw + 1rem, 1.8rem);
+			color: #0f172a;
+		}
+
+		.student-section-title--single-line {
+			font-size: clamp(1.02rem, 0.62vw + 0.94rem, 1.5rem);
+			line-height: 1.2;
+			white-space: nowrap;
+		}
+
+		.student-section-subtitle {
+			margin: 0.45rem 0 0;
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.65;
+		}
+
+		.student-spotlight {
+			display: grid;
+			grid-template-columns: minmax(0, 1.2fr) minmax(220px, auto);
+			gap: var(--ui-space-md);
+			align-items: center;
+		}
+
+		.student-spotlight-copy {
+			display: flex;
+			flex-direction: column;
+			gap: var(--ui-space-xs);
+			min-width: 0;
+		}
+
+		#profilGreeting {
+			margin: 0;
+			font-family: 'Space Grotesk', 'Inter', sans-serif;
+			font-size: clamp(1.3rem, 1.15vw + 1.05rem, 2rem);
+			font-weight: 700;
+			color: #0f172a;
+		}
+
+		.student-spotlight-note {
+			margin: 0;
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.65;
+		}
+
+		.student-highlight-badge {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: fit-content;
+			max-width: 100%;
+			padding: calc(var(--ui-card-pad) - 0.05rem) calc(var(--ui-card-pad) - 0.05rem);
+			border-radius: 20px;
+			background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(59, 130, 246, 0.2));
+			color: #1d4ed8;
+			font-weight: 700;
+			font-size: var(--ui-font-sm);
+			line-height: 1.4;
+			text-align: center;
+			min-width: 0;
+		}
+
+		.student-request-intro {
+			margin-bottom: 1rem;
+			padding: calc(var(--ui-card-pad) - 0.05rem) calc(var(--ui-card-pad) - 0.05rem);
+			border-radius: 18px;
+			background: rgba(239, 246, 255, 0.9);
+			border: 1px solid rgba(147, 197, 253, 0.35);
+			color: #1e3a8a;
+			font-size: var(--ui-font-sm);
+			line-height: 1.65;
+		}
+
+		.student-info-stack {
+			display: grid;
+			gap: var(--ui-space-sm);
+		}
+
+		.student-mini-card {
+			padding: calc(var(--ui-card-pad) - 0.05rem) var(--ui-card-pad);
+			border-radius: 20px;
+			background: rgba(248, 250, 252, 0.88);
+			border: 1px solid rgba(148, 163, 184, 0.18);
+		}
+
+		.student-mini-card h3 {
+			margin: 0 0 0.45rem;
+			font-size: var(--ui-font-md);
+			color: #0f172a;
+		}
+
+		.student-mini-card .profile-info-card__headline {
+			font-size: var(--ui-font-md);
+		}
+
+		.student-mini-card p {
+			margin: 0;
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.65;
+		}
+
+		.student-danger-zone {
+			border: 1px solid rgba(239, 68, 68, 0.18);
+			background: rgba(255, 255, 255, 0.92);
+		}
+
+		.student-danger-zone h3 {
+			color: #991b1b;
+		}
+
+		.student-danger-zone .btn {
+			margin-top: var(--ui-space-sm);
+		}
+
+		.student-checkin-form {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.9rem;
+			margin-top: 1rem;
+		}
+
+		.student-checkin-field {
+			display: flex;
+			flex-direction: column;
+			gap: 0.45rem;
+			padding: 0.95rem 1rem;
+			border-radius: 18px;
+			background: rgba(248, 250, 252, 0.9);
+			border: 1px solid rgba(148, 163, 184, 0.18);
+		}
+
+		.student-checkin-field span {
+			font-size: var(--ui-font-sm);
+			font-weight: 700;
+			line-height: 1.5;
+			color: #1e3a8a;
+		}
+
+		.student-checkin-field--wide {
+			grid-column: 1 / -1;
+		}
+
+		.student-checkin-field textarea.input {
+			min-height: 110px;
+			resize: vertical;
+		}
+
+		.student-checkin-actions {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 0.75rem;
+			padding: 0;
+			background: transparent;
+			border: none;
+		}
+
+		#studentCheckinStatus {
+			margin: 0;
+		}
+
+		.student-checkin-summary,
+		.student-support-guidance {
+			margin-top: 1rem;
+			padding: 1rem 1.1rem;
+			border-radius: 20px;
+			border: 1px solid rgba(191, 219, 254, 0.72);
+			background: linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(239, 246, 255, 0.96) 100%);
+		}
+
+		.student-checkin-summary[data-state="stable"],
+		.student-support-guidance[data-state="stable"] {
+			border-color: rgba(134, 239, 172, 0.82);
+			background: linear-gradient(180deg, rgba(240, 253, 244, 0.98) 0%, rgba(236, 253, 245, 0.98) 100%);
+		}
+
+		.student-checkin-summary[data-state="attention"],
+		.student-support-guidance[data-state="attention"] {
+			border-color: rgba(253, 224, 71, 0.82);
+			background: linear-gradient(180deg, rgba(254, 252, 232, 0.98) 0%, rgba(255, 251, 235, 0.98) 100%);
+		}
+
+		.student-checkin-summary[data-state="urgent"],
+		.student-support-guidance[data-state="urgent"] {
+			border-color: rgba(252, 165, 165, 0.82);
+			background: linear-gradient(180deg, rgba(254, 242, 242, 0.98) 0%, rgba(255, 241, 242, 0.98) 100%);
+		}
+
+		.student-checkin-summary__badge,
+		.student-support-guidance__eyebrow {
+			display: inline-flex;
+			align-items: center;
+			padding: 0.35rem 0.7rem;
+			border-radius: 999px;
+			background: rgba(219, 234, 254, 0.92);
+			color: #1d4ed8;
+			font-size: 0.8rem;
+			font-weight: 800;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+		}
+
+		.student-checkin-summary__title,
+		.student-support-guidance__title {
+			margin: 0.8rem 0 0.55rem;
+			font-size: 1.1rem;
+			color: #0f172a;
+		}
+
+		.student-checkin-summary__text,
+		.student-support-guidance__text,
+		.student-checkin-summary__meta,
+		.student-checkin-summary__note,
+		.student-support-alert,
+		.student-support-template p {
+			margin: 0;
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.68;
+		}
+
+		.student-checkin-summary__meta,
+		.student-checkin-summary__note,
+		.student-support-alert,
+		.student-support-template {
+			margin-top: 0.75rem;
+		}
+
+		.student-support-topic-grid {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.65rem;
+			margin-top: 1rem;
+		}
+
+		.student-support-topic {
+			padding: 0.6rem 0.95rem;
+			border-radius: 999px;
+			border: 1px solid rgba(191, 219, 254, 0.72);
+			background: rgba(239, 246, 255, 0.92);
+			color: #1e3a8a;
+			font-size: var(--ui-font-sm);
+			font-weight: 700;
+			cursor: pointer;
+			transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+		}
+
+		.student-support-topic:hover,
+		.student-support-topic:focus-visible,
+		.student-support-topic.is-active {
+			transform: translateY(-2px);
+			box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+			background: #dbeafe;
+			border-color: rgba(96, 165, 250, 0.78);
+		}
+
+		.student-support-topic:disabled {
+			opacity: 0.55;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+		}
+
+		.student-support-guidance__steps {
+			margin: 0.85rem 0 0;
+			padding-left: 1.15rem;
+			color: #334155;
+		}
+
+		.student-support-guidance__steps li + li {
+			margin-top: 0.45rem;
+		}
+
+		.student-support-alert {
+			padding: 0.8rem 0.9rem;
+			border-radius: 16px;
+			background: rgba(255, 255, 255, 0.72);
+			border: 1px solid rgba(248, 113, 113, 0.28);
+		}
+
+		.student-support-template {
+			padding: 0.85rem 0.9rem;
+			border-radius: 16px;
+			background: rgba(255, 255, 255, 0.72);
+			border: 1px solid rgba(148, 163, 184, 0.18);
+		}
+
+		.student-support-template strong {
+			display: block;
+			margin-bottom: 0.35rem;
+			color: #0f172a;
+		}
+
+		.student-support-recommendations {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.9rem;
+			margin-top: 1rem;
+		}
+
+		.student-support-recommendations__group {
+			padding: 0.9rem;
+			border-radius: 18px;
+			background: rgba(255, 255, 255, 0.76);
+			border: 1px solid rgba(148, 163, 184, 0.18);
+		}
+
+		.student-support-recommendations__title {
+			display: block;
+			margin-bottom: 0.65rem;
+			color: #0f172a;
+			font-size: var(--ui-font-sm);
+			font-weight: 800;
+		}
+
+		.student-support-recommendation-list {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			display: grid;
+			gap: 0.7rem;
+		}
+
+		.student-support-recommendation {
+			padding: 0.8rem 0.85rem;
+			border-radius: 16px;
+			background: rgba(248, 250, 252, 0.92);
+			border: 1px solid rgba(191, 219, 254, 0.54);
+		}
+
+		.student-support-recommendation--muted {
+			border-style: dashed;
+		}
+
+		.student-support-recommendation strong {
+			display: block;
+			margin-bottom: 0.35rem;
+			color: #0f172a;
+		}
+
+		.student-support-recommendation p {
+			margin: 0;
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.62;
+		}
+
+		.student-support-recommendation p + p {
+			margin-top: 0.3rem;
+		}
+
+		.student-support-firm-link {
+			color: #1d4ed8;
+			text-decoration: none;
+		}
+
+		.student-support-firm-link:hover,
+		.student-support-firm-link:focus-visible {
+			text-decoration: underline;
+		}
+
+		#studentProfileMessages .result-card,
+		#studentFullProfileRequests .panel,
+		#studentProfileContent .result-card {
+			box-shadow: none;
+			border-radius: 18px;
+			border: 1px solid rgba(148, 163, 184, 0.18);
+		}
+
+		@media (max-width: 1080px) {
+			.student-dashboard {
+				grid-template-columns: 1fr;
+			}
+
+			.student-sticky-column {
+				position: static;
+			}
+
+			.student-spotlight {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		/* ── Notification badge (pill on section label) ── */
+		.notif-badge {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 1.35em;
+			height: 1.35em;
+			padding: 0 0.42em;
+			margin-left: 0.45rem;
+			border-radius: 999px;
+			background: #ef4444;
+			color: #fff;
+			font-size: 0.72rem;
+			font-weight: 800;
+			line-height: 1;
+			vertical-align: middle;
+			letter-spacing: 0;
+			animation: notif-pop 280ms cubic-bezier(.34,1.56,.64,1) both;
+		}
+
+		@keyframes notif-pop {
+			from { transform: scale(0.5); opacity: 0; }
+			to   { transform: scale(1);   opacity: 1; }
+		}
+
+		/* ── Top notification banner ── */
+		#studentNotificationBanner {
+			display: none;
+			gap: 0.75rem;
+			margin-bottom: 1.2rem;
+		}
+
+		#studentNotificationBanner.has-notifications {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.student-notif-alert {
+			display: flex;
+			align-items: center;
+			gap: 0.85rem;
+			padding: 0.9rem 1.1rem;
+			border-radius: 18px;
+			background: linear-gradient(135deg, rgba(254, 242, 242, 0.96), rgba(255, 237, 213, 0.96));
+			border: 1px solid rgba(252, 165, 165, 0.55);
+			cursor: pointer;
+			transition: box-shadow 180ms ease, transform 160ms ease;
+		}
+
+		.student-notif-alert:hover {
+			box-shadow: 0 8px 24px rgba(239, 68, 68, 0.14);
+			transform: translateY(-1px);
+		}
+
+		.student-notif-alert--info {
+			background: linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(224, 231, 255, 0.96));
+			border-color: rgba(147, 197, 253, 0.55);
+		}
+
+		.student-notif-alert--info:hover {
+			box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+		}
+
+		.student-notif-alert__icon {
+			flex-shrink: 0;
+			width: 2.1rem;
+			height: 2.1rem;
+			border-radius: 50%;
+			background: rgba(239, 68, 68, 0.12);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1rem;
+		}
+
+		.student-notif-alert--info .student-notif-alert__icon {
+			background: rgba(59, 130, 246, 0.12);
+		}
+
+		.student-notif-alert__body {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.student-notif-alert__title {
+			margin: 0;
+			font-size: var(--ui-font-sm);
+			font-weight: 800;
+			color: #991b1b;
+			line-height: 1.4;
+		}
+
+		.student-notif-alert--info .student-notif-alert__title {
+			color: #1e3a8a;
+		}
+
+		.student-notif-alert__sub {
+			margin: 0.2rem 0 0;
+			font-size: 0.78rem;
+			color: #7f1d1d;
+			line-height: 1.5;
+		}
+
+		.student-notif-alert--info .student-notif-alert__sub {
+			color: #1e3a8a;
+			opacity: 0.75;
+		}
+
+		.student-notif-alert__cta {
+			flex-shrink: 0;
+			font-size: 0.78rem;
+			font-weight: 700;
+			color: #dc2626;
+			white-space: nowrap;
+		}
+
+		.student-notif-alert--info .student-notif-alert__cta {
+			color: #2563eb;
+		}
+
+		.profil-account-actions {
+			display: flex !important;
+			flex-direction: column;
+			gap: 0.75rem !important;
+			align-items: flex-end !important;
+			min-width: min(100%, 38rem);
+		}
+
+		.profil-account-action-row {
+			display: flex;
+			width: 100%;
+			flex-wrap: wrap;
+			gap: 0.75rem;
+			justify-content: flex-end;
+			align-items: center;
+		}
+
+		.profil-account-action-row--meta {
+			align-items: flex-start;
+		}
+
+		.student-profile-action-hint {
+			flex: 1 1 18rem;
+			width: auto;
+			max-width: min(100%, 25rem);
+			padding: 0.95rem 1.1rem;
+			border-radius: 16px;
+			background: rgba(248, 250, 252, 0.94);
+			border: 1px solid rgba(226, 232, 240, 0.96);
+			color: #475569;
+			font-size: var(--ui-font-sm);
+			line-height: 1.6;
+		}
+
+		/* highlight the requests section card when there are open requests */
+		.student-card--has-requests {
+			border-color: rgba(239, 68, 68, 0.4) !important;
+			box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08), 0 24px 56px rgba(15, 23, 42, 0.08) !important;
+		}
+
+		@media (max-width: 720px) {
+			.student-shell {
+				width: calc(100vw - 16px);
+				margin-bottom: 1.5rem;
+			}
+
+			.student-section-title--single-line {
+				white-space: normal;
+			}
+
+			.student-card {
+				padding: 1rem;
+				border-radius: 20px;
+			}
+
+			.student-highlight-badge {
+				min-width: 0;
+				width: 100%;
+				justify-content: flex-start;
+			}
+
+			.profil-account-actions {
+				width: 100%;
+				min-width: 0;
+				align-items: stretch !important;
+			}
+
+			.profil-account-action-row {
+				justify-content: flex-start;
+			}
+
+			.student-profile-action-hint {
+				width: 100%;
+				max-width: none;
+			}
+
+			.profil-account-action-row .btn {
+				flex: 1 1 100%;
+			}
+
+			.student-checkin-form {
+				grid-template-columns: 1fr;
+			}
+
+			.student-checkin-actions {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+
+			.student-support-recommendations {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+	<body class="student-profile-page startseite-page">
+	<a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+	<div class="bg-grid profile-grid-muted" aria-hidden="true"></div>
+	<div class="bg-orb orb-one" aria-hidden="true"></div>
+	<div class="bg-orb orb-two" aria-hidden="true"></div>
+	<div class="start-wrapper index-layout profile-shell-wrapper">
+		<header class="index-topbar portal-entry-topbar profile-topbar">
+			<a href="index.html" class="index-brand">AzubiMatcher</a>
+			<nav class="index-nav" aria-label="Seitennavigation">
+				<a href="index.html">Startseite</a>
+				<a href="home.html">Mehr erfahren</a>
+				<a href="bewerber.html?edit=1" id="studentProfilePortalNavLink">Portal für Bewerbende</a>
+			</nav>
+		</header>
+
+	<div class="student-shell">
+		<div class="profil-account-bar">
+			<div class="profil-account-left">
+				<span class="profil-account-greeting">Mein Bereich: <strong id="profileDisplayName"></strong></span>
+				<span class="profil-account-email-chip" id="profileDisplayEmail"></span>
+			</div>
+			<div class="profil-account-actions">
+				<div class="profil-account-action-row">
+					<a href="index.html" class="btn ghost small">Zur Startseite</a>
+					<button id="profileBackToEdit" class="btn primary small" type="button">Bearbeiten</button>
+					<button id="profileLogout" class="btn ghost small" type="button">Abmelden</button>
+				</div>
+				<div class="profil-account-action-row profil-account-action-row--meta">
+					<span class="student-profile-action-hint">Bearbeiten öffnet dein Profilformular für Wunschberuf, Unterlagen und fehlende Angaben.</span>
+				</div>
+			</div>
+		</div>
+
+		<main id="main-content" class="student-dashboard">
+			<section class="student-main-column">
+				<div id="studentNotificationBanner" role="region" aria-label="Neue Benachrichtigungen" aria-live="polite"></div>
+
+				<section class="student-card" data-collapse-card data-collapse-state="collapsed" id="studentMessagesCard">
+					<p class="student-section-label">Nachrichten<span id="studentMessagesBadge" class="notif-badge notif-badge--blue" hidden aria-label="ungelesene Nachrichten"></span></p>
+					<h2 class="student-section-title">Kommunikation</h2>
+					<p class="student-section-subtitle">Sobald eine Freigabe erteilt wurde, erscheinen hier Nachrichten und spätere Rückmeldungen der Firmen.</p>
+					<button class="btn ghost small section-collapse-toggle" type="button" data-collapse-toggle="studentMessagesPanel" data-collapse-group="student-profile-main" data-default-collapsed="true" data-open-label="Bereich öffnen" data-close-label="Bereich schließen" aria-expanded="false">Bereich öffnen</button>
+					<div id="studentMessagesPanel" class="section-collapse-panel is-collapsed" aria-hidden="true">
+					<div id="studentProfileMessages">
+						<p class="status">Noch keine Nachrichten vorhanden.</p>
+					</div>
+					</div>
+				</section>
+
+				<section class="student-card">
+					<p class="student-section-label">Profilübersicht</p>
+					<h2 class="student-section-title">Dein Kurzprofil</h2>
+					<div id="studentProfileContent" class="profil-card-area profil-card-area--short-profile">
+						<p class="status">Profil wird geladen.</p>
+					</div>
+				</section>
+
+				<section class="student-card student-card-tight">
+					<div class="student-spotlight">
+						<div class="student-spotlight-copy">
+							<p class="student-section-label">Mein Profil</p>
+							<h2 id="profilGreeting">Willkommen</h2>
+							<p class="student-spotlight-note">Hier steuerst du deine Profilfreigaben, siehst Firmenanfragen und behältst Nachrichten sowie Unterlagen an einem Ort im Blick.</p>
+						</div>
+						<div class="student-highlight-badge">Dashboard für Bewerbende</div>
+					</div>
+				</section>
+
+				<section class="student-card" data-collapse-card data-collapse-state="open" id="studentRequestsCard">
+					<p class="student-section-label">Anfragen von Firmen<span id="studentRequestsBadge" class="notif-badge" hidden aria-label="offene Anfragen"></span></p>
+					<h2 class="student-section-title student-section-title--single-line">Freigaben bewusst steuern</h2>
+					<p class="student-section-subtitle">Du entscheidest erst nach Sicht auf das Firmen-Kurzprofil, ob deine Bewerbungsunterlagen freigegeben werden.</p>
+					<button class="btn ghost small section-collapse-toggle" type="button" data-collapse-toggle="studentRequestsPanel" data-collapse-group="student-profile-main" data-open-label="Bereich öffnen" data-close-label="Bereich schließen" aria-expanded="true">Bereich schließen</button>
+					<div id="studentRequestsPanel" class="section-collapse-panel">
+						<div class="student-request-intro">Offene Firmenanfragen erscheinen hier mit kompaktem Kurzprofil, damit du Chancen, Branche und Standort direkt vergleichen kannst.</div>
+						<div id="studentFullProfileRequests">
+							<p class="student-empty-copy">Keine offenen Anfragen.</p>
+						</div>
+					</div>
+				</section>
+
+				<section id="studentDirectMatchSection" class="student-card" data-collapse-card data-collapse-state="collapsed" hidden>
+					<p class="student-section-label">Umkreissuche</p>
+					<h2 class="student-section-title student-section-title--single-line">Passende Firmen in deinem Umkreis</h2>
+					<p class="student-section-subtitle">Die Treffer berücksichtigen deinen Wunschberuf sowie den eingestellten Umkreis von dir und dem jeweiligen Betrieb.</p>
+					<button class="btn ghost small section-collapse-toggle" type="button" data-collapse-toggle="studentDirectMatchesPanel" data-collapse-group="student-profile-main" data-default-collapsed="true" data-open-label="Bereich öffnen" data-close-label="Bereich schließen" aria-expanded="false">Bereich öffnen</button>
+					<div id="studentDirectMatchesPanel" class="section-collapse-panel is-collapsed" aria-hidden="true">
+					<div class="student-match-toolbar">
+						<label class="student-radius-filter" for="studentMatchRadiusSelect">
+							<span>Dein Umkreis</span>
+							<select id="studentMatchRadiusSelect" class="input">
+								<option value="5">5 km</option>
+								<option value="10">10 km</option>
+								<option value="25">25 km</option>
+								<option value="50">50 km</option>
+								<option value="100">100 km</option>
+								<option value="de">Deutschlandweit</option>
+							</select>
+						</label>
+						<p id="studentDirectMatchMeta" class="student-match-meta"></p>
+					</div>
+					<div id="studentGeoMap" class="geo-map-container" hidden></div>
+					<div id="studentDirectMatches">
+						<p class="student-empty-copy">Noch keine passenden Firmen im aktuellen Umkreis.</p>
+					</div>
+					</div>
+				</section>
+
+
+				<section id="studentAlternativeMatchSection" class="student-card" hidden>
+					<p class="student-section-label">Berufsfeld-Vorschläge</p>
+					<h2 class="student-section-title"><span class="title-stack title-stack--compact"><span class="title-stack__line">Alternative Berufe</span><span class="title-stack__line title-stack__line--offset">für neue Matches</span></span></h2>
+					<p class="student-section-subtitle">Mit einem Klick kannst du dir passende Alternativberufe aus demselben Berufsfeld anzeigen lassen und bei Bedarf für zusätzliche Matchanfragen aktivieren.</p>
+					<div class="student-alternative-toolbar">
+						<button id="studentAlternativeToggle" class="btn ghost small" type="button" aria-expanded="false">Alternative Berufe anzeigen</button>
+						<div id="studentActivatedAlternativeProfessions" class="student-alternative-summary" hidden></div>
+					</div>
+					<p id="studentAlternativeActionStatus" class="student-alternative-status" hidden></p>
+					<div id="studentAlternativeMatches" hidden>
+						<p class="student-empty-copy">Noch keine alternativen Berufsfeld-Vorschläge vorhanden.</p>
+					</div>
+				</section>
+
+				<section class="student-card" data-collapse-card data-collapse-state="collapsed">
+					<p class="student-section-label">Kontakte und Freigaben</p>
+					<h2 class="student-section-title">Direktkontakt und Freigaben</h2>
+					<p class="student-section-subtitle">Hier öffnest du laufende Gespräche sofort und siehst, welche Firmen bereits Zugriff auf deine Unterlagen haben.</p>
+					<button class="btn ghost small section-collapse-toggle" type="button" data-collapse-toggle="studentAccessPanel" data-collapse-group="student-profile-main" data-default-collapsed="true" data-open-label="Bereich öffnen" data-close-label="Bereich schließen" aria-expanded="false">Bereich öffnen</button>
+					<div id="studentAccessPanel" class="section-collapse-panel is-collapsed" aria-hidden="true">
+					<div id="studentFirmChats" class="student-contact-thread-stack">
+						<p class="status">Sobald eine Firma deine Unterlagen erhalten hat, erscheint hier der direkte Kontaktverlauf.</p>
+					</div>
+					<div id="studentContactOverview">
+						<p class="status">Noch hat keine Firma freigegebene Unterlagen von dir erhalten.</p>
+					</div>
+					</div>
+				</section>
+
+				<section class="student-card internship-access-card" data-collapse-card data-collapse-state="collapsed">
+					<p class="student-section-label">Schulpraktikum</p>
+					<button class="btn ghost small section-collapse-toggle" type="button" data-collapse-toggle="studentInternshipPanel" data-collapse-group="student-profile-main" data-default-collapsed="true" data-open-label="Bereich öffnen" data-close-label="Bereich schließen" aria-expanded="false">Bereich öffnen</button>
+					<div id="studentInternshipPanel" class="section-collapse-panel is-collapsed" aria-hidden="true">
+					<div class="internship-access-card__body">
+						<div class="internship-access-card__content">
+							<h2 class="student-section-title"><span class="title-stack title-stack--card"><span class="title-stack__line">Praktikumsbereich separat</span><span class="title-stack__line title-stack__line--offset"> öffnen</span></span></h2>
+							<p class="internship-access-card__copy">Damit dein Ausbildungsprofil nicht überladen wird, laufen Schulpraktika in einem eigenen Bereich mit eigenem Match-Pool weiter.</p>
+							<p class="internship-access-card__meta">Nutze den Bereich, wenn du aktuell einen Schulpraktikumsplatz suchst oder dein Praktikumsprofil pflegen willst.</p>
+						</div>
+						<div class="actions internship-access-card__actions">
+							<a class="btn ghost" href="bewerber_praktikum.html">Zum Schulpraktikum wechseln</a>
+						</div>
+					</div>
+					</div>
+				</section>
+
+			</section>
+
+			<aside class="student-sidebar-column">
+				<div class="student-sticky-column">
+					<section class="student-card student-search-status-card">
+						<p class="student-section-label">Matching steuern</p>
+						<h2 class="student-section-title">Sichtbarkeit separat steuern</h2>
+						<p class="student-section-subtitle">Du kannst deine Ausbildungsplatzsuche und deine Praktikumsplatzsuche unabhängig voneinander pausieren. Solange ein Bereich auf aktuell nicht suchend steht, bist du dort nicht sichtbar.</p>
+						<div id="studentSearchStatusControls">
+							<p class="status">Status wird geladen.</p>
+						</div>
+						<p id="studentSearchStatusFeedback" class="student-search-status-feedback status" hidden aria-live="polite"></p>
+					</section>
+
+					<section class="student-card profile-info-card student-info-stack-shell" data-disclosure-card data-open="false">
+						<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+							<span class="profile-info-card__header-main">
+								<span class="profile-info-card__eyebrow">Weitere Informationen</span>
+								<span class="profile-info-card__headline"><span class="title-stack title-stack--card"><span class="title-stack__line">Hinweise und</span><span class="title-stack__line title-stack__line--offset">nächste Schritte</span></span></span>
+								<span class="profile-info-card__subheadline">Freigabe-Hinweis, Profilpflege und Kontooptionen</span>
+							</span>
+							<span class="profile-info-card__hint">Anzeigen</span>
+						</button>
+						<div class="profile-info-card__body">
+							<div class="profile-info-card__body-inner">
+								<div class="student-info-stack">
+						<section class="student-card student-mini-card profile-info-card" data-disclosure-card data-open="false">
+							<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+								<span class="profile-info-card__header-main">
+									<span class="profile-info-card__eyebrow">Hinweis</span>
+									<span class="profile-info-card__headline"><span class="title-stack title-stack--card"><span class="title-stack__line">Hinweis zur</span><span class="title-stack__line title-stack__line--offset">Freigabe</span></span></span>
+									<span class="profile-info-card__subheadline">Wie deine Unterlagen geteilt werden</span>
+								</span>
+								<span class="profile-info-card__hint">Anzeigen</span>
+							</button>
+							<div class="profile-info-card__body">
+								<div class="profile-info-card__body-inner">
+									<p>Deine Unterlagen werden nicht pauschal geteilt. Jede Firma muss eine konkrete Anfrage stellen, die du einzeln annehmen oder ablehnen kannst.</p>
+								</div>
+							</div>
+						</section>
+
+						<section class="student-card student-mini-card profile-info-card" data-disclosure-card data-open="false">
+							<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+								<span class="profile-info-card__header-main">
+									<span class="profile-info-card__eyebrow">Nächste Schritte</span>
+									<span class="profile-info-card__headline"><span class="title-stack title-stack--card"><span class="title-stack__line">Profil aktuell</span><span class="title-stack__line title-stack__line--offset">halten</span></span></span>
+									<span class="profile-info-card__subheadline">So bleibst du für passende Firmen sichtbar</span>
+								</span>
+								<span class="profile-info-card__hint">Anzeigen</span>
+							</button>
+							<div class="profile-info-card__body">
+								<div class="profile-info-card__body-inner">
+									<p>Halte dein Profil aktuell, lade vollständige Unterlagen hoch und prüfe neue Anfragen regelmäßig, damit passende Firmen schnell reagieren können.</p>
+								</div>
+							</div>
+						</section>
+
+						<section class="student-card student-mini-card student-danger-zone profile-info-card" data-disclosure-card data-open="false">
+							<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+								<span class="profile-info-card__header-main">
+									<span class="profile-info-card__eyebrow">Konto</span>
+									<span class="profile-info-card__headline"><span class="title-stack title-stack--card"><span class="title-stack__line">Profil</span><span class="title-stack__line title-stack__line--offset">löschen</span></span></span>
+									<span class="profile-info-card__subheadline">Dauerhafte Entfernung deines Kontos</span>
+								</span>
+								<span class="profile-info-card__hint">Anzeigen</span>
+							</button>
+							<div class="profile-info-card__body">
+								<div class="profile-info-card__body-inner">
+									<p>Wenn du dein Konto vollständig entfernen möchtest, kannst du das hier dauerhaft auslösen.</p>
+									<button id="deleteProfileBtn" class="btn ghost small" type="button">Profil löschen</button>
+								</div>
+							</div>
+						</section>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>
+			</aside>
+
+			<div class="student-bottom-column">
+				<section class="student-card profile-info-card" data-disclosure-card data-open="false" id="studentRetentionCheckinSection">
+					<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+						<span class="profile-info-card__header-main">
+							<span class="profile-info-card__eyebrow">Ausbildung stabil halten</span>
+							<span class="profile-info-card__headline">Probezeit-Check-in</span>
+							<span class="profile-info-card__subheadline">Mit diesem kurzen Check kannst du früh festhalten, ob Betrieb, Aufgaben, Schule und Motivation noch gut zusammenpassen.</span>
+						</span>
+						<span class="profile-info-card__hint">Anzeigen</span>
+					</button>
+					<div class="profile-info-card__body">
+						<div class="profile-info-card__body-inner">
+					<form id="studentRetentionCheckinForm" class="student-checkin-form">
+						<label class="student-checkin-field">
+							<span>Wie sicher fühlst du dich aktuell im Betrieb?</span>
+							<select id="studentCheckinBetrieb" class="input">
+								<option value="">Bitte einschätzen</option>
+								<option value="4">Läuft gut und gibt mir Sicherheit</option>
+								<option value="3">Überwiegend gut</option>
+								<option value="2">Teilweise unsicher</option>
+								<option value="1">Gerade kritisch</option>
+							</select>
+						</label>
+						<label class="student-checkin-field">
+							<span>Wie klar sind deine Aufgaben und Erwartungen?</span>
+							<select id="studentCheckinAufgaben" class="input">
+								<option value="">Bitte einschätzen</option>
+								<option value="4">Sehr klar und machbar</option>
+								<option value="3">Überwiegend klar</option>
+								<option value="2">Teilweise unklar</option>
+								<option value="1">Zu oft überfordernd</option>
+							</select>
+						</label>
+						<label class="student-checkin-field">
+							<span>Wie gut bekommst du Schule und Betrieb zusammen?</span>
+							<select id="studentCheckinSchule" class="input">
+								<option value="">Bitte einschätzen</option>
+								<option value="4">Sehr gut organisiert</option>
+								<option value="3">Meistens gut</option>
+								<option value="2">Oft anstrengend</option>
+								<option value="1">Im Moment kaum zu schaffen</option>
+							</select>
+						</label>
+						<label class="student-checkin-field">
+							<span>Wie motiviert fühlst du dich für deinen Weg?</span>
+							<select id="studentCheckinMotivation" class="input">
+								<option value="">Bitte einschätzen</option>
+								<option value="4">Ich bin sehr sicher</option>
+								<option value="3">Im Großen und Ganzen passt es</option>
+								<option value="2">Ich zweifle teilweise</option>
+								<option value="1">Ich denke über einen Abbruch nach</option>
+							</select>
+						</label>
+						<label class="student-checkin-field student-checkin-field--wide">
+							<span>Optional: Was belastet dich gerade am meisten?</span>
+							<textarea id="studentCheckinNote" class="input" rows="4" placeholder="Zum Beispiel: unklare Aufgaben, Konflikte im Team, Druck in der Schule oder Zweifel am Beruf."></textarea>
+						</label>
+						<div class="student-checkin-field student-checkin-field--wide student-checkin-actions">
+							<button id="studentSaveCheckin" class="btn primary small" type="submit">Check-in speichern</button>
+							<p id="studentCheckinStatus" class="status" hidden></p>
+						</div>
+					</form>
+					<div id="studentCheckinSummary" class="student-checkin-summary" data-state="empty">
+						<p class="status">Sobald du deinen ersten Check-in speicherst, zeigt dir AzubiMatcher hier eine Einschätzung und passende nächste Schritte.</p>
+					</div>
+						</div>
+					</div>
+				</section>
+
+				<section class="student-card profile-info-card" data-disclosure-card data-open="false" id="studentDropoutSupportSection">
+					<button class="profile-info-card__toggle" type="button" data-disclosure-toggle aria-expanded="false">
+						<span class="profile-info-card__header-main">
+							<span class="profile-info-card__eyebrow">Soforthilfe bei Krisen</span>
+							<span class="profile-info-card__headline"><span class="title-stack title-stack--card"><span class="title-stack__line">Ich denke über einen</span><span class="title-stack__line title-stack__line--offset">Abbruch nach - was jetzt?</span></span></span>
+							<span class="profile-info-card__subheadline">Wähle aus, was gerade am ehesten auf deine Situation passt. Du bekommst sofort konkrete nächste Schritte für ein Gespräch und passende Unterstützung.</span>
+						</span>
+						<span class="profile-info-card__hint">Anzeigen</span>
+					</button>
+					<div class="profile-info-card__body">
+						<div class="profile-info-card__body-inner">
+					<div class="student-support-topic-grid" aria-label="Hilfethemen bei Ausbildungsproblemen">
+						<button class="student-support-topic" type="button" data-support-topic="overload">Überforderung</button>
+						<button class="student-support-topic" type="button" data-support-topic="conflict">Konflikte im Betrieb</button>
+						<button class="student-support-topic" type="button" data-support-topic="motivation">Zweifel am Beruf</button>
+						<button class="student-support-topic" type="button" data-support-topic="school">Probleme in der Schule</button>
+						<button class="student-support-topic" type="button" data-support-topic="health">Stress oder Gesundheit</button>
+					</div>
+					<div id="studentSupportGuidance" class="student-support-guidance" data-state="empty">
+						<p class="status">Wähle ein Thema aus oder speichere zuerst deinen Check-in, damit wir dir gezieltere Hinweise geben können.</p>
+					</div>
+						</div>
+					</div>
+				</section>
+			</div>
+		</main>
+	</div>
+	</div>
+
+	<script src="privacy-settings.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+	<script src="discovery.js"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN2GIaQ=" crossorigin=""></script>
+	<script src="script.js"></script>
+</body>
+</html>

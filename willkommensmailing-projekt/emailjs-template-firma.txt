@@ -1,0 +1,19 @@
+Guten Tag {{recipient_name}},
+
+Ihre Registrierung war erfolgreich und Ihr Zugang zu AzubiMatch ist jetzt freigeschaltet.
+
+Mit AzubiMatch machen Sie Ausbildungsplätze sichtbarer, erkennen passende Profile früher und verkürzen erste Kontaktwege.
+
+Ihre nächsten Schritte:
+- Unternehmensprofil vervollständigen
+- Ausbildungsplatz oder Angebot anlegen
+- passende Kurzprofile prüfen und Kontakt anbahnen
+
+Firmenprofil öffnen:
+{{portal_url}}
+
+Falls Sie sich neu anmelden müssen:
+{{login_url}}
+
+Freundliche Grüße
+{{support_name}}

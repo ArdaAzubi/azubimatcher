@@ -1,0 +1,24 @@
+Empfohlener Betreff: AzubiMatch: Dein Sicherheitscode
+
+Hallo {{recipient_name}},
+
+für {{flow_label}} wurde soeben ein einmaliger Sicherheitscode angefordert.
+
+Dein Code lautet:
+{{otp_code}}
+
+Gültigkeit:
+{{expires_hint}}
+
+Bitte gib den Code nur direkt im offiziellen AzubiMatch-Fenster ein und teile ihn nicht mit anderen Personen.
+
+Kurzhinweis:
+{{message_line}}
+
+Falls du dich erneut anmelden musst:
+{{login_url}}
+
+Wenn du diese Anforderung nicht selbst ausgelöst hast, kannst du diese Nachricht ignorieren.
+
+Viele Grüße
+{{support_name}}

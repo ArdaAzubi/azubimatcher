@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Fotoaehnliche Szene fuer Maurer und Maurerin mit Mauerwerk, Kelle und Baumaterial">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff6ef"/>
+      <stop offset="100%" stop-color="#efe7ff"/>
+    </linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffa864"/>
+      <stop offset="100%" stop-color="#d97342"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d9c0a8"/>
+      <stop offset="100%" stop-color="#a17654"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#5a3d2a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#bg)"/>
+  <rect x="50" y="54" width="700" height="372" rx="34" fill="#ffffff" opacity="0.96" filter="url(#shadow)"/>
+  <rect x="92" y="92" width="616" height="156" rx="22" fill="#f7efe6"/>
+  <rect x="92" y="248" width="616" height="120" fill="url(#floor)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="126" y="150" width="344" height="164" rx="18" fill="#fff3e8" stroke="#ecd5bf" stroke-width="4"/>
+    <g fill="url(#wall)">
+      <rect x="156" y="176" width="84" height="34" rx="6"/>
+      <rect x="248" y="176" width="84" height="34" rx="6"/>
+      <rect x="340" y="176" width="84" height="34" rx="6"/>
+      <rect x="202" y="216" width="84" height="34" rx="6"/>
+      <rect x="294" y="216" width="84" height="34" rx="6"/>
+      <rect x="156" y="256" width="84" height="34" rx="6"/>
+      <rect x="248" y="256" width="84" height="34" rx="6"/>
+      <rect x="340" y="256" width="84" height="34" rx="6"/>
+    </g>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="494" y="286" width="84" height="52" rx="10" fill="#b08a67"/>
+    <rect x="516" y="262" width="84" height="52" rx="10" fill="#c79d74"/>
+    <rect x="538" y="238" width="84" height="52" rx="10" fill="#e0b084"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M516 196 l80 -54 l44 32 l-80 54 z" fill="#7c3aed"/>
+    <path d="M640 174 l44 -12" fill="none" stroke="#b79af0" stroke-width="8" stroke-linecap="round"/>
+    <path d="M528 124 h56" fill="none" stroke="#f5bf3f" stroke-width="18" stroke-linecap="round"/>
+    <path d="M574 106 c0 -20 -14 -34 -34 -34 h-18 c-20 0 -34 14 -34 34" fill="none" stroke="#f5bf3f" stroke-width="18" stroke-linecap="round"/>
+    <path d="M122 330 h552" fill="none" stroke="#d0c1e8" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>

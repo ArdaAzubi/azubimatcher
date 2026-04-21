@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120" role="img" aria-labelledby="title desc">
+  <title id="title">AzubiMatch Logo</title>
+  <desc id="desc">Blaues AzubiMatch-Wortlogo mit kreisfoermigem Symbol.</desc>
+  <defs>
+    <linearGradient id="azubimatchMarkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="azubimatchTextGradient" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#0f3f93"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 8)">
+    <rect x="0" y="0" width="104" height="104" rx="28" fill="#eff6ff"/>
+    <circle cx="52" cy="52" r="33" fill="url(#azubimatchMarkGradient)"/>
+    <circle cx="52" cy="52" r="17" fill="#dbeafe" opacity="0.95"/>
+    <path d="M36 54.5 46.5 65 69 41.5" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  </g>
+  <g transform="translate(132 22)">
+    <text x="0" y="41" fill="url(#azubimatchTextGradient)" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" letter-spacing="-1.2">AzubiMatch</text>
+    <text x="2" y="75" fill="#335b99" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="1.6">AUSBILDUNG PASSEND ZUSAMMENBRINGEN</text>
+  </g>
+</svg>

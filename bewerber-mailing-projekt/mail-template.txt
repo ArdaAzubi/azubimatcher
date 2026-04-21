@@ -1,0 +1,25 @@
+Betreff: AzubiMatch: Dein direkter Weg zum passenden Ausbildungsplatz
+
+Hallo und herzlich willkommen bei AzubiMatch,
+
+wir bei AzubiMatch möchten dir den Einstieg in die Ausbildung einfacher machen. Auf unserer Plattform entdeckst du Berufe, findest passendere Ausbildungsplätze und kommst ohne unnötige Umwege mit Betrieben in Kontakt.
+
+AzubiMatch verbindet Berufsorientierung, regionale Suche und direkte Kontaktwege in einem Ablauf, der verständlich bleibt und inklusive Chancen bewusst sichtbar macht.
+
+Was dir AzubiMatch bringt:
+- Ausbildungsplätze sehen, die besser zu deinem Profil und deinem Standort passen
+- Berufe, Anforderungen und Chancen schneller verstehen
+- direkter mit Betrieben in Kontakt kommen
+- inklusive Ausbildungsmöglichkeiten klarer erkennen
+
+So startest du:
+Profil anlegen, Berufe entdecken, passende Treffer prüfen und mit AzubiMatch den nächsten Schritt Richtung Ausbildung gehen.
+
+Zur Bewerberseite:
+/bewerber/
+
+Viele Grüße
+AzubiMatch | Bewerbendenservice
+
+Hinweis fuer den Versand:
+Der Link verweist jetzt auf den Livepfad /bewerber/ aus dem aktuellen AzubiMatch-WordPress-Export. Ansprechstelle in dieser Vorlage ist der Bewerbendenservice von AzubiMatch.

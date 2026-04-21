@@ -1,0 +1,19 @@
+Empfohlener Betreff: AzubiMatch: Neue Anfrage für deine Bewerbungsunterlagen
+
+Guten Tag {{recipient_name}},
+
+{{firm_name}} hat eine Anfrage für deine Bewerbungsunterlagen zu {{matched_profession}} gestellt.
+
+So gehst du vor:
+1. Öffne zuerst das Kurzprofil der Firma.
+2. Gehe danach in dein Bewerberprofil.
+3. Nimm die Anfrage dort an oder lehne sie ab.
+
+Kurzprofil der Firma:
+{{quickprofile_url}}
+
+Dein Bewerberprofil:
+{{dashboard_url}}
+
+Viele Grüße
+{{support_name}}

@@ -1,0 +1,12 @@
+
+AzubiMatch Mail-Test → oezcan.fatih@gmx.de
+──────────────────────────────────────────────────
+[1/7 Willkommen Bewerbende] ✓ OK — {"success":true}
+[2/7 Willkommen Firma] ✓ OK — {"success":true}
+[3/7 OTC Sicherheitscode] ✓ OK — {"success":true}
+[4/7 Freigabeanfrage an Bewerber] ✓ OK — {"success":true}
+[5/7 Dokumentenfreigabe an Firma] ✓ OK — {"success":true}
+[6/7 Match-Digest Bewerber] ✓ OK — {"success":true}
+[7/7 Match-Digest Firma] ✓ OK — {"success":true}
+
+Fertig.

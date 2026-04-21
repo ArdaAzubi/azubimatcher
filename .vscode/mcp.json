@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "wordpress": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automattic/mcp-wordpress-remote@latest"
+      ],
+      "env": {
+        "WP_API_URL": "https://a-zu-bio.de",
+        "WP_API_USERNAME": "Arda",
+        "WP_API_PASSWORD": "ArdaistderGOAT112!"
+      }
+    }
+  }
+}

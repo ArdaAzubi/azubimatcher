@@ -1,0 +1,22 @@
+Betreff: AzubiMatch hilft dir, passende Ausbildungsplätze schneller zu finden
+
+Hallo,
+
+mit AzubiMatch können Bewerbende Ausbildungsberufe entdecken, passende Ausbildungsplätze schneller erkennen und einfacher mit Betrieben in Kontakt kommen.
+
+Die Plattform soll den Einstieg in Ausbildung verständlicher machen und legt dabei auch Wert auf faire Teilhabe und inklusive Chancen.
+
+Was dir AzubiMatch bringt:
+- passendere Ausbildungsplätze statt unübersichtlicher Suchlisten
+- mehr Orientierung zu Berufen, Anforderungen und Chancen
+- direktere Wege zum ersten Kontakt mit Betrieben
+- mehr Sichtbarkeit für inklusive Ausbildungsmöglichkeiten
+
+So startest du:
+Profil anlegen, Berufe entdecken, passende Treffer prüfen und direkt den nächsten Schritt Richtung Ausbildung gehen.
+
+Zur Bewerberseite:
+../bewerber.html
+
+Hinweis für den Versand:
+Vor dem echten Versand sollte der Link auf eine öffentlich erreichbare URL gesetzt werden.

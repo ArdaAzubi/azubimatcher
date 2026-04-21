@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">AzubiMatch App Icon</title>
+  <desc id="desc">Quadratisches AzubiMatch App-Symbol mit stilisiertem A und M.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f4c81"/>
+      <stop offset="52%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0.45"/>
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="456" height="456" rx="116" fill="url(#bg)"/>
+  <path d="M116 132c72-28 156-42 232-18c29 9 54 23 78 42c-17 6-30 16-40 31c-17-11-35-19-55-24c-52-14-110-3-166 20l44 70h88l46-70h52l-69 110l69 110h-52l-46-70h-88l-44 70h-52l69-110z" fill="url(#glass)"/>
+  <path d="M196 363l60-95l60 95h-120z" fill="#ffffff"/>
+  <circle cx="378" cy="156" r="28" fill="#fde68a"/>
+</svg>

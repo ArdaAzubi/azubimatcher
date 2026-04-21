@@ -1,0 +1,29 @@
+<?php
+return [
+  // Fuer CLI-Cronjobs noetig, fuer HTTP-Aufrufe kann die URL automatisch erkannt werden.
+  'baseUrl' => 'https://a-zu-bio.de',
+  // Optionaler Schutz fuer den Deep-Check-Endpunkt health_monitor.php.
+  'apiKey' => '',
+  // Empfaenger fuer Eskalationsmails bei wiederholten Fehlern.
+  'alertEmail' => 'admin@beispiel.de',
+  'alertName' => 'AzubiMatch Admin',
+  // Absenderdaten fuer Monitoring-Mails.
+  'fromEmail' => 'info@azubimatcher.com',
+  'fromName' => 'AzubiMatch Monitor',
+  // Wiederholungen bis zur Eskalation und Cooldown zwischen Warnmails.
+  'alertThreshold' => 2,
+  'notifyCooldownSeconds' => 21600,
+  // Timeout pro Zielseite.
+  'requestTimeoutSeconds' => 15,
+  // Optional anpassen, falls Reports an anderer Stelle liegen sollen.
+  'stateFile' => __DIR__ . '/test-results/health-monitor-state.json',
+  'lastReportFile' => __DIR__ . '/test-results/health-monitor-last-run.json',
+  // Optional eigene Zielseiten definieren.
+  'targets' => [
+    ['key' => 'index', 'label' => 'Startseite', 'path' => 'index.html', 'mustContain' => ['AzubiMatch', '<body']],
+    ['key' => 'home', 'label' => 'Mehr erfahren', 'path' => 'home.html', 'mustContain' => ['AzubiMatch', '<body']],
+    ['key' => 'bewerber', 'label' => 'Bewerber-Portal', 'path' => 'bewerber.html', 'mustContain' => ['id="studentAuthPanel"', 'id="studentLoginBtn"', '<body']],
+    ['key' => 'firma', 'label' => 'Firmen-Portal', 'path' => 'firma.html', 'mustContain' => ['id="firmAuthPanel"', 'id="firmLoginBtn"', '<body']],
+    ['key' => 'admin', 'label' => 'Admin-Portal', 'path' => 'admin.html', 'mustContain' => ['id="adminLoginPanel"', 'Admin Portal', '<body']]
+  ]
+];

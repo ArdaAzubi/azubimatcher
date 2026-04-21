@@ -1,0 +1,33 @@
+﻿{
+  "name": "AzubiMatcher Handy-App",
+  "short_name": "AzubiMatcher",
+  "id": "./app.html",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f8ff",
+  "theme_color": "#0f4c81",
+  "description": "Mobiler Zugang für Bewerbende und Unternehmen mit Profil, Nachrichten und Freigaben.",
+  "shortcuts": [
+    {
+      "name": "Bewerber-App",
+      "short_name": "Bewerber",
+      "url": "./bewerber_app.html",
+      "description": "Öffnet das mobile Bewerber-Dashboard mit Profil, Nachrichten und Freigaben."
+    }
+  ],
+  "icons": [
+    {
+      "src": "./images/azubimatch-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./images/azubimatch-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

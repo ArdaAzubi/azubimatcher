@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Fotoaehnliche Szene fuer Speditionskaufmann und Speditionskauffrau mit Monitor, Versanddokumenten und LKW-Modell">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5f8ff"/>
+      <stop offset="100%" stop-color="#dbe8fb"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dbe9ff"/>
+      <stop offset="100%" stop-color="#f6f9ff"/>
+    </linearGradient>
+    <linearGradient id="desk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b633f"/>
+      <stop offset="100%" stop-color="#5b3c25"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#edf5ff"/>
+      <stop offset="100%" stop-color="#d6e6ff"/>
+    </linearGradient>
+    <linearGradient id="truck" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4b74ea"/>
+      <stop offset="100%" stop-color="#2746a9"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#20345f" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#bg)"/>
+  <rect x="50" y="54" width="700" height="372" rx="34" fill="#ffffff" opacity="0.96" filter="url(#shadow)"/>
+  <rect x="92" y="92" width="616" height="154" rx="22" fill="url(#sky)"/>
+  <rect x="92" y="246" width="616" height="122" rx="0" fill="url(#desk)"/>
+  <path d="M92 246 L708 246 L672 272 L126 272 Z" fill="#9f7751" opacity="0.48"/>
+
+  <g filter="url(#shadow)">
+    <rect x="142" y="122" width="248" height="146" rx="20" fill="#2c3d66"/>
+    <rect x="156" y="136" width="220" height="118" rx="14" fill="url(#screen)"/>
+    <path d="M186 220 C214 188 244 176 280 186 C304 194 330 184 350 158" fill="none" stroke="#3158d4" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="186" cy="220" r="8" fill="#3158d4"/>
+    <circle cx="280" cy="186" r="8" fill="#3158d4"/>
+    <circle cx="350" cy="158" r="8" fill="#3158d4"/>
+    <path d="M320 148 h22" fill="none" stroke="#89a5ea" stroke-width="6" stroke-linecap="round"/>
+    <path d="M330 138 v20" fill="none" stroke="#89a5ea" stroke-width="6" stroke-linecap="round"/>
+    <rect x="236" y="266" width="60" height="10" rx="5" fill="#556786"/>
+    <rect x="222" y="276" width="88" height="10" rx="5" fill="#465779"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="462" y="132" width="132" height="174" rx="14" fill="#fdfdfd" transform="rotate(4 462 132)"/>
+    <rect x="474" y="152" width="92" height="10" rx="5" fill="#94a9d8" transform="rotate(4 474 152)"/>
+    <rect x="474" y="176" width="108" height="10" rx="5" fill="#c0cee9" transform="rotate(4 474 176)"/>
+    <rect x="474" y="200" width="84" height="10" rx="5" fill="#c0cee9" transform="rotate(4 474 200)"/>
+    <rect x="474" y="228" width="70" height="48" rx="10" fill="#e1ebfb" transform="rotate(4 474 228)"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="148" y="300" width="72" height="44" rx="10" fill="#dbb68d"/>
+    <rect x="224" y="292" width="72" height="44" rx="10" fill="#f8f8fb"/>
+    <rect x="300" y="304" width="72" height="44" rx="10" fill="#d7e2f8"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M462 314 h126" fill="none" stroke="#3558c8" stroke-width="12" stroke-linecap="round"/>
+    <rect x="450" y="262" width="94" height="48" rx="12" fill="url(#truck)"/>
+    <rect x="522" y="270" width="42" height="40" rx="8" fill="#93adf7"/>
+    <path d="M564 276 h22 l24 22 v12 h-46" fill="none" stroke="#3558c8" stroke-width="8" stroke-linejoin="round"/>
+    <circle cx="480" cy="320" r="16" fill="#20355f"/>
+    <circle cx="578" cy="320" r="16" fill="#20355f"/>
+  </g>
+</svg>

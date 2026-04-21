@@ -1,0 +1,21 @@
+# Abhaengigkeiten
+node_modules/
+.next/
+
+# Umgebungsvariablen – enthalten Passwoerter, nie einchecken
+.env
+
+# Build-Ausgabe
+dist/
+
+# Lokale Datenbankdateien
+.mariadb-data/
+
+# Temporaere Dateien
+.tmp/
+.tmp_authflows/
+test-results/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db

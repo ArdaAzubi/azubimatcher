@@ -1,0 +1,27 @@
+Betreff: AzubiMatch: Für Ihr neues Ausbildungsangebot gibt es bereits passende Profile
+
+Guten Tag {{recipient_name}},
+
+für Ihr neues Firmenprofil beziehungsweise Ausbildungsangebot gibt es bei AzubiMatch bereits {{match_count}} sichtbare Profil-Matches.
+
+Ihr aktuell wichtigster Treffer:
+- Profil: {{top_match_profile_code}}
+- Ausbildungsberuf: {{top_match_profession}}
+- Ort: {{top_match_city}}
+- Match-Typ: {{top_match_label}}
+- Distanz: {{top_match_distance}}
+- Ihr Umkreis: {{radius_label}}
+
+{{inclusion_hint}}
+
+Öffnen Sie jetzt Ihr Firmenprofil und prüfen Sie die sichtbaren Kurzprofile:
+{{dashboard_url}}
+
+Falls Sie sich neu anmelden müssen:
+{{login_url}}
+
+Freundliche Grüße
+{{support_name}}
+
+Verwendete EmailJS-Felder:
+recipient_name, recipient_email, match_count, top_match_profile_code, top_match_profession, top_match_city, top_match_distance, top_match_label, radius_label, inclusion_hint, dashboard_url, login_url, support_name

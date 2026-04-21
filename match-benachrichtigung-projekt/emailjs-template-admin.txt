@@ -1,0 +1,29 @@
+Betreff: AzubiMatch intern: Neues Sofort-Match nach Registrierung
+
+Hallo {{recipient_name}},
+
+eine neue Registrierung hat direkt {{match_count}} sichtbare Matches erzeugt.
+
+Auslöser:
+- Typ: {{trigger_type}}
+- Name: {{registrant_name}}
+- E-Mail: {{registrant_email}}
+
+Top-Match:
+- Referenz: {{top_match_reference}}
+- Beruf: {{top_match_profession}}
+- Ort: {{top_match_city}}
+- Distanz: {{top_match_distance}}
+- Match-Typ: {{top_match_label}}
+
+Dashboard:
+{{dashboard_url}}
+
+Anmeldung:
+{{login_url}}
+
+Viele Grüße
+{{support_name}}
+
+Verwendete EmailJS-Felder:
+recipient_name, recipient_email, trigger_type, registrant_name, registrant_email, match_count, top_match_reference, top_match_profession, top_match_city, top_match_distance, top_match_label, dashboard_url, login_url, support_name

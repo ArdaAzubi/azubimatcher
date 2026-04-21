@@ -1,0 +1,1499 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: clamp(250px, 19vw, 332px) minmax(0, 1fr);
+      gap: 0;
+      min-height: 100vh;
+      background: #f9fafb;
+      width: 100%;
+    }
+
+    .admin-sidebar {
+      background: #1f2937;
+      color: white;
+      padding: clamp(1.1rem, 2.6vw, 2.15rem) clamp(1.1rem, 2.3vw, 1.75rem);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .admin-sidebar h1 {
+      font-size: var(--ui-font-lg);
+      margin: 0 0 calc(var(--ui-space-lg) + 0.2rem);
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .admin-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .admin-nav li {
+      margin: 0;
+      width: 100%;
+    }
+
+    .admin-nav .admin-nav-btn,
+    .admin-nav button {
+      display: flex;
+      align-items: center;
+      gap: var(--ui-space-sm);
+      background: none;
+      border: none;
+      color: #d1d5db;
+      cursor: pointer;
+      padding: calc(0.88rem + 0.12 * var(--ui-space-xs)) calc(1.1rem + 0.24 * var(--ui-space-sm));
+      border-radius: 6px;
+      width: 100%;
+      min-width: 100%;
+      text-align: left;
+      font-size: var(--ui-font-md);
+      transition: background 0.2s, color 0.2s;
+      font-weight: 500;
+      line-height: 1.35;
+      min-height: 3.35rem;
+      justify-content: flex-start;
+      box-sizing: border-box;
+    }
+
+    .admin-nav-label {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .admin-nav-item--logout {
+      margin-top: 0.85rem;
+    }
+
+    .admin-nav button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .admin-nav button.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .admin-main {
+      margin-left: 0;
+      padding: clamp(1.2rem, 2.8vw, 2.4rem) clamp(1.35rem, 3vw, 3rem);
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .admin-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--ui-space-sm);
+      margin-bottom: 2rem;
+      background: white;
+      padding: var(--ui-card-pad);
+      border-radius: clamp(10px, 1vw, 16px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .admin-header__copy {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    .admin-header__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .admin-header h2 {
+      margin: 0;
+      font-size: var(--ui-font-xl);
+      color: #1f2937;
+      line-height: 1.15;
+    }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--ui-space-lg);
+      margin-bottom: 2rem;
+    }
+
+    .admin-stat-card {
+      background: white;
+      border-radius: clamp(10px, 1vw, 16px);
+      padding: var(--ui-card-pad);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border-left: 4px solid #2563eb;
+    }
+
+    .admin-stat-card.warning {
+      border-left-color: #f59e0b;
+    }
+
+    .admin-stat-card.success {
+      border-left-color: #22c55e;
+    }
+
+    .admin-stat-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: var(--ui-font-xs);
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.35;
+    }
+
+    .admin-stat-card .value {
+      font-size: clamp(1.85rem, 4.2vw, 2.5rem);
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--ui-space-sm);
+      margin-bottom: 1.5rem;
+      padding: var(--ui-space-xs);
+      border-bottom: 1px solid #e5e7eb;
+      background: white;
+      border-radius: clamp(10px, 1vw, 16px);
+      overflow: hidden;
+    }
+
+    .admin-tabs button {
+      background: none;
+      border: none;
+      flex: 1 1 180px;
+      padding: calc(0.82rem + 0.15 * var(--ui-space-xs)) calc(0.95rem + 0.4 * var(--ui-space-sm));
+      cursor: pointer;
+      font-weight: 500;
+      font-size: var(--ui-font-sm);
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      transition: all 0.2s;
+      line-height: 1.35;
+    }
+
+    .admin-tabs button:hover {
+      color: #1f2937;
+    }
+
+    .admin-tabs button.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+
+    .admin-content {
+      background: white;
+      border-radius: clamp(10px, 1vw, 16px);
+      padding: var(--ui-card-pad);
+      min-width: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .admin-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-item {
+      border: 1px solid #e5e7eb;
+      border-radius: clamp(10px, 1vw, 16px);
+      padding: var(--ui-card-pad);
+      margin-bottom: 1rem;
+      background: #f9fafb;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-item h3 {
+      margin: 0 0 0.5rem;
+      font-size: var(--ui-font-md);
+      color: #1f2937;
+      line-height: 1.3;
+    }
+
+    .admin-item p {
+      margin: 0.5rem 0;
+      color: #6b7280;
+      font-size: var(--ui-font-sm);
+      line-height: 1.55;
+    }
+
+    .admin-item-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--ui-space-sm);
+      margin: 1rem 0;
+      font-size: var(--ui-font-sm);
+      line-height: 1.55;
+    }
+
+    .admin-item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--ui-space-sm);
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .admin-item-actions button {
+      flex: 1 1 160px;
+      padding: calc(0.55rem + 0.1 * var(--ui-space-xs)) calc(0.9rem + 0.25 * var(--ui-space-sm));
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: var(--ui-font-sm);
+      min-height: var(--ui-touch-min);
+      line-height: 1.3;
+      transition: all 0.2s;
+    }
+
+    .admin-btn-approve {
+      background: #22c55e;
+      color: white;
+    }
+
+    .admin-btn-approve:hover {
+      background: #16a34a;
+    }
+
+    .admin-btn-reject {
+      background: #ef4444;
+      color: white;
+    }
+
+    .admin-btn-reject:hover {
+      background: #dc2626;
+    }
+
+    .admin-btn-view {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .admin-btn-view:hover {
+      background: #2563eb;
+    }
+
+    .admin-status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .admin-status.unverified {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .admin-status.verified {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .admin-empty {
+      text-align: center;
+      padding: 2rem;
+      color: #6b7280;
+    }
+
+    .admin-health-list {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .admin-health-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      background: #fff;
+    }
+
+    .admin-health-item__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.55rem;
+    }
+
+    .admin-health-item__time,
+    .admin-health-item__meta {
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .admin-health-item__message {
+      margin: 0 0 0.4rem;
+      color: #0f172a;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
+    .admin-health-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-settings-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 1rem;
+    }
+
+    .admin-settings-checkbox input {
+      width: auto;
+      margin: 0;
+    }
+
+    .admin-settings-inline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .admin-settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .admin-login-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .admin-login-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      width: min(100%, 400px);
+    }
+
+    .admin-login-card h1 {
+      margin: 0 0 1.5rem;
+      font-size: 1.8rem;
+      color: #1f2937;
+      text-align: center;
+    }
+
+    .admin-login-card label {
+      display: block;
+      margin: 1rem 0 0.5rem;
+      font-weight: 500;
+      color: #1f2937;
+    }
+
+    .admin-login-card input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+
+    .admin-login-card input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .admin-login-card button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .admin-login-card button:hover {
+      background: #1d4ed8;
+    }
+
+    .admin-login-reset {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .admin-login-reset p,
+    .admin-settings-note {
+      margin: 0 0 0.85rem;
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .admin-login-reset button,
+    .admin-settings-reset button {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .admin-login-reset button:hover,
+    .admin-settings-reset button:hover {
+      background: #cbd5e1;
+    }
+
+    .admin-settings-reset {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .admin-settings-reset button {
+      width: auto;
+      min-width: min(260px, 100%);
+    }
+
+    .admin-login-error {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .admin-users-panel {
+      margin-bottom: 1rem;
+    }
+
+    .admin-users-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .admin-users-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-users-toolbar input {
+      width: min(420px, 100%);
+      flex: 1 1 320px;
+      padding: 0.8rem 1rem;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      font-size: 1rem;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    .admin-users-toolbar input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .admin-users-meta {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .admin-users-table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .admin-users-table-wrap tbody tr.is-selected {
+      background: rgba(219, 234, 254, 0.72);
+    }
+
+    #usersTab table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+    }
+
+    #usersTab th,
+    #usersTab td {
+      padding: 0.85rem 0.9rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+
+    #usersTab th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #usersTab tbody tr:nth-child(even) {
+      background: rgba(248, 250, 252, 0.88);
+    }
+
+    #usersTab tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .admin-users-actions-cell {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 150px;
+    }
+
+    .admin-users-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 0.55rem 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .admin-users-btn.edit,
+    .admin-users-btn.save {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .admin-users-btn.cancel {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .admin-user-editor {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .admin-user-editor[hidden] {
+      display: none;
+    }
+
+    .admin-user-editor__intro {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-user-editor__eyebrow {
+      margin: 0 0 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #2563eb;
+    }
+
+    .admin-user-editor__intro h2 {
+      margin: 0;
+    }
+
+    .admin-user-editor__meta-copy {
+      margin: 0.5rem 0 0;
+      color: #475569;
+      max-width: 62ch;
+    }
+
+    .admin-user-editor__status {
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .admin-user-editor__status[hidden] {
+      display: none;
+    }
+
+    .admin-user-editor__status.is-success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid rgba(22, 101, 52, 0.14);
+    }
+
+    .admin-user-editor__status.is-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid rgba(153, 27, 27, 0.14);
+    }
+
+    .admin-user-editor__body {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .admin-user-editor__meta-grid {
+      display: grid;
+      gap: 0.9rem;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    .admin-user-editor__meta-card {
+      padding: 1rem;
+      border-radius: 18px;
+      border: 1px solid #dbe4f0;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+    }
+
+    .admin-user-editor__meta-card strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: #0f172a;
+    }
+
+    .admin-user-editor__meta-card span {
+      color: #475569;
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+
+    .admin-user-editor__empty-profile {
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      border: 1px dashed #bfdbfe;
+      background: rgba(239, 246, 255, 0.9);
+      color: #1d4ed8;
+      line-height: 1.55;
+    }
+
+    .admin-user-editor__section {
+      padding: 1rem;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.98);
+    }
+
+    .admin-user-editor__section-head {
+      margin-bottom: 1rem;
+    }
+
+    .admin-user-editor__section-head h3 {
+      margin: 0;
+    }
+
+    .admin-user-editor__section-head p {
+      margin: 0.35rem 0 0;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .admin-user-editor__grid {
+      display: grid;
+      gap: 0.95rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .admin-user-editor__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .admin-user-editor__field--full {
+      grid-column: 1 / -1;
+    }
+
+    .admin-user-editor__field.is-hidden {
+      display: none;
+    }
+
+    .admin-user-editor__field label {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .admin-user-editor__field input,
+    .admin-user-editor__field select,
+    .admin-user-editor__field textarea {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.96rem;
+      background: #fff;
+      box-sizing: border-box;
+      font: inherit;
+    }
+
+    .admin-user-editor__field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .admin-user-editor__field input:focus,
+    .admin-user-editor__field select:focus,
+    .admin-user-editor__field textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .admin-user-editor__field-note {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .admin-user-editor__file-current {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      padding: 0.8rem 0.9rem;
+      border-radius: 14px;
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      line-height: 1.45;
+    }
+
+    .admin-user-editor__file-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: #1d4ed8;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .admin-user-editor__checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      color: #475569;
+      font-size: 0.92rem;
+    }
+
+    .admin-user-editor__checkbox input {
+      width: auto;
+      margin: 0;
+    }
+
+    .admin-user-editor__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-users-empty {
+      padding: 22px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .admin-billing-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-billing-metric {
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      border: 1px solid #dbe4f0;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .admin-billing-metric__label {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .admin-billing-metric__value {
+      display: block;
+      color: #0f172a;
+      font-size: clamp(1.55rem, 2.7vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .admin-billing-metric__meta {
+      display: block;
+      margin-top: 0.45rem;
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .admin-billing-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .admin-billing-firm-card {
+      border: 1px solid #dbe4f0;
+      border-radius: 20px;
+      padding: 1.1rem;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(255, 255, 255, 0.98) 100%);
+    }
+
+    /* details/summary collapsible */
+    .admin-billing-firm-card[open] {
+      padding-bottom: 1.1rem;
+    }
+
+    .admin-billing-firm-card__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+      cursor: pointer;
+      list-style: none;
+      margin-bottom: 0;
+      border-radius: 14px;
+      padding: 0.25rem 0.1rem;
+      transition: background 0.15s;
+    }
+    .admin-billing-firm-card__head::-webkit-details-marker { display: none; }
+
+    .admin-billing-firm-card[open] > .admin-billing-firm-card__head {
+      margin-bottom: 1rem;
+    }
+
+    .admin-billing-firm-card__head:hover {
+      background: rgba(219, 234, 254, 0.35);
+    }
+
+    .admin-billing-firm-card__head-text {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .admin-billing-firm-card__head h3 {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1.08rem;
+    }
+
+    .admin-billing-firm-card__meta {
+      margin: 0.35rem 0 0;
+      color: #64748b;
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .admin-billing-firm-card__pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.55rem;
+    }
+
+    .admin-billing-firm-card__toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      align-self: center;
+      transition: transform 0.2s;
+    }
+    .admin-billing-firm-card__toggle::after {
+      content: "▼";
+      display: block;
+      transition: transform 0.2s;
+    }
+    .admin-billing-firm-card[open] .admin-billing-firm-card__toggle::after {
+      transform: rotate(180deg);
+    }
+
+    .admin-billing-firm-card__body {
+      /* inner spacing already handled by child elements */
+    }
+
+    .admin-billing-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.38rem 0.72rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .admin-billing-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-billing-summary__item {
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 0.9rem 1rem;
+    }
+
+    .admin-billing-summary__item strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: #0f172a;
+      font-size: 1.05rem;
+    }
+
+    .admin-billing-summary__item span {
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .admin-billing-months {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-billing-month-card {
+      border-radius: 16px;
+      border: 1px solid #dbe4f0;
+      background: rgba(239, 246, 255, 0.85);
+      padding: 0.9rem 1rem;
+    }
+
+    .admin-billing-month-card__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.45rem;
+      color: #1e3a8a;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .admin-billing-month-card__amount {
+      color: #0f172a;
+      font-size: 1.02rem;
+      font-weight: 800;
+    }
+
+    .admin-billing-entry-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .admin-billing-entry {
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      padding: 0.95rem 1rem;
+    }
+
+    .admin-billing-entry__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.4rem;
+    }
+
+    .admin-billing-entry__head strong {
+      color: #0f172a;
+      font-size: 0.98rem;
+    }
+
+    .admin-billing-entry__status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.28rem 0.68rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .admin-billing-entry__status--billable {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .admin-billing-entry__status--invoiced {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .admin-billing-entry__meta {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .admin-billing-entry__amount {
+      margin: 0.5rem 0 0;
+      color: #0f172a;
+      font-size: 1.02rem;
+      font-weight: 800;
+    }
+
+    .admin-billing-empty {
+      border: 1px dashed #cbd5e1;
+      border-radius: 18px;
+      padding: 1.1rem 1.2rem;
+      color: #64748b;
+      background: #f8fafc;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .admin-main {
+        margin-left: 0;
+        padding: 1rem;
+      }
+
+      .admin-header__actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .admin-tabs button {
+        flex-basis: calc(50% - 0.5rem);
+      }
+
+      .admin-item-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-users-toolbar {
+        align-items: stretch;
+      }
+
+      .admin-user-editor__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-billing-firm-card__pills {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .admin-header,
+      .admin-content,
+      .admin-login-card {
+        padding: 1rem;
+      }
+
+      .admin-tabs button,
+      .admin-item-actions button,
+      .admin-settings-reset button,
+      .admin-users-btn,
+      .admin-user-editor__actions .btn {
+        flex-basis: 100%;
+        width: 100%;
+      }
+
+      .admin-user-editor__actions {
+        justify-content: stretch;
+      }
+
+      .admin-billing-entry__head,
+      .admin-billing-month-card__head,
+      .admin-billing-firm-card__head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body class="admin-page">
+
+  <!-- Sofortige Match-Anzeige oben auf der Seite -->
+
+
+  <!-- Login Panel -->
+  <div id="adminLoginPanel" class="admin-login-panel" style="display: none;">
+    <div class="admin-login-card">
+
+      <h1>Admin Portal</h1>
+      <p id="adminLoginHint" style="margin:0 0 1rem;color:#475569;line-height:1.6;">Admin-Sitzungen sind zeitlich begrenzt und gelten nur für den aktuellen Browser-Tab.</p>
+      <div id="adminLoginError" class="admin-login-error" style="display: none;"></div>
+      <label for="adminPassword">Admin-Passwort</label>
+      <input type="password" id="adminPassword" placeholder="Passwort eingeben" autocomplete="current-password">
+      <div id="adminPasswordConfirmWrap" style="display:none;">
+        <label for="adminPasswordConfirm">Passwort bestätigen</label>
+        <input type="password" id="adminPasswordConfirm" placeholder="Passwort bestätigen" autocomplete="new-password">
+      </div>
+      <button type="button" id="adminLoginBtn">Anmelden</button>
+      <div id="adminResetWrap" class="admin-login-reset" style="display:none;">
+        <p>Falls das lokale Admin-Passwort für diesen Browser nicht mehr bekannt ist, kann der Zugang hier zurückgesetzt und anschließend neu eingerichtet werden.</p>
+        <button type="button" id="adminResetBtn">Lokales Admin-Passwort zurücksetzen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Portal -->
+  <div id="adminPortal" style="display: none;" class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <ul class="admin-nav">
+        <li><button class="admin-nav-btn active" data-tab="dashboard">📊 <span class="admin-nav-label">Dashboard</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="students">👨‍🎓 <span class="admin-nav-label">Bewerbende</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="firms">🏢 <span class="admin-nav-label">Firmen</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="users">👥 <span class="admin-nav-label">Nutzerverwaltung</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="match">🔗 <span class="admin-nav-label">Match</span></button></li>
+        <!-- entfernt: Match-Box in der Sidebar, stattdessen im Content-Bereich -->
+        <li><button class="admin-nav-btn" data-tab="contact">📨 <span class="admin-nav-label">Kontaktanfragen</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="billing">💶 <span class="admin-nav-label">Rechnungen</span></button></li>
+        <li><button class="admin-nav-btn" data-tab="settings">⚙️ <span class="admin-nav-label">Einstellungen</span></button></li>
+        <li class="admin-nav-item admin-nav-item--logout"><button class="admin-nav-btn" id="adminLogoutBtn">🚪 <span class="admin-nav-label">Abmelden</span></button></li>
+
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Dashboard Tab -->
+      <div id="dashboardTab" class="admin-tab" style="display: block;">
+        <div class="admin-header admin-header--hero">
+          <div class="admin-header__copy">
+            <h2 class="admin-header-title--hero">Dashboard</h2>
+            <p class="admin-header__meta admin-header__meta--hero">Interne Steuerung für Freigaben, Kontaktanfragen und die aktuelle Match-Lage.</p>
+          </div>
+          <div class="admin-header__actions">
+            <a class="btn ghost admin-header-link" href="admin.html?tab=match">Zum Match-Tab</a>
+          </div>
+        </div>
+        <!-- Match-Infos im Dashboard anzeigen -->
+        <div id="dashboardMatchBox"></div>
+        <div id="adminDashboardStats" class="admin-stats">
+          <div class="admin-stat-card" data-stat-key="pendingStudents" data-stat-category="pending">
+            <h3>Bewerbende offen</h3>
+            <p class="admin-stat-value" id="statUnverifiedStudents">0</p>
+          </div>
+          <div class="admin-stat-card warning" data-stat-key="pendingFirms" data-stat-category="pending">
+            <h3>Firmen offen</h3>
+            <p class="admin-stat-value" id="statUnverifiedFirms">0</p>
+          </div>
+          <div class="admin-stat-card success" data-stat-key="verifiedStudents" data-stat-category="verified">
+            <h3>Bewerbende verifiziert</h3>
+            <p class="admin-stat-value" id="statVerifiedStudents">0</p>
+          </div>
+          <div class="admin-stat-card success" data-stat-key="verifiedFirms" data-stat-category="verified">
+            <h3>Firmen freigegeben</h3>
+            <p class="admin-stat-value" id="statVerifiedFirms">0</p>
+          </div>
+        </div>
+        <div class="admin-dashboard-grid">
+          <section class="admin-content admin-dashboard-panel">
+            <div class="admin-dashboard-panel__header">
+              <h3>Priorisierte Aufgaben</h3>
+              <p>Automatisch nach Dringlichkeit sortiert.</p>
+            </div>
+            <div id="adminDashboardPriorityList" class="admin-dashboard-priority-list"></div>
+          </section>
+          <section class="admin-content admin-dashboard-panel">
+            <div class="admin-dashboard-panel__header">
+              <h3>Aktuelle Aktivität</h3>
+              <p>Neueste Kontaktanfragen und Freigaben.</p>
+            </div>
+            <div id="adminDashboardActivityList" class="admin-dashboard-activity-list"></div>
+          </section>
+          <section class="admin-content admin-dashboard-panel">
+            <div class="admin-dashboard-panel__header">
+              <h3>System-Checks</h3>
+              <p>Zufällige Smoke-Checks mit Eskalation bei wiederholten Fehlern.</p>
+            </div>
+            <div class="admin-health-actions">
+              <button type="button" class="btn ghost" id="runHealthMonitorNowBtn">Jetzt prüfen</button>
+              <span id="adminHealthMonitorMeta" class="admin-settings-note"></span>
+            </div>
+            <div id="adminDashboardHealthList" class="admin-health-list"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Students Tab -->
+      <div id="studentsTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header">
+          <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Bewerbende und</span><span class="title-stack__line title-stack__line--offset">Registrierungen</span></span></h2>
+        </div>
+        <div class="admin-tabs">
+          <button class="admin-filter-btn admin-filter-active" data-filter="unverified">Ausstehend</button>
+          <button class="admin-filter-btn" data-filter="verified">Freigegeben</button>
+          <button class="admin-filter-btn" data-filter="registrationOnly">Nur Registrierung</button>
+        </div>
+        <div class="admin-content">
+          <ul id="studentsList" class="admin-list"></ul>
+          <hr class="admin-section-divider">
+
+        </div>
+      </div>
+
+      <!-- Firms Tab -->
+      <div id="firmsTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header">
+          <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Firmen und</span><span class="title-stack__line title-stack__line--offset">Registrierungen</span></span></h2>
+        </div>
+        <div class="admin-tabs">
+          <button class="admin-filter-btn admin-filter-active" data-filter="unverified">Ausstehend</button>
+          <button class="admin-filter-btn" data-filter="verified">Freigegeben</button>
+        </div>
+        <div class="admin-content">
+          <ul id="firmsList" class="admin-list"></ul>
+        </div>
+      </div>
+
+      <div id="usersTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header">
+          <div class="admin-header__copy">
+            <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Interne</span><span class="title-stack__line title-stack__line--offset">Nutzerverwaltung</span></span></h2>
+            <p class="admin-header__meta">Kontodaten, Vollprofile und hochgeladene Nachweise lassen sich hier typgerecht nachpflegen, ohne in die einzelnen Portale zu wechseln.</p>
+          </div>
+        </div>
+        <section class="admin-content admin-users-panel">
+          <div class="admin-users-toolbar">
+            <input id="adminUsersSearch" type="text" placeholder="Suche nach Name, E-Mail, Beruf, Firma, Ort oder ID">
+            <div class="admin-users-meta" id="adminUsersResultsMeta">Daten werden geladen …</div>
+          </div>
+        </section>
+        <div class="admin-users-grid">
+          <section class="admin-content admin-users-section">
+            <h2>Bewerbende</h2>
+            <div class="admin-users-table-wrap" id="adminUsersStudentsWrap"></div>
+          </section>
+          <section class="admin-content admin-users-section">
+            <h2>Firmen</h2>
+            <div class="admin-users-table-wrap" id="adminUsersFirmsWrap"></div>
+          </section>
+        </div>
+        <section class="admin-content admin-user-editor" id="adminUserEditorPanel" hidden>
+          <div class="admin-user-editor__intro">
+            <div>
+              <p class="admin-user-editor__eyebrow">Vollständige Bearbeitung</p>
+              <h2 id="adminUserEditorTitle">Nutzerdaten bearbeiten</h2>
+              <p class="admin-user-editor__meta-copy" id="adminUserEditorMeta">Wählen Sie einen Eintrag aus einer der beiden Tabellen aus, um Konto- und Profildaten vollständig zu bearbeiten.</p>
+            </div>
+          </div>
+          <div class="admin-user-editor__status" id="adminUserEditorStatus" hidden></div>
+          <div class="admin-user-editor__body" id="adminUserEditorBody"></div>
+          <div class="admin-user-editor__actions">
+            <button class="btn ghost" type="button" data-admin-users-action="cancel-editor">Schließen</button>
+            <button class="btn primary" type="button" data-admin-users-action="save-editor">Änderungen speichern</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Match Tab (wie Dashboard-Box, aber im Content-Bereich) -->
+      <div id="matchTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header admin-header--hero">
+          <div class="admin-header__copy">
+            <h2 class="admin-header-title--hero">Matching-Übersicht</h2>
+            <p class="admin-header__meta admin-header__meta--hero">Die vollständige interne Berufsgruppen-Übersicht aller aktuellen Matches direkt im Admin-Portal.</p>
+          </div>
+        </div>
+        <section class="matching-hero-panel">
+          <div class="matching-hero-copy">
+            <p class="index-kicker">Admin Matching-Übersicht</p>
+            <h1 class="matching-title"><span class="title-stack"><span class="title-stack__line">Aktuelle Matches nach</span><span class="title-stack__line title-stack__line--offset">Berufsfeldern direkt</span><span class="title-stack__line title-stack__line--offset-strong">im Portal kontrollieren</span></span></h1>
+            <p class="matching-lead">Die ehemalige Matching-Seite wurde vollständig in diesen Admin-Tab übernommen. Hier sehen Sie alle aktuellen Kombinationen zwischen Firmen und Profilen je Berufsfeld, inklusive Inklusions-Matches.</p>
+          </div>
+          <div class="matching-overview-grid">
+            <article class="matching-overview-card">
+              <p class="matching-overview-label">Zugriff</p>
+              <h2>Nur im Admin-Portal</h2>
+              <p>Die Übersicht ist jetzt ausschließlich innerhalb des Admin-Bereichs verfügbar und nicht mehr als separate Seite erreichbar.</p>
+            </article>
+            <article class="matching-overview-card">
+              <p class="matching-overview-label">Aktueller Stand</p>
+              <h2 id="matchingAdminStatus">Admin-Sitzung aktiv</h2>
+              <p>Die Ansicht zeigt laufende Kombinationen zwischen Firmen und Profilen nach Berufsfeld gebündelt an.</p>
+            </article>
+            <article class="matching-overview-card">
+              <p class="matching-overview-label">Nutzen</p>
+              <h2><span class="title-stack title-stack--card"><span class="title-stack__line">Eine zentrale interne</span><span class="title-stack__line title-stack__line--offset">Matching-Ansicht</span></span></h2>
+              <p>Freigaben, Rückfragen und Engpässe lassen sich jetzt ohne Seitenwechsel direkt im Admin-Workflow nachvollziehen.</p>
+            </article>
+          </div>
+        </section>
+        <section id="matchingAdminContent" class="matching-results-panel">
+          <div class="matching-results-head">
+            <p class="index-section-kicker">Aktuelle Übersicht</p>
+            <h2 class="matching-results-title"><span class="title-stack title-stack--card"><span class="title-stack__line">Berufsfelder mit</span><span class="title-stack__line title-stack__line--offset">aktiven Matches</span></span></h2>
+            <p class="matching-lead">Fahren Sie über eine Berufsgruppe, um die zugehörigen Firmen-Profil-Kombinationen im Detail zu sehen.</p>
+          </div>
+          <div id="matchingByProfession" class="matching-results-grid"></div>
+        </section>
+      </div>
+
+      <!-- Kontaktanfragen Tab -->
+      <div id="contactTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header">
+          <h2>Kontaktanfragen</h2>
+        </div>
+        <div class="admin-content">
+          <ul id="contactRequestsList" class="admin-list"></ul>
+          <div id="contactRequestsEmpty" class="admin-empty admin-empty--hidden">Keine Kontaktanfragen vorhanden.</div>
+        </div>
+      </div>
+
+      <div id="billingTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header admin-header--hero">
+          <div class="admin-header__copy">
+            <h2 class="admin-header-title--hero">Rechnungen</h2>
+            <p class="admin-header__meta admin-header__meta--hero">Zusammenstellung aller zu berechnenden Freigaben, nach Firma gruppiert und nach letzter Aktivität sortiert.</p>
+          </div>
+        </div>
+        <div id="adminBillingMetrics" class="admin-billing-metrics"></div>
+        <section class="admin-content">
+          <div class="admin-dashboard-panel__header">
+            <h3>Rechnungsübersicht nach Firma</h3>
+            <p id="adminBillingMeta">Nach Firma gruppiert. Firmengruppen werden nach letzter Aktivität sortiert, Einzelpositionen jeweils neueste zuerst.</p>
+          </div>
+          <div id="adminBillingInvoiceList" class="admin-billing-list"></div>
+        </section>
+      </div>
+
+      <!-- Settings Tab -->
+      <div id="settingsTab" class="admin-tab admin-tab--hidden">
+        <div class="admin-header">
+          <h2>Einstellungen</h2>
+        </div>
+        <div class="admin-content">
+          <h3>Admin-Passwort ändern</h3>
+          <p class="admin-settings-note">Das Admin-Passwort gilt nur für diesen Browser. Zum Ändern wird das aktuelle Passwort benötigt.</p>
+          <div class="admin-settings-form">
+            <label for="currentPassword">Aktuelles Passwort</label>
+            <input type="password" id="currentPassword" placeholder="Aktuelles Passwort">
+            <label for="newPassword">Neues Passwort</label>
+            <input type="password" id="newPassword" placeholder="Neues Passwort">
+            <label for="confirmPassword">Passwort bestätigen</label>
+            <input type="password" id="confirmPassword" placeholder="Passwort bestätigen">
+            <button type="button" class="btn primary admin-settings-submit" id="changePasswordBtn">Passwort ändern</button>
+          </div>
+          <p id="settingsStatus" class="status admin-settings-status"></p>
+          <div class="admin-settings-reset">
+            <h3>Automatischer Selbsttest</h3>
+            <p class="admin-settings-note">Der Selbsttest prüft die wichtigsten Seiten in zufälligen Abständen. Erst wenn ein Problem wiederholt auftritt, wird ein Admin-Alarm ausgelöst.</p>
+            <label class="admin-settings-checkbox" for="healthMonitorEnabled">
+              <input type="checkbox" id="healthMonitorEnabled">
+              <span>Selbsttest aktivieren</span>
+            </label>
+            <div class="admin-settings-form">
+              <label for="healthMonitorAdminEmail">Admin-E-Mail für Warnungen</label>
+              <input type="email" id="healthMonitorAdminEmail" placeholder="admin@beispiel.de">
+              <label for="healthMonitorAdminName">Anzeigename Empfänger</label>
+              <input type="text" id="healthMonitorAdminName" placeholder="AzubiMatcher Admin">
+              <div class="admin-settings-inline">
+                <div>
+                  <label for="healthMonitorMinInterval">Min. Intervall in Minuten</label>
+                  <input type="number" id="healthMonitorMinInterval" min="5" step="1" placeholder="19">
+                </div>
+                <div>
+                  <label for="healthMonitorMaxInterval">Max. Intervall in Minuten</label>
+                  <input type="number" id="healthMonitorMaxInterval" min="5" step="1" placeholder="47">
+                </div>
+              </div>
+              <div class="admin-settings-actions">
+                <button type="button" class="btn primary admin-settings-submit" id="saveHealthMonitorSettingsBtn">Selbsttest speichern</button>
+                <button type="button" class="btn ghost" id="runHealthMonitorSettingsBtn">Sofort prüfen</button>
+              </div>
+            </div>
+          </div>
+          <div class="admin-settings-reset">
+            <p class="admin-settings-note">Wenn das aktuelle Passwort nicht mehr bekannt ist, können die lokalen Admin-Zugangsdaten in diesem Browser zurückgesetzt werden. Danach ist eine neue Ersteinrichtung erforderlich.</p>
+            <button type="button" id="resetAdminPasswordBtn">Lokalen Admin-Zugang zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="privacy-settings.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

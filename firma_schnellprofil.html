@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kurzprofil – Firma</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body.firm-quick-profile-page {
+      color: #334155;
+      background:
+        radial-gradient(circle at 12% 12%, rgba(59, 130, 246, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(20, 184, 166, 0.16), transparent 24%),
+        linear-gradient(180deg, #f5f9ff 0%, #edf4ff 44%, #f8fafc 100%);
+    }
+
+    .schnellprofil-shell {
+      width: min(var(--shell-max), calc(100vw - var(--shell-gutter)));
+      margin: 1.25rem auto 3rem;
+      display: grid;
+      gap: 1.1rem;
+    }
+
+    .schnellprofil-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1rem;
+    }
+
+    body.firm-quick-profile-page.is-readonly-view .schnellprofil-topbar {
+      display: none;
+    }
+
+    .schnellprofil-topbar-note {
+      color: #5b6b83;
+      font-size: var(--ui-font-sm);
+      line-height: 1.55;
+    }
+
+    .schnellprofil-hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(1.35rem, 1.2vw + 1rem, 2.25rem);
+      border-radius: 32px;
+      border: 1px solid rgba(191, 219, 254, 0.88);
+      background:
+        linear-gradient(140deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 246, 255, 0.96) 56%, rgba(236, 253, 245, 0.95) 100%);
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.1);
+      isolation: isolate;
+    }
+
+    .schnellprofil-hero::before,
+    .schnellprofil-hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      z-index: -1;
+      opacity: 0.78;
+    }
+
+    .schnellprofil-hero::before {
+      width: 240px;
+      height: 240px;
+      top: -120px;
+      right: -50px;
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.24) 0%, rgba(96, 165, 250, 0.06) 64%, transparent 74%);
+    }
+
+    .schnellprofil-hero::after {
+      width: 220px;
+      height: 220px;
+      left: -70px;
+      bottom: -130px;
+      background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(20, 184, 166, 0.05) 60%, transparent 74%);
+    }
+
+    .schnellprofil-eyebrow,
+    .quickprofile-section__eyebrow,
+    .schnellprofil-sidecard__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.48rem;
+      width: fit-content;
+      margin: 0 0 0.6rem;
+      padding: 0.46rem 0.9rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(234, 242, 255, 0.96) 0%, rgba(236, 249, 245, 0.92) 100%);
+      border: 1px solid rgba(147, 197, 253, 0.42);
+      color: #1d4ed8;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 10px 24px rgba(29, 78, 216, 0.08);
+    }
+
+    .schnellprofil-eyebrow::before,
+    .quickprofile-section__eyebrow::before,
+    .schnellprofil-sidecard__eyebrow::before {
+      content: "";
+      width: 0.52rem;
+      height: 0.52rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .schnellprofil-hero h1 {
+      margin: 0;
+      color: #10243f;
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2rem, 2.2vw + 1.4rem, 3rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+    }
+
+    .schnellprofil-lead {
+      max-width: 58rem;
+      margin: 0.85rem 0 0;
+      color: #4b5d74;
+      font-size: 1rem;
+      line-height: 1.72;
+    }
+
+    body.firm-quick-profile-page.is-readonly-view .schnellprofil-lead {
+      display: none;
+    }
+
+    .schnellprofil-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.15rem;
+    }
+
+    .schnellprofil-meta-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.35rem;
+      padding: 0.48rem 0.86rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(191, 219, 254, 0.8);
+      color: #24405f;
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .schnellprofil-meta-chip[data-state="readonly"] {
+      border-color: rgba(245, 158, 11, 0.32);
+      background: rgba(255, 251, 235, 0.92);
+      color: #92400e;
+    }
+
+    .schnellprofil-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.28fr) minmax(280px, 0.72fr);
+      gap: 1.1rem;
+      align-items: start;
+    }
+
+    .schnellprofil-container,
+    .schnellprofil-sidecard {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(203, 213, 225, 0.82);
+      border-radius: 28px;
+      box-shadow: 0 22px 48px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .schnellprofil-container {
+      padding: clamp(1.1rem, 1vw + 0.88rem, 1.7rem);
+    }
+
+    .schnellprofil-aside {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .schnellprofil-sidecard {
+      padding: 1.2rem 1.25rem;
+    }
+
+    .schnellprofil-sidecard h2 {
+      margin: 0;
+      color: #10243f;
+      font-size: 1.2rem;
+      line-height: 1.25;
+      text-wrap: balance;
+    }
+
+    .schnellprofil-sidecard p,
+    .schnellprofil-sidecard li {
+      color: #4b5d74;
+      line-height: 1.65;
+    }
+
+    body.firm-quick-profile-page.is-readonly-view .quickprofile-section__copy--edit-hint {
+      display: none;
+    }
+
+    .schnellprofil-tip-list,
+    .schnellprofil-preview-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.9rem 0 0;
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .schnellprofil-tip-list li,
+    .schnellprofil-preview-list li {
+      position: relative;
+      padding-left: 1.1rem;
+    }
+
+    .schnellprofil-tip-list li::before,
+    .schnellprofil-preview-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62rem;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .schnellprofil-notice {
+      margin-bottom: 1rem;
+      padding: 1rem 1.05rem;
+      border-radius: 18px;
+      border: 1px solid rgba(245, 158, 11, 0.38);
+      background: linear-gradient(180deg, rgba(255, 251, 235, 0.96), rgba(255, 255, 255, 0.98));
+      color: #92400e;
+      line-height: 1.65;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .schnellprofil-form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .quickprofile-section {
+      padding: 1.15rem 1.1rem;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.74), rgba(255, 255, 255, 0.92));
+      border: 1px solid rgba(203, 213, 225, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    }
+
+    .quickprofile-section__head {
+      margin-bottom: 0.95rem;
+    }
+
+    .quickprofile-section__title {
+      margin: 0;
+      color: #10243f;
+      font-size: 1.2rem;
+      line-height: 1.24;
+      text-wrap: balance;
+    }
+
+    .quickprofile-section__copy {
+      margin: 0.5rem 0 0;
+      color: #5b6b83;
+      line-height: 1.65;
+    }
+
+    .quickprofile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.95rem 1rem;
+    }
+
+    .quickprofile-field {
+      display: grid;
+      gap: 0.38rem;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .quickprofile-field--full {
+      grid-column: 1 / -1;
+    }
+
+    .quickprofile-field > span {
+      color: #1e293b;
+      font-size: var(--ui-font-sm);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .quickprofile-field input,
+    .quickprofile-field select,
+    .quickprofile-field textarea,
+    #professionEditRow input,
+    #benefitEditRow input {
+      width: 100%;
+      min-width: 0;
+      min-height: var(--ui-touch-min);
+      padding: 0.82rem 0.95rem;
+      border-radius: 16px;
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      background: rgba(248, 250, 252, 0.94);
+      color: #0f172a;
+      font-size: var(--ui-font-md);
+      line-height: 1.45;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, transform 180ms ease;
+    }
+
+    .quickprofile-field input:focus,
+    .quickprofile-field select:focus,
+    .quickprofile-field textarea:focus,
+    #professionEditRow input:focus,
+    #benefitEditRow input:focus {
+      outline: none;
+      border-color: rgba(37, 99, 235, 0.58);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      background: #ffffff;
+    }
+
+    .benefits-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin: 0;
+      min-height: 2.8rem;
+      align-items: flex-start;
+    }
+
+    #professionList:empty::before,
+    #benefitsList:empty::before {
+      color: #7b8aa1;
+      font-size: var(--ui-font-sm);
+      line-height: 1.55;
+    }
+
+    #professionList:empty::before {
+      content: "Noch keine Ausbildungsplätze hinzugefügt.";
+    }
+
+    #benefitsList:empty::before {
+      content: "Noch keine Benefits hinterlegt.";
+    }
+
+    .benefit-checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-height: 2.5rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(239, 246, 255, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+      border: 1px solid rgba(191, 219, 254, 0.86);
+      color: #1f3d63;
+      font-size: var(--ui-font-sm);
+      font-weight: 700;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+    }
+
+    .benefit-remove-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+      font-size: 0.96rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, background-color 160ms ease;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .benefit-remove-btn:hover,
+    .benefit-remove-btn:focus-visible {
+      background: rgba(239, 68, 68, 0.18);
+      transform: scale(1.06);
+      outline: none;
+    }
+
+    #professionEditRow,
+    #benefitEditRow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      margin-top: 0.85rem;
+      align-items: stretch;
+    }
+
+    #professionEditRow input,
+    #benefitEditRow input {
+      margin: 0;
+    }
+
+    #addProfessionBtn,
+    #addBenefitBtn {
+      width: 3.35rem !important;
+      min-width: 3.35rem !important;
+      min-height: var(--ui-touch-min);
+      padding: 0 !important;
+      border-radius: 16px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 1.35rem !important;
+      line-height: 1 !important;
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.18);
+    }
+
+    .quickprofile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.15rem;
+    }
+
+    .quickprofile-actions__note {
+      margin: 0;
+      color: #5b6b83;
+      font-size: var(--ui-font-sm);
+      line-height: 1.55;
+    }
+
+    .quickprofile-actions__buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .quickprofile-actions__buttons .btn {
+      min-width: min(100%, 13.5rem);
+    }
+
+    .btn.primary:hover {
+      background: #1e40af;
+    }
+
+    @media (max-width: 980px) {
+      .schnellprofil-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .schnellprofil-aside {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .schnellprofil-shell {
+        width: calc(100vw - 16px);
+      }
+
+      .schnellprofil-hero,
+      .schnellprofil-container,
+      .schnellprofil-sidecard {
+        padding: 1.05rem;
+        border-radius: 24px;
+      }
+
+      .quickprofile-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quickprofile-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .quickprofile-actions__buttons {
+        justify-content: stretch;
+      }
+
+      .quickprofile-actions__buttons .btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 540px) {
+      #professionEditRow,
+      #benefitEditRow {
+        grid-template-columns: 1fr;
+      }
+
+      #addProfessionBtn,
+      #addBenefitBtn {
+        width: 100% !important;
+      }
+
+      .schnellprofil-topbar {
+        align-items: stretch;
+      }
+
+      .schnellprofil-topbar .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="firm-quick-profile-page">
+  <div class="schnellprofil-shell">
+    <div class="schnellprofil-topbar">
+      <a id="quickProfileBackLink" class="btn ghost small" href="firma_profil.html">Zum Firmenprofil</a>
+      <p class="schnellprofil-topbar-note" id="quickProfileTopbarStatus">Pflegen Sie hier die Kurzansicht, die Bewerbende vor der Unterlagenfreigabe sehen.</p>
+    </div>
+
+    <section class="schnellprofil-hero">
+      <p class="schnellprofil-eyebrow">Freigegebene Schnellansicht</p>
+      <h1 id="schnellprofilTitle">Kurzprofil für Firmen</h1>
+      <p class="schnellprofil-lead">Dieses Kurzprofil zeigt Bewerbenden auf einen Blick, wofür Ihr Betrieb steht, welche Ausbildungsplätze offen sind und welche Vorteile Sie bieten. Je klarer und konkreter die Angaben, desto stärker wirkt der erste Eindruck.</p>
+      <div class="schnellprofil-meta">
+        <span class="schnellprofil-meta-chip" id="quickProfileModeChip" data-state="edit">Bearbeitungsmodus</span>
+        <span class="schnellprofil-meta-chip" id="quickProfileProfessionCount">0 Ausbildungsplätze</span>
+        <span class="schnellprofil-meta-chip" id="quickProfileBenefitCount">0 Benefits</span>
+      </div>
+    </section>
+
+    <div class="schnellprofil-layout">
+      <div class="schnellprofil-container">
+        <div id="firmQuickProfileLockNotice" class="schnellprofil-notice" style="display:none;"></div>
+        <form id="kurzprofilForm" class="schnellprofil-form">
+          <section class="quickprofile-section">
+            <div class="quickprofile-section__head">
+              <p class="quickprofile-section__eyebrow">Basisdaten</p>
+              <h2 class="quickprofile-section__title">So erkennen Bewerbende Ihren Betrieb sofort</h2>
+              <p class="quickprofile-section__copy quickprofile-section__copy--edit-hint">Firmenname, Branche und Standort sind der erste Vertrauensanker im Matching.</p>
+            </div>
+            <div class="quickprofile-grid">
+              <label class="quickprofile-field" for="firma">
+                <span>Firmenname <span class="required-mark">*</span></span>
+                <input type="text" id="firma" name="firma" required>
+              </label>
+
+              <label class="quickprofile-field" for="branche">
+                <span>Branche <span class="required-mark">*</span></span>
+                <input type="text" id="branche" name="branche" required placeholder="z. B. IT, Handwerk, Gesundheit">
+              </label>
+
+              <label class="quickprofile-field" for="stadt">
+                <span>Stadt <span class="required-mark">*</span></span>
+                <input type="text" id="stadt" name="stadt" required>
+              </label>
+
+              <label class="quickprofile-field" for="plz">
+                <span>PLZ <span class="required-mark">*</span></span>
+                <input type="text" id="plz" name="plz" required pattern="[0-9]{5}">
+              </label>
+            </div>
+          </section>
+
+          <section class="quickprofile-section">
+            <div class="quickprofile-section__head">
+              <p class="quickprofile-section__eyebrow">Ausbildungsplätze</p>
+              <h2 class="quickprofile-section__title">Welche Berufe bieten Sie aktuell an?</h2>
+              <p class="quickprofile-section__copy quickprofile-section__copy--edit-hint">Mehrere Berufe einzeln hinzufügen. Alle hinterlegten Ausbildungsplätze fließen in die Matchsuche ein.</p>
+            </div>
+            <div class="benefits-list" id="professionList"></div>
+            <div id="professionEditRow">
+              <input type="text" id="ausbildungsplaetze" name="ausbildungsplaetze" placeholder="z. B. Fachinformatiker/in">
+              <button type="button" id="addProfessionBtn" class="btn primary" aria-label="Ausbildungsplatz hinzufügen">+</button>
+            </div>
+          </section>
+
+          <section class="quickprofile-section">
+            <div class="quickprofile-section__head">
+              <p class="quickprofile-section__eyebrow">Benefits</p>
+              <h2 class="quickprofile-section__title">Was macht Ihren Betrieb attraktiv?</h2>
+              <p class="quickprofile-section__copy quickprofile-section__copy--edit-hint">Vorteile wie Zuschüsse, Mobilität oder Lernunterstützung helfen Bewerbenden beim schnellen Einordnen.</p>
+            </div>
+            <div class="benefits-list" id="benefitsList"></div>
+            <div id="benefitEditRow">
+              <input type="text" id="benefitInput" placeholder="Benefit hinzufügen...">
+              <button type="button" id="addBenefitBtn" class="btn primary" aria-label="Benefit hinzufügen">+</button>
+            </div>
+          </section>
+
+          <div class="quickprofile-actions" id="actionsRow">
+            <p class="quickprofile-actions__note">Gespeichert wird nur die Schnellansicht, nicht das vollständige Firmenprofil.</p>
+            <div class="quickprofile-actions__buttons">
+              <button type="button" id="backToFirmProfileBtn" class="btn ghost">Zurück zum Profil</button>
+              <button type="submit" class="btn primary">Kurzprofil speichern</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <aside class="schnellprofil-aside">
+        <section class="schnellprofil-sidecard">
+          <p class="schnellprofil-sidecard__eyebrow">Wirkung</p>
+          <h2>Worauf Bewerbende zuerst achten</h2>
+          <ul class="schnellprofil-tip-list">
+            <li>klare Berufsbezeichnungen statt Sammelbegriffe</li>
+            <li>eine erkennbare Branche und ein eindeutiger Standort</li>
+            <li>konkrete Benefits, die sich vom Standard abheben</li>
+          </ul>
+        </section>
+
+        <section class="schnellprofil-sidecard">
+          <p class="schnellprofil-sidecard__eyebrow">Voransicht</p>
+          <h2>So wird die Schnellansicht eingesetzt</h2>
+          <ul class="schnellprofil-preview-list">
+            <li>sichtbar vor der Freigabe kompletter Bewerbungsunterlagen</li>
+            <li>entscheidend für den ersten Eindruck im Matching</li>
+            <li>ideal für präzise Berufe, Standort und echte Vorteile</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <script src="privacy-settings.js"></script>
+  <script src="discovery.js"></script>
+  <script src="script.js"></script>
+  <script>
+    function getFirmProfilePageUrl() {
+      return typeof window.buildRuntimeUrl === 'function'
+        ? window.buildRuntimeUrl('firma_profil.html')
+        : 'firma_profil.html';
+    }
+
+    function getQuickProfileReadonlyState() {
+      return new URLSearchParams(window.location.search).get('readonly') === '1'
+        || (window.isFirmQuickProfileEditableForAuth && !window.isFirmQuickProfileEditableForAuth(window.getStoredFirmAuth ? window.getStoredFirmAuth() : null));
+    }
+
+    function getFirmQuickProfileProfessions(firm) {
+      if (!firm) return [];
+      if (window.getOfferProfessionList && typeof window.getOfferProfessionList === 'function') {
+        return window.getOfferProfessionList(firm);
+      }
+      const source = Array.isArray(firm.berufe) && firm.berufe.length
+        ? firm.berufe
+        : [firm.beruf || firm.ausbildung || firm.ausbildungsplaetze || ''];
+      return source
+        .flatMap((entry) => String(entry || '').split(','))
+        .map((entry) => String(entry || '').trim())
+        .filter(Boolean);
+    }
+
+    function professionExists(professions, candidate) {
+      const normalizedCandidate = String(candidate || '').trim().toLowerCase();
+      return professions.some((entry) => String(entry || '').trim().toLowerCase() === normalizedCandidate);
+    }
+
+    function renderProfessionList(professions) {
+      const list = document.getElementById('professionList');
+      if (!list) return;
+      list.innerHTML = '';
+      const readonly = getQuickProfileReadonlyState();
+      (professions || []).forEach((profession, index) => {
+        const tag = document.createElement('span');
+        tag.className = 'benefit-checkbox';
+        if (readonly) {
+          tag.textContent = profession;
+        } else {
+          tag.innerHTML = `${profession}<button type="button" data-idx="${index}" class="benefit-remove-btn remove-profession-btn" aria-label="Ausbildungsplatz entfernen">×</button>`;
+        }
+        list.appendChild(tag);
+      });
+      const professionEditRow = document.getElementById('professionEditRow');
+      if (professionEditRow) professionEditRow.style.display = readonly ? 'none' : 'grid';
+    }
+
+    function renderBenefits(benefits) {
+      const list = document.getElementById('benefitsList');
+      list.innerHTML = '';
+      const readonly = getQuickProfileReadonlyState();
+      (benefits || []).forEach((benefit, index) => {
+        const tag = document.createElement('span');
+        tag.className = 'benefit-checkbox';
+        if (readonly) {
+          tag.textContent = benefit;
+        } else {
+          tag.innerHTML = `${benefit}<button type="button" data-idx="${index}" class="benefit-remove-btn remove-benefit-btn" aria-label="Benefit entfernen">×</button>`;
+        }
+        list.appendChild(tag);
+      });
+      const benefitEditRow = document.getElementById('benefitEditRow');
+      if (benefitEditRow) benefitEditRow.style.display = readonly ? 'none' : 'grid';
+    }
+
+    function updateQuickProfileReadonlyPresentation(readonly) {
+      if (document.body) {
+        document.body.classList.toggle('is-readonly-view', !!readonly);
+      }
+
+      const aside = document.querySelector('.schnellprofil-aside');
+      if (aside) {
+        aside.hidden = !!readonly;
+      }
+    }
+
+    function updateQuickProfileMeta(professions, benefits, readonly) {
+      updateQuickProfileReadonlyPresentation(readonly);
+
+      const modeChip = document.getElementById('quickProfileModeChip');
+      if (modeChip) {
+        modeChip.textContent = readonly ? 'Nur Ansicht' : 'Bearbeitungsmodus';
+        modeChip.setAttribute('data-state', readonly ? 'readonly' : 'edit');
+      }
+
+      const professionChip = document.getElementById('quickProfileProfessionCount');
+      if (professionChip) {
+        const count = Array.isArray(professions) ? professions.length : 0;
+        professionChip.textContent = count === 1 ? '1 Ausbildungsplatz' : `${count} Ausbildungsplätze`;
+      }
+
+      const benefitChip = document.getElementById('quickProfileBenefitCount');
+      if (benefitChip) {
+        const count = Array.isArray(benefits) ? benefits.length : 0;
+        benefitChip.textContent = count === 1 ? '1 Benefit' : `${count} Benefits`;
+      }
+
+      const topbarStatus = document.getElementById('quickProfileTopbarStatus');
+      if (topbarStatus) {
+        topbarStatus.textContent = readonly
+          ? 'Sie sehen hier die freigegebene Kurzansicht Ihres Betriebs.'
+          : 'Pflegen Sie hier die Kurzansicht, die Bewerbende vor der Unterlagenfreigabe sehen.';
+      }
+    }
+
+    function navigateToFirmProfilePage() {
+      const targetUrl = getFirmProfilePageUrl();
+
+      if (typeof window.navigateWithTransition === 'function') {
+        window.navigateWithTransition(targetUrl, 'Firmenprofil wird geöffnet...');
+        return;
+      }
+
+      window.location.href = targetUrl;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      let firm = null;
+      let offers = [];
+      let readonly = params.get('readonly') === '1';
+      const backLink = document.getElementById('quickProfileBackLink');
+      const backButton = document.getElementById('backToFirmProfileBtn');
+
+      if (backLink) {
+        backLink.href = getFirmProfilePageUrl();
+      }
+
+      if (backButton) {
+        backButton.addEventListener('click', function() {
+          navigateToFirmProfilePage();
+        });
+      }
+
+      if (readonly) {
+        Array.from(document.querySelectorAll('#kurzprofilForm input, #kurzprofilForm textarea, #kurzprofilForm select')).forEach((el) => {
+          el.setAttribute('disabled', 'disabled');
+        });
+        const professionEditRow = document.getElementById('professionEditRow');
+        if (professionEditRow) professionEditRow.style.display = 'none';
+        const benefitEditRow = document.getElementById('benefitEditRow');
+        if (benefitEditRow) benefitEditRow.style.display = 'none';
+        const actionsRow = document.getElementById('actionsRow');
+        if (actionsRow) actionsRow.style.display = 'none';
+
+        const firmId = params.get('firmId') || params.get('fid');
+        try {
+          offers = typeof loadOffers === 'function' ? loadOffers() : JSON.parse(localStorage.getItem('azubimatch_offers') || '[]');
+        } catch (e) {
+          offers = [];
+        }
+        if (firmId) {
+          firm = offers.find((entry) => entry.userId === firmId || entry.id === firmId || entry.userEmail === firmId);
+        }
+        if (!firm && offers.length > 0) firm = offers[0];
+        if (firm) {
+          if (firm.firma) document.getElementById('firma').value = firm.firma;
+          if (firm.stadt) document.getElementById('stadt').value = firm.stadt;
+          if (firm.plz) document.getElementById('plz').value = firm.plz;
+          if (firm.branche) document.getElementById('branche').value = firm.branche;
+          renderProfessionList(getFirmQuickProfileProfessions(firm));
+          if (firm.benefits && Array.isArray(firm.benefits)) renderBenefits(firm.benefits);
+          updateQuickProfileMeta(getFirmQuickProfileProfessions(firm), Array.isArray(firm.benefits) ? firm.benefits : [], true);
+        }
+      } else {
+        try {
+          offers = typeof loadOffers === 'function' ? loadOffers() : JSON.parse(localStorage.getItem('azubimatch_offers') || '[]');
+        } catch (e) {
+          offers = [];
+        }
+        const auth = window.getStoredFirmAuth ? window.getStoredFirmAuth() : null;
+        firm = offers.find((entry) => entry.userId === auth?.id || entry.userEmail === auth?.email);
+        if (window.isFirmQuickProfileEditableForAuth && !window.isFirmQuickProfileEditableForAuth(auth, offers)) {
+          readonly = true;
+          const lockNotice = document.getElementById('firmQuickProfileLockNotice');
+          if (lockNotice) {
+            lockNotice.style.display = 'block';
+            lockNotice.textContent = window.getFirmReleasePendingMessage ? window.getFirmReleasePendingMessage(firm) : 'Das Kurzprofil ist erst nach abgeschlossener Dokumentenprüfung bearbeitbar.';
+          }
+          Array.from(document.querySelectorAll('#kurzprofilForm input, #kurzprofilForm textarea, #kurzprofilForm select, #kurzprofilForm button')).forEach((el) => {
+            el.setAttribute('disabled', 'disabled');
+          });
+          const professionEditRow = document.getElementById('professionEditRow');
+          if (professionEditRow) professionEditRow.style.display = 'none';
+          const benefitEditRow = document.getElementById('benefitEditRow');
+          if (benefitEditRow) benefitEditRow.style.display = 'none';
+          const actionsRow = document.getElementById('actionsRow');
+          if (actionsRow) actionsRow.style.display = 'none';
+        }
+      }
+
+      const title = document.getElementById('schnellprofilTitle');
+      if (title) {
+        title.textContent = firm && firm.firma ? ('Kurzprofil von ' + firm.firma) : 'Kurzprofil für Firmen';
+      }
+
+      if (readonly) {
+        if (!firm) updateQuickProfileMeta([], [], true);
+        return;
+      }
+
+      const auth = window.getStoredFirmAuth ? window.getStoredFirmAuth() : null;
+      const firmRecord = offers.find((entry) => entry.userId === auth?.id || entry.userEmail === auth?.email);
+      let professions = getFirmQuickProfileProfessions(firmRecord);
+      let benefits = firmRecord && Array.isArray(firmRecord.benefits) ? [...firmRecord.benefits] : [];
+
+      if (firmRecord) {
+        if (firmRecord.firma) document.getElementById('firma').value = firmRecord.firma;
+        if (firmRecord.stadt) document.getElementById('stadt').value = firmRecord.stadt;
+        if (firmRecord.plz) document.getElementById('plz').value = firmRecord.plz;
+        if (firmRecord.branche) document.getElementById('branche').value = firmRecord.branche;
+      }
+
+      renderProfessionList(professions);
+      renderBenefits(benefits);
+      updateQuickProfileMeta(professions, benefits, false);
+
+      document.getElementById('addProfessionBtn').addEventListener('click', function() {
+        const input = document.getElementById('ausbildungsplaetze');
+        const value = input.value.trim();
+        if (!value || professionExists(professions, value)) {
+          input.value = '';
+          return;
+        }
+        professions.push(value);
+        renderProfessionList(professions);
+        updateQuickProfileMeta(professions, benefits, false);
+        input.value = '';
+      });
+
+      document.getElementById('ausbildungsplaetze').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('addProfessionBtn').click();
+        }
+      });
+
+      document.getElementById('professionList').addEventListener('click', function(e) {
+        if (!e.target.classList.contains('remove-profession-btn')) return;
+        const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+        professions.splice(idx, 1);
+        renderProfessionList(professions);
+        updateQuickProfileMeta(professions, benefits, false);
+      });
+
+      document.getElementById('addBenefitBtn').addEventListener('click', function() {
+        const input = document.getElementById('benefitInput');
+        const value = input.value.trim();
+        if (!value || benefits.includes(value)) {
+          input.value = '';
+          return;
+        }
+        benefits.push(value);
+        renderBenefits(benefits);
+        updateQuickProfileMeta(professions, benefits, false);
+        input.value = '';
+      });
+
+      document.getElementById('benefitInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('addBenefitBtn').click();
+        }
+      });
+
+      document.getElementById('benefitsList').addEventListener('click', function(e) {
+        if (!e.target.classList.contains('remove-benefit-btn')) return;
+        const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+        benefits.splice(idx, 1);
+        renderBenefits(benefits);
+        updateQuickProfileMeta(professions, benefits, false);
+      });
+
+      document.getElementById('kurzprofilForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!professions.length) {
+          alert('Bitte mindestens einen Ausbildungsplatz hinzufügen.');
+          return;
+        }
+
+        const nextOffers = typeof loadOffers === 'function' ? loadOffers() : [];
+        const currentAuth = window.getStoredFirmAuth ? window.getStoredFirmAuth() : null;
+        const idx = nextOffers.findIndex((entry) => entry.userId === currentAuth?.id || entry.userEmail === currentAuth?.email);
+        if (idx === -1) {
+          alert('Fehler: Firmenprofil nicht gefunden.');
+          return;
+        }
+
+        nextOffers[idx].firma = document.getElementById('firma').value.trim();
+        nextOffers[idx].stadt = document.getElementById('stadt').value.trim();
+        nextOffers[idx].plz = document.getElementById('plz').value.trim();
+        nextOffers[idx].branche = document.getElementById('branche').value.trim();
+        nextOffers[idx].berufe = [...professions];
+        nextOffers[idx].ausbildungsplaetze = professions.join(', ');
+        nextOffers[idx].beruf = professions[0] || nextOffers[idx].beruf || '';
+        nextOffers[idx].benefits = [...benefits];
+        saveOffers(nextOffers);
+        alert('Kurzprofil gespeichert!');
+        navigateToFirmProfilePage();
+      });
+    });
+  </script>
+</body>
+</html>

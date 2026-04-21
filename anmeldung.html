@@ -1,0 +1,360 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Anmeldung bei AzubiMatcher für Bewerbende und Betriebe. Melde dich an, um passende Ausbildungsplätze zu finden oder offene Stellen gezielt zu besetzen.">
+    <title>AzubiMatcher – Anmeldung</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page startseite-page auth-landing-page">
+    <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-orb orb-one" aria-hidden="true"></div>
+    <div class="bg-orb orb-two" aria-hidden="true"></div>
+
+    <div class="start-wrapper index-layout auth-layout">
+        <header class="index-topbar auth-topbar">
+            <a href="index.html" class="index-brand">AzubiMatcher</a>
+            <div class="index-nav-cluster">
+                <details class="index-directory">
+                    <summary>Seitenübersicht</summary>
+                    <div class="index-directory-panel">
+                        <div class="index-directory-group">
+                            <span class="index-directory-title">Hauptseiten</span>
+                            <a href="index.html">Start</a>
+                            <a href="home.html">Plattform</a>
+                            <a href="lehrberufe.html">Berufe</a>
+                        </div>
+                        <div class="index-directory-group">
+                            <span class="index-directory-title">Portale</span>
+                            <a href="bewerber.html">Bewerbende</a>
+                            <a href="firma.html">Unternehmen</a>
+                            <a href="anmeldung.html" aria-current="page">Anmeldung</a>
+                        </div>
+                        <div class="index-directory-group">
+                            <span class="index-directory-title">Weitere Seiten</span>
+                            <a href="trainings.html">Trainings</a>
+                        </div>
+                    </div>
+                </details>
+                <nav class="index-nav" aria-label="Hauptnavigation">
+                    <a href="index.html">Start</a>
+                    <a href="home.html">Plattform</a>
+                    <a href="lehrberufe.html">Berufe</a>
+                    <a href="bewerber.html">Bewerbende</a>
+                    <a href="firma.html">Unternehmen</a>
+                </nav>
+                <div class="index-meta-nav" aria-label="Sekundäre Navigation">
+                    <a href="anmeldung.html" aria-current="page">Anmeldung</a>
+                </div>
+            </div>
+            <div class="index-topbar-actions">
+                <a href="index.html" class="btn ghost index-login-btn">Zurück</a>
+            </div>
+        </header>
+
+        <main id="main-content" class="auth-main auth-main--solo">
+            <section class="auth-panel-surface auth-panel-surface--solo">
+                <div class="login-container auth-login-card auth-login-card--solo">
+                    <div class="auth-login-head">
+                        <p class="auth-login-kicker">AzubiMatcher</p>
+                        <h1 class="auth-solo-title">Anmelden</h1>
+                    </div>
+                    <form id="loginForm" class="auth-login-form">
+                        <label for="email">E-Mail</label>
+                        <input type="email" id="email" name="email" autocomplete="email" required>
+                        <label for="password">Passwort</label>
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+                        <button type="submit" class="btn primary auth-submit-btn" style="margin-top:0.45rem;">Anmelden</button>
+                        <div id="loginError" class="auth-login-error" role="alert" aria-live="polite">Falsche Zugangsdaten oder E-Mail noch nicht bestätigt.</div>
+                    </form>
+
+                    <div class="auth-divider"><span>Noch kein Konto?</span></div>
+
+                    <div class="auth-register-btns">
+                        <a href="bewerber.html?auth=1&amp;start=register" class="btn ghost auth-register-btn">Als Bewerber/in registrieren</a>
+                        <a href="firma.html?start=register" class="btn ghost auth-register-btn">Als Unternehmen registrieren</a>
+                    </div>
+
+                    <div class="auth-login-links">
+                        <a id="forgotStudentLink" href="bewerber.html?auth=1&amp;forgot=1" hidden>Passwort für Bewerbende zurücksetzen</a>
+                        <a id="forgotFirmLink" href="firma.html?forgot=1" hidden>Passwort für Firmen zurücksetzen</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="start-footer auth-footer">
+            <span>© 2026 AzubiMatcher</span>
+            <div class="index-footer-links">
+                    <a href="datenschutzerklaerung.html">Datenschutz</a>
+                <a href="#" data-open-privacy-settings>Privatsphäre & Cookies</a>
+                    <a href="impressum.html">Impressum</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="privacy-settings.js"></script>
+    <script>
+    var USER_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
+    function secretHashingAvailable() {
+        return !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues && window.TextEncoder);
+    }
+
+    function bytesToBase64(bytes) {
+        var binary = '';
+        var chunkSize = 0x8000;
+        for (var i = 0; i < bytes.length; i += chunkSize) {
+            var chunk = bytes.subarray(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        return btoa(binary);
+    }
+
+    function base64ToBytes(value) {
+        var binary = atob(String(value || ''));
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+    }
+
+    function legacySecretHash(value) {
+        return bytesToBase64(new TextEncoder().encode(String(value || '')));
+    }
+
+    function isStoredSecretRecord(value) {
+        return !!value && typeof value === 'object' && value.version === 2 && value.algorithm === 'pbkdf2-sha256' && value.salt && value.hash;
+    }
+
+    async function deriveSecretHash(secret, saltBase64, iterations) {
+        var encoder = new TextEncoder();
+        var keyMaterial = await window.crypto.subtle.importKey('raw', encoder.encode(String(secret || '')), 'PBKDF2', false, ['deriveBits']);
+        var derivedBits = await window.crypto.subtle.deriveBits({
+            name: 'PBKDF2',
+            hash: 'SHA-256',
+            salt: base64ToBytes(saltBase64),
+            iterations: iterations
+        }, keyMaterial, 256);
+        return bytesToBase64(new Uint8Array(derivedBits));
+    }
+
+    async function createStoredSecret(secret, iterations) {
+        if (!secretHashingAvailable()) {
+            return legacySecretHash(secret);
+        }
+        var saltBytes = new Uint8Array(16);
+        window.crypto.getRandomValues(saltBytes);
+        var salt = bytesToBase64(saltBytes);
+        return {
+            version: 2,
+            algorithm: 'pbkdf2-sha256',
+            salt: salt,
+            iterations: iterations || 120000,
+            hash: await deriveSecretHash(secret, salt, iterations || 120000),
+            createdAt: new Date().toISOString()
+        };
+    }
+
+    async function verifyStoredSecret(secret, storedValue) {
+        if (isStoredSecretRecord(storedValue)) {
+            if (!secretHashingAvailable()) {
+                throw new Error('Sicherer Passwortabgleich ist in diesem Browserkontext nicht verfügbar.');
+            }
+            var derived = await deriveSecretHash(secret, storedValue.salt, storedValue.iterations || 120000);
+            return {
+                valid: storedValue.hash === derived,
+                needsUpgrade: false
+            };
+        }
+
+        if (typeof storedValue === 'string' && storedValue) {
+            var valid = storedValue === legacySecretHash(secret);
+            return {
+                valid: valid,
+                needsUpgrade: valid && secretHashingAvailable()
+            };
+        }
+
+        return {
+            valid: false,
+            needsUpgrade: false
+        };
+    }
+
+    function buildTimedSession(auth) {
+        var loginTime = auth && auth.loggedInAt ? new Date(auth.loggedInAt).getTime() : Date.now();
+        var startTime = isFinite(loginTime) && loginTime > 0 ? loginTime : Date.now();
+        var next = Object.assign({}, auth, {
+            loggedInAt: new Date(startTime).toISOString(),
+            sessionExpiresAt: new Date(startTime + USER_SESSION_TTL_MS).toISOString()
+        });
+        return next;
+    }
+
+    function normalizeText(str) {
+        return (str || '').trim().toLowerCase();
+    }
+
+    function storeAuthRecord(key, value) {
+        if (window.AzubiMatchPrivacy && typeof window.AzubiMatchPrivacy.writeAuthSession === 'function') {
+            window.AzubiMatchPrivacy.writeAuthSession(key, value);
+            return;
+        }
+        localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    var forgotPasswordRevealState = {
+        email: '',
+        failures: 0
+    };
+
+    function setForgotPasswordLinksVisible(visible) {
+        var studentLink = document.getElementById('forgotStudentLink');
+        var firmLink = document.getElementById('forgotFirmLink');
+        if (studentLink) studentLink.hidden = !visible;
+        if (firmLink) firmLink.hidden = !visible;
+    }
+
+    function resetForgotPasswordGate() {
+        forgotPasswordRevealState.email = '';
+        forgotPasswordRevealState.failures = 0;
+        setForgotPasswordLinksVisible(false);
+    }
+
+    function registerForgotPasswordFailure(email) {
+        var normalizedEmail = normalizeText(email);
+        if (!normalizedEmail) {
+            resetForgotPasswordGate();
+            return 0;
+        }
+        if (forgotPasswordRevealState.email !== normalizedEmail) {
+            forgotPasswordRevealState.email = normalizedEmail;
+            forgotPasswordRevealState.failures = 0;
+        }
+        forgotPasswordRevealState.failures += 1;
+        setForgotPasswordLinksVisible(forgotPasswordRevealState.failures >= 2);
+        return forgotPasswordRevealState.failures;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        resetForgotPasswordGate();
+        var onboardEmail = localStorage.getItem('azubimatch_onboard_firm_email');
+        if (onboardEmail) {
+            document.getElementById('email').value = onboardEmail;
+            localStorage.removeItem('azubimatch_onboard_firm_email');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var errorBox = document.getElementById('loginError');
+            errorBox.classList.remove('is-visible');
+
+            var email = document.getElementById('email').value.trim().toLowerCase();
+            var password = document.getElementById('password').value;
+            var matchedConfirmedAccount = false;
+
+            var students = JSON.parse(localStorage.getItem('azubimatch_student_users') || '[]');
+            var student = null;
+            for (var studentIndex = 0; studentIndex < students.length; studentIndex++) {
+                var candidateStudent = students[studentIndex];
+                if (normalizeText(candidateStudent.email) !== email || !candidateStudent.emailConfirmed) {
+                    continue;
+                }
+                var studentCheck;
+                try {
+                    studentCheck = await verifyStoredSecret(password, candidateStudent.passwordHash);
+                } catch (err) {
+                    errorBox.textContent = err.message;
+                    errorBox.classList.add('is-visible');
+                    return;
+                }
+                matchedConfirmedAccount = true;
+                if (!studentCheck.valid) {
+                    continue;
+                }
+                if (studentCheck.needsUpgrade) {
+                    candidateStudent.passwordHash = await createStoredSecret(password, 120000);
+                    localStorage.setItem('azubimatch_student_users', JSON.stringify(students));
+                }
+                student = candidateStudent;
+                break;
+            }
+
+            if (student) {
+                resetForgotPasswordGate();
+                var allProfiles = JSON.parse(localStorage.getItem('azubimatch_students') || '[]');
+                var realProfile = allProfiles.find(function(profile) {
+                    return profile.userId === student.id || profile.userEmail === student.email;
+                });
+                var id = realProfile ? realProfile.id : (student.profilCode || student.id);
+                var name = realProfile ? realProfile.name : student.name;
+                storeAuthRecord('azubimatch_student_auth', buildTimedSession({ id: id, name: name, email: student.email }));
+                window.location.href = buildRuntimeUrl('bewerber_profil.html');
+                return;
+            }
+
+            var firms = JSON.parse(localStorage.getItem('azubimatch_firm_users') || '[]');
+            var firm = null;
+            for (var firmIndex = 0; firmIndex < firms.length; firmIndex++) {
+                var candidateFirm = firms[firmIndex];
+                if (normalizeText(candidateFirm.email) !== email || !candidateFirm.emailConfirmed) {
+                    continue;
+                }
+                var firmCheck;
+                try {
+                    firmCheck = await verifyStoredSecret(password, candidateFirm.passwordHash);
+                } catch (err) {
+                    errorBox.textContent = err.message;
+                    errorBox.classList.add('is-visible');
+                    return;
+                }
+                matchedConfirmedAccount = true;
+                if (!firmCheck.valid) {
+                    continue;
+                }
+                if (firmCheck.needsUpgrade) {
+                    candidateFirm.passwordHash = await createStoredSecret(password, 120000);
+                    localStorage.setItem('azubimatch_firm_users', JSON.stringify(firms));
+                }
+                firm = candidateFirm;
+                break;
+            }
+
+            if (firm) {
+                resetForgotPasswordGate();
+                storeAuthRecord('azubimatch_firm_auth', buildTimedSession({ id: firm.id, name: firm.name, email: firm.email }));
+                window.location.href = buildRuntimeUrl('firma_profil.html');
+                return;
+            }
+
+            var simOffers = JSON.parse(localStorage.getItem('azubimatch_offers') || '[]');
+            var simFirm = simOffers.find(function(offer) {
+                return normalizeText(offer.userEmail) === email;
+            });
+
+            if (simFirm) {
+                resetForgotPasswordGate();
+                storeAuthRecord('azubimatch_firm_auth', buildTimedSession({ id: simFirm.userId || simFirm.id, name: simFirm.firma, email: simFirm.userEmail }));
+                window.location.href = buildRuntimeUrl('firma_profil.html');
+                return;
+            }
+
+            if (matchedConfirmedAccount) {
+                var failureCount = registerForgotPasswordFailure(email);
+                errorBox.textContent = failureCount >= 2
+                    ? 'Passwort falsch. Die Links zum Zurücksetzen sind jetzt eingeblendet.'
+                    : 'Passwort falsch. Bitte erneut versuchen.';
+            } else {
+                resetForgotPasswordGate();
+                errorBox.textContent = 'Falsche Zugangsdaten oder E-Mail noch nicht bestätigt.';
+            }
+            errorBox.classList.add('is-visible');
+        });
+    });
+    </script>
+</body>
+</html>

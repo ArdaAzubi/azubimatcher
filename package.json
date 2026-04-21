@@ -1,0 +1,35 @@
+{
+  "name": "azubimatch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AzubiMatch – Ausbildungsplatz-Matching-Plattform",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "start": "node server/index.mjs",
+    "frontend:dev": "next dev",
+    "frontend:build": "next build",
+    "frontend:start": "next start",
+    "build": "next build",
+    "strato:build": "node tools/build_strato_wordpress_theme.mjs",
+    "db:setup": "node tools/db_setup.mjs",
+    "db:migrate": "node tools/db_migrate.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "next": "^16.2.4",
+    "pg": "^8.13.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "playwright": "^1.44.0"
+  }
+}

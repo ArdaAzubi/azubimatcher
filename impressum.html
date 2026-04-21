@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AzubiMatcher – Impressum</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f0f4fb;
+      --panel: #ffffff;
+      --text: #172b44;
+      --muted: #58677b;
+      --line: #dbe4f0;
+      --accent: #1a56db;
+      --accent-dark: #1240b0;
+      --accent-soft: #e8f0fe;
+      --warn: #9a3412;
+      --warn-soft: #fff4ed;
+      --shadow-sm: 0 2px 8px rgba(15,23,42,0.06);
+      --shadow: 0 20px 48px rgba(15,23,42,0.10);
+      --radius: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Topnav ── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 24px;
+    }
+    .topnav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      gap: 12px;
+    }
+    .topnav-brand {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .topnav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .topnav-links a {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: #f8fbff;
+      color: var(--text);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .topnav-links a:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .topnav-links a.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .topnav-links a.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1240b0 0%, #1a56db 45%, #2d74f7 100%);
+      color: #fff;
+      padding: 64px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .hero-sub {
+      margin: 0 auto;
+      max-width: 560px;
+      font-size: 1.05rem;
+      opacity: 0.88;
+      line-height: 1.6;
+    }
+    .hero-meta {
+      margin-top: 22px;
+      font-size: 0.82rem;
+      opacity: 0.7;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Content wrapper ── */
+    .content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 72px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 10px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      margin-top: 40px;
+    }
+    .section-header:first-of-type { margin-top: 0; }
+    .section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    /* ── Cards ── */
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 20px 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card p { margin: 8px 0 0; }
+    .card p:first-child { margin-top: 0; }
+
+    .card-warn {
+      background: var(--warn-soft);
+      border-color: rgba(154,52,18,0.22);
+      color: var(--warn);
+    }
+    .card-info {
+      background: var(--accent-soft);
+      border-color: rgba(26,86,219,0.18);
+    }
+    .card-plain {
+      background: #f6f9fe;
+    }
+
+    /* ── Grid ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .card-grid .card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card-grid .card-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .card-grid .card-label svg { flex-shrink: 0; }
+    .card-grid .card p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+
+    /* ── Prose (no card) ── */
+    .prose p { margin: 0 0 14px; }
+    .prose p:last-child { margin-bottom: 0; }
+
+    /* ── Divider ── */
+    hr.divider {
+      border: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line) 30%, var(--line) 70%, transparent);
+      margin: 44px 0 28px;
+    }
+
+    /* ── Footer ── */
+    .footnote {
+      background: #f0f5ff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+    strong { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .hero { padding: 48px 18px 40px; }
+      .content { padding: 36px 16px 56px; }
+      .topnav-links a.secondary { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav" aria-label="Seitennavigation">
+    <div class="topnav-inner">
+      <a href="index.html" class="topnav-brand">AzubiMatcher</a>
+      <div class="topnav-links">
+        <a class="secondary" href="index.html" onclick="if(window.history.length>1){window.history.back();return false;}">← Zurück</a>
+        <a class="secondary" href="index.html">Startseite</a>
+        <a class="primary" href="home.html">Mehr erfahren</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" role="banner">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5A6.5 6.5 0 1 0 8 14.5A6.5 6.5 0 0 0 8 1.5zm0 2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0 3.5c.55 0 1 .45 1 1v3a1 1 0 1 1-2 0V8.5c0-.55.45-1 1-1z" fill="currentColor"/></svg>
+      Rechtliche Angaben
+    </div>
+    <h1>Impressum</h1>
+    <p class="hero-sub">Angaben gemäß § 5 DDG. Dieses Impressum gilt für die Website und Plattform AzubiMatcher einschließlich aller öffentlichen Informationsseiten und Portalzugänge.</p>
+    <p class="hero-meta">Stand: 13. April 2026</p>
+  </header>
+
+  <main class="content" id="main-content">
+
+    <div class="section">
+      <div class="card card-warn">
+        <strong>⚠ Wichtiger Hinweis vor Veröffentlichung:</strong> Die folgenden Platzhalter müssen vor einem öffentlichen Live-Betrieb mit den tatsächlichen Anbieterangaben ersetzt werden. Ohne ladungsfähige Anschrift, belastbare Kontaktadresse und ggf. Registerdaten ist das Impressum nicht vollständig.
+      </div>
+    </div>
+
+    <!-- 1 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">1</span>
+        <h2>Angaben gemäß § 5 DDG</h2>
+      </div>
+      <div class="card card-info">
+        <p><strong>Anbieter:</strong> [bitte vollständigen Namen oder Firmierung ergänzen]</p>
+        <p><strong>Rechtsform:</strong> [z. B. Einzelunternehmen, GbR, GmbH]</p>
+        <p><strong>Anschrift:</strong><br>[Straße und Hausnummer]<br>[PLZ und Ort]<br>[Land, falls erforderlich]</p>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">2</span>
+        <h2>Vertretungsberechtigte Person</h2>
+      </div>
+      <div class="card card-plain">
+        <p>[bitte vertretungsberechtigte Person ergänzen, z. B. Geschäftsführer oder Inhaber]</p>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">3</span>
+        <h2>Kontakt</h2>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-label">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm2 0v.01L10 11 16 5.01V5H4zm0 2.4V15h12V7.4l-5.45 4.9a1 1 0 0 1-1.1 0L4 7.4z" fill="currentColor"/></svg>
+            E-Mail
+          </div>
+          <p>[bitte ergänzen]</p>
+        </div>
+        <div class="card">
+          <div class="card-label">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 4a1 1 0 0 1 1-1h2.5a1 1 0 0 1 .97.757l.7 2.8a1 1 0 0 1-.27.98l-1.14 1.14a11.05 11.05 0 0 0 4.55 4.55l1.14-1.14a1 1 0 0 1 .98-.27l2.8.7A1 1 0 0 1 17 13.5V16a1 1 0 0 1-1 1C8.27 17 3 11.73 3 5V4z" fill="currentColor"/></svg>
+            Telefon
+          </div>
+          <p>[optional ergänzen]</p>
+        </div>
+        <div class="card">
+          <div class="card-label">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
+            Rechtliche Anliegen
+          </div>
+          <p>[bitte ergänzen, falls abweichend]</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">4</span>
+        <h2>Registereintrag</h2>
+      </div>
+      <div class="card card-plain">
+        <p><strong>Handelsregister:</strong> [falls vorhanden ergänzen]</p>
+        <p><strong>Registergericht:</strong> [falls vorhanden ergänzen]</p>
+        <p><strong>Registernummer:</strong> [falls vorhanden ergänzen]</p>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">5</span>
+        <h2>Umsatzsteuer</h2>
+      </div>
+      <div class="card card-plain">
+        <p><strong>USt-IdNr. gemäß § 27a UStG:</strong> [falls vorhanden ergänzen]</p>
+        <p><strong>Wirtschafts-IdNr. gemäß § 139c AO:</strong> [falls vorhanden ergänzen]</p>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">6</span>
+        <h2>Verantwortlich für den Inhalt</h2>
+      </div>
+      <div class="card card-plain">
+        <p><strong>Verantwortliche Person:</strong> [bitte ergänzen]</p>
+        <p><strong>Anschrift:</strong> [falls abweichend von oben ergänzen]</p>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">7</span>
+        <h2>Journalistisch-redaktionelle Inhalte</h2>
+      </div>
+      <div class="card card-plain">
+        <p>Sofern auf einzelnen Seiten journalistisch-redaktionelle Inhalte im Sinne von § 18 Abs. 2 MStV veröffentlicht werden, ist hier die verantwortliche Person zu ergänzen:</p>
+        <p>[Name und Anschrift ergänzen oder Abschnitt entfernen, wenn nicht einschlägig]</p>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">8</span>
+        <h2>Streitbeilegung</h2>
+      </div>
+      <div class="card card-plain">
+        <p>Die Europäische Kommission stellt seit dem 20. Juli 2025 keine Plattform zur Online-Streitbeilegung mehr bereit. Eine Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle besteht nur, wenn der Anbieter dazu gesetzlich verpflichtet ist oder sich freiwillig dazu bereit erklärt.</p>
+        <p>[bitte ergänzen, ob Bereitschaft oder gesetzliche Verpflichtung zur Teilnahme besteht]</p>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">9</span>
+        <h2>Haftung für Inhalte</h2>
+      </div>
+      <div class="prose">
+        <p>Die Inhalte dieses Angebots wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden, soweit gesetzlich zulässig. Gesetzliche Verantwortlichkeiten nach allgemeinen Vorschriften bleiben unberührt.</p>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">10</span>
+        <h2>Haftung für Links</h2>
+      </div>
+      <div class="prose">
+        <p>Dieses Angebot enthält gegebenenfalls Links zu externen Websites Dritter. Auf deren Inhalte besteht kein Einfluss. Für die Inhalte verlinkter Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar.</p>
+      </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">11</span>
+        <h2>Urheberrecht</h2>
+      </div>
+      <div class="prose">
+        <p>Die auf dieser Website erstellten Inhalte, Texte, Designs und Strukturen unterliegen dem anwendbaren Urheberrecht. Soweit Inhalte Dritter verwendet werden, sind deren Rechte zu beachten. Eine Vervielfältigung oder Weiterverwendung außerhalb der gesetzlichen Grenzen bedarf der vorherigen Zustimmung der jeweiligen Rechteinhaber.</p>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">12</span>
+        <h2>Bildnachweise und Quellen</h2>
+      </div>
+      <div class="card card-plain">
+        <p>[bitte ergänzen, falls eigene Bilder, Stockmaterial, Logos oder externe Grafiken verwendet werden und eine Nennung erforderlich ist]</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="footnote" role="note">
+      Diese Vorlage wurde für AzubiMatcher auf den aktuellen Projektstand angepasst. Sie ersetzt keine individuelle Rechtsberatung. Vor Veröffentlichung sollten Betreiberangaben, Registerdaten und Pflichtinformationen rechtlich geprüft und final ergänzt werden.
+    </div>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- LKW/Lastwagen -->
+  <rect x="16" y="30" width="32" height="22" rx="3" stroke="currentColor" stroke-width="2.5"/>
+  <rect x="20" y="35" width="8" height="8" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="50" y="26" width="44" height="28" stroke="currentColor" stroke-width="2.5"/>
+  <!-- Räder -->
+  <circle cx="26" cy="56" r="5" stroke="currentColor" stroke-width="2.5"/>
+  <circle cx="74" cy="57" r="5" stroke="currentColor" stroke-width="2.5"/>
+  <circle cx="88" cy="57" r="5" stroke="currentColor" stroke-width="2.5"/>
+  <!-- Bodenline -->
+  <line x1="12" y1="62" x2="104" y2="62" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>

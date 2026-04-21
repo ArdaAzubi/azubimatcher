@@ -1,0 +1,115 @@
+import { Router } from 'express';
+import bcrypt from 'bcryptjs';
+import pool from '../db.mjs';
+import { signToken } from '../auth.mjs';
+
+const router = Router();
+
+// POST /api/auth/register
+router.post('/register', async (req, res) => {
+  const { email, password, role } = req.body ?? {};
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'E-Mail und Passwort sind erforderlich.' });
+  }
+
+  const normalizedEmail = String(email).toLowerCase().trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return res.status(400).json({ error: 'Ungueltige E-Mail-Adresse.' });
+  }
+
+  if (String(password).length < 6) {
+    return res.status(400).json({ error: 'Passwort muss mindestens 6 Zeichen haben.' });
+  }
+
+  const normalizedRole = role === 'firm' ? 'firm' : 'student';
+
+  try {
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
+    if (existing.rowCount > 0) {
+      return res.status(409).json({ error: 'Diese E-Mail ist bereits registriert.' });
+    }
+
+    const hash = await bcrypt.hash(String(password), 12);
+    const result = await pool.query(
+      'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role, created_at',
+      [normalizedEmail, hash, normalizedRole]
+    );
+
+    const user = result.rows[0];
+    const token = signToken({ id: user.id, email: user.email, role: user.role });
+
+    return res.status(201).json({
+      token,
+      user: { id: user.id, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error('[register]', err.message);
+    return res.status(500).json({ error: 'Registrierung fehlgeschlagen. Bitte erneut versuchen.' });
+  }
+});
+
+// POST /api/auth/login
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body ?? {};
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'E-Mail und Passwort sind erforderlich.' });
+  }
+
+  const normalizedEmail = String(email).toLowerCase().trim();
+
+  try {
+    const result = await pool.query(
+      'SELECT id, email, password, role FROM users WHERE email = $1',
+      [normalizedEmail]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).json({ error: 'E-Mail oder Passwort falsch.' });
+    }
+
+    const user = result.rows[0];
+    const valid = await bcrypt.compare(String(password), user.password);
+
+    if (!valid) {
+      return res.status(401).json({ error: 'E-Mail oder Passwort falsch.' });
+    }
+
+    const token = signToken({ id: user.id, email: user.email, role: user.role });
+
+    return res.json({
+      token,
+      user: { id: user.id, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error('[login]', err.message);
+    return res.status(500).json({ error: 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.' });
+  }
+});
+
+// GET /api/auth/me
+router.get('/me', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  try {
+    const { verifyToken } = await import('../auth.mjs');
+    const payload = verifyToken(token);
+    const result = await pool.query('SELECT id, email, role, created_at FROM users WHERE id = $1', [payload.id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+    }
+
+    return res.json({ user: result.rows[0] });
+  } catch {
+    return res.status(401).json({ error: 'Sitzung abgelaufen.' });
+  }
+});
+
+export default router;

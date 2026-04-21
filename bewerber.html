@@ -1,0 +1,689 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ich suche einen Ausbildungsplatz</title>
+	<script>
+	(function() {
+		try {
+			if (/(?:\?|&)iosfix=1(?:&|$)/.test(window.location.search || "")) {
+				document.documentElement.classList.add("ios-visibility-fallback");
+			}
+			if (/(?:\?|&)lite=1(?:&|$)/.test(window.location.search || "")) {
+				document.documentElement.classList.add("ios-lite-fallback");
+			}
+		} catch (err) {
+			// Intentionally ignore and keep default rendering.
+		}
+	})();
+	</script>
+	<link rel="stylesheet" href="style.css">
+</head>
+	<body class="portal-entry-page bewerber-entry-page startseite-page">
+	<style id="bewerberCriticalVisibilityFallback">
+		body.bewerber-entry-page .index-topbar,
+		body.bewerber-entry-page .hero > * {
+			opacity: 1 !important;
+			visibility: visible !important;
+			transform: none !important;
+			animation: none !important;
+		}
+
+		body.bewerber-entry-page #authPanel {
+			display: block !important;
+		}
+
+		body.bewerber-entry-page.bewerber-entry-page--editing #authPanel {
+			display: none !important;
+		}
+
+		body.bewerber-entry-page.bewerber-entry-page--editing #profilePanel {
+			display: block !important;
+		}
+
+		body.bewerber-entry-page.bewerber-entry-page--editing #messagesPanel {
+			display: none !important;
+		}
+
+		body.bewerber-entry-page.bewerber-entry-page--auth-only #authPanel {
+			display: block !important;
+		}
+
+		body.bewerber-entry-page.bewerber-entry-page--auth-only #profilePanel,
+		body.bewerber-entry-page.bewerber-entry-page--auth-only #messagesPanel {
+			display: none !important;
+		}
+
+		html.ios-lite-fallback,
+		html.ios-lite-fallback body {
+			background: #f8fafc !important;
+			color: #0f172a !important;
+			opacity: 1 !important;
+			visibility: visible !important;
+		}
+
+		html.ios-lite-fallback body > * {
+			display: none !important;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback {
+			display: block !important;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback .lite-card {
+			margin: 1rem;
+			padding: 1rem;
+			background: #ffffff;
+			border: 1px solid #cbd5e1;
+			border-radius: 14px;
+			box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+			font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback h1 {
+			margin: 0 0 0.75rem;
+			font-size: 1.25rem;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback p {
+			margin: 0 0 0.75rem;
+			line-height: 1.5;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback a {
+			display: block;
+			margin: 0.6rem 0;
+			padding: 0.7rem 0.9rem;
+			text-decoration: none;
+			font-weight: 700;
+			border-radius: 10px;
+			text-align: center;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback .lite-primary {
+			background: #0f62fe;
+			color: #ffffff;
+		}
+
+		html.ios-lite-fallback #iosLiteFallback .lite-secondary {
+			background: #e2e8f0;
+			color: #0f172a;
+		}
+	</style>
+	<section id="iosLiteFallback" style="display:none" aria-label="Notfallansicht für iPhone">
+		<div class="lite-card">
+			<h1>Notfallansicht aktiv</h1>
+			<p>Falls dein iPhone die normale Seite nicht anzeigt, nutze bitte diesen direkten Zugang.</p>
+			<a class="lite-primary" href="bewerber.html?edit=1&iosfix=1">Profilformular öffnen</a>
+			<a class="lite-secondary" href="anmeldung.html">Anmeldung öffnen</a>
+		</div>
+	</section>
+	<a href="#main-content" class="skip-link">Zum Inhalt springen</a>
+	<div class="bg-grid" aria-hidden="true"></div>
+	<div class="bg-orb orb-one" aria-hidden="true"></div>
+	<div class="bg-orb orb-two" aria-hidden="true"></div>
+	<div class="start-wrapper index-layout portal-entry-wrapper">
+		<header class="index-topbar portal-entry-topbar">
+			<a href="index.html" class="index-brand">AzubiMatcher</a>
+			<div class="index-nav-cluster">
+				<details class="index-directory">
+					<summary>Seitenübersicht</summary>
+					<div class="index-directory-panel">
+						<div class="index-directory-group">
+							<span class="index-directory-title">Hauptseiten</span>
+							<a href="index.html">Start</a>
+							<a href="home.html">Plattform</a>
+							<a href="lehrberufe.html">Berufe</a>
+						</div>
+						<div class="index-directory-group">
+							<span class="index-directory-title">Portale</span>
+							<a href="bewerber.html" aria-current="page">Bewerbende</a>
+							<a href="firma.html">Unternehmen</a>
+							<a href="bewerber_praktikum.html">Schulpraktikum</a>
+							<a href="anmeldung.html">Anmeldung</a>
+						</div>
+						<div class="index-directory-group">
+							<span class="index-directory-title">Weitere Seiten</span>
+							<a href="trainings.html">Trainings</a>
+						</div>
+					</div>
+				</details>
+				<nav class="index-nav" aria-label="Hauptnavigation">
+					<a href="index.html">Start</a>
+					<a href="home.html">Plattform</a>
+					<a href="lehrberufe.html">Berufe</a>
+					<a href="bewerber.html" aria-current="page">Bewerbende</a>
+					<a href="firma.html">Unternehmen</a>
+				</nav>
+				<div class="index-meta-nav" aria-label="Sekundäre Navigation">
+					<a href="anmeldung.html">Anmeldung</a>
+					<a href="#student-praktikum">Schulpraktikum</a>
+				</div>
+			</div>
+			<div class="index-topbar-actions">
+				<a href="anmeldung.html" class="btn primary index-login-btn">Anmelden oder registrieren</a>
+			</div>
+		</header>
+	<main id="main-content" class="hero portal-page bewerber-entry-layout portal-entry-main">
+		<section class="bewerber-intro-band">
+			<div class="bewerber-intro-copy">
+				<p class="eyebrow">Portal für Bewerbende</p>
+				<h1><span class="title-stack"><span class="title-stack__line">Ausbildungsplatz gezielt</span><span class="title-stack__line title-stack__line--offset">und professionell finden</span></span></h1>
+				<p class="lead">Erstelle ein seriöses Kurzprofil, hinterlege deine Unterlagen vollständig und entscheide später selbst, welche Firma Zugriff auf deine Bewerbungsdokumente erhält. Wenn du mit Behinderung lebst oder bestimmte Unterstützung benötigst, soll dein Einstieg nicht schwerer, sondern passender werden.</p>
+			</div>
+			<div class="bewerber-intro-brief">
+				<p class="bewerber-intro-brief__label">So funktioniert es</p>
+				<div class="bewerber-intro-brief__list">
+					<div class="bewerber-intro-brief__item"><strong>1</strong><span>Registrieren und Profil vollständig anlegen.</span></div>
+					<div class="bewerber-intro-brief__item"><strong>2</strong><span>Im Matching zuerst nur mit deinem Kurzprofil und klaren Rahmenbedingungen sichtbar werden.</span></div>
+					<div class="bewerber-intro-brief__item"><strong>3</strong><span>Unterlagen erst nach eigener Freigabe an passende Firmen teilen, die auch Teilhabe ernst nehmen.</span></div>
+				</div>
+			</div>
+		</section>
+
+		<section class="panel portal-form student-clickgo-card" aria-labelledby="studentClickGoHeading">
+			<p class="student-clickgo-card__eyebrow">Schnellstart für Schüler</p>
+			<div class="student-clickgo-card__head">
+				<h2 id="studentClickGoHeading">Klick and Go: In 3 Schritten zum Start</h2>
+				<p>Wir führen dich direkt durch die Registrierung. Du brauchst nur E-Mail, Passwort und deinen Namen.</p>
+			</div>
+			<div class="student-clickgo-card__steps" aria-label="Schnellstart-Schritte">
+				<div class="student-clickgo-step" data-clickgo-step="1"><strong>Schritt 1</strong><span>Registrierung öffnen und Name ergänzen.</span></div>
+				<div class="student-clickgo-step" data-clickgo-step="2"><strong>Schritt 2</strong><span>Code aus der E-Mail eingeben und Zugang bestätigen.</span></div>
+				<div class="student-clickgo-step" data-clickgo-step="3"><strong>Schritt 3</strong><span>Profil speichern und passende Ausbildungswege sehen.</span></div>
+			</div>
+			<div class="actions student-clickgo-card__actions">
+				<button type="button" class="btn primary" data-student-quick-action="register">Jetzt schnell registrieren</button>
+				<button type="button" class="btn ghost" data-student-quick-action="login">Ich habe schon ein Konto</button>
+				<a class="btn ghost" href="lehrberufe.html">Erst Berufe anschauen</a>
+			</div>
+		</section>
+
+		<section class="internship-access-card portal-internship-stage" id="student-praktikum" aria-labelledby="studentInternshipMainStageHeading">
+			<p class="internship-access-card__eyebrow">Schulpraktikum direkt erreichbar</p>
+			<div class="internship-access-card__body">
+				<div class="internship-access-card__content">
+					<h2 id="studentInternshipMainStageHeading">Du suchst gerade einen Schulpraktikumsplatz?</h2>
+					<p class="internship-access-card__copy">Dann nutze den separaten Schulpraktikumsbereich. Dein Konto bleibt gleich, aber Schulpraktikum und Ausbildung laufen als zwei klar getrennte Wege mit eigenen Angaben.</p>
+					<p class="internship-access-card__meta">So startest du direkt im passenden Bereich, statt dein Ausbildungsprofil erst dafür umzubauen.</p>
+					<div class="portal-internship-stage__chips" aria-label="Vorteile des Praktikumsbereichs">
+						<span class="portal-internship-stage__chip">eigener Match-Pool</span>
+						<span class="portal-internship-stage__chip">gleiches Konto</span>
+						<span class="portal-internship-stage__chip">separater Bereich</span>
+					</div>
+				</div>
+				<div class="actions internship-access-card__actions">
+					<a class="btn primary" href="bewerber_praktikum.html">Zum Schulpraktikum wechseln</a>
+				</div>
+			</div>
+		</section>
+
+		<div class="bewerber-entry-grid">
+			<section class="panel portal-form bewerber-auth-card" id="authPanel">
+				<h2>Persönlicher Zugang</h2>
+				<p>Nutze deine E-Mail-Adresse und dein Passwort, um dein Profilkonto sicher zu verwalten. AzubiMatcher soll dir auch dann einen guten Einstieg ermöglichen, wenn du besondere Unterstützung oder barrierearme Rahmenbedingungen brauchst.</p>
+				<div class="student-auth-quick-guide" aria-label="Anleitung für die Registrierung">
+					<p class="student-auth-quick-guide__title">So kommst du schnell durch die Anmeldung</p>
+					<div class="student-auth-quick-guide__line"><strong>1.</strong><span>Auf <em>Neu registrieren</em> klicken.</span></div>
+					<div class="student-auth-quick-guide__line"><strong>2.</strong><span>Name, E-Mail und Passwort eingeben.</span></div>
+					<div class="student-auth-quick-guide__line"><strong>3.</strong><span>Bestätigungscode aus deiner E-Mail eintragen.</span></div>
+				</div>
+
+				<div class="auth-reg-stepper" id="authRegStepper" aria-label="Registrierungsfortschritt" hidden>
+					<div class="auth-reg-stepper__step" data-step="1">
+						<span class="auth-reg-stepper__num" aria-hidden="true">1</span>
+						<span class="auth-reg-stepper__label">Daten eingeben</span>
+					</div>
+					<div class="auth-reg-stepper__connector" aria-hidden="true"></div>
+					<div class="auth-reg-stepper__step" data-step="2">
+						<span class="auth-reg-stepper__num" aria-hidden="true">2</span>
+						<span class="auth-reg-stepper__label">Code bestätigen</span>
+					</div>
+					<div class="auth-reg-stepper__connector" aria-hidden="true"></div>
+					<div class="auth-reg-stepper__step" data-step="3">
+						<span class="auth-reg-stepper__num" aria-hidden="true">3</span>
+						<span class="auth-reg-stepper__label">Fertig!</span>
+					</div>
+				</div>
+
+				<label class="form-label" for="authEmail">E-Mail-Adresse</label>
+				<input class="input" id="authEmail" type="email" placeholder="deine@email.de" autocomplete="email">
+				<p class="field-hint">Deine Schul- oder persönliche E-Mail – du bekommst darüber deinen Bestätigungscode.</p>
+
+				<label class="form-label" for="authPassword">Passwort</label>
+				<div class="password-field">
+					<input class="input" id="authPassword" type="password" placeholder="Mindestens 6 Zeichen" autocomplete="current-password">
+					<button class="pw-toggle" type="button" data-target="authPassword" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+						<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+							<circle cx="12" cy="12" r="3.2"></circle>
+						</svg>
+					</button>
+				</div>
+				<p class="field-hint">Mindestens 6 Zeichen – am besten eine Kombination aus Buchstaben und Zahlen.</p>
+
+				<div class="actions auth-actions">
+					<button id="btnAuthLogin" class="btn primary">Anmelden</button>
+					<button id="btnShowRegister" class="btn ghost small" type="button">Neu registrieren</button>
+					<button id="btnForgotPassword" class="btn ghost small" type="button" hidden>Passwort vergessen</button>
+					<a class="btn ghost small link-btn" href="?forgot=1">Passwort vergessen?</a>
+					<a class="btn ghost link-btn back-home" href="index.html">Zurück</a>
+				</div>
+
+				<div id="registerBox" class="auth-register-extra" style="display:none;">
+					<h3>Registrierung</h3>
+					<p class="status" style="margin-top:0;margin-bottom:0.85rem;max-width:none;">Bitte hinterlege deinen Namen sowie ein sicheres Passwort. Nach der Registrierung bestätigst du deine E-Mail-Adresse.</p>
+
+					<label class="form-label" for="registerName">Name</label>
+					<input class="input" id="registerName" type="text" placeholder="Vorname Nachname" autocomplete="name">
+					<p class="field-hint field-hint--always">Dein Vor- und Nachname, z.&nbsp;B. „Max Mustermann".</p>
+
+					<label class="form-label" for="authPasswordConfirm">Passwort bestätigen</label>
+					<div class="password-field">
+						<input class="input" id="authPasswordConfirm" type="password" placeholder="Passwort wiederholen">
+						<button class="pw-toggle" type="button" data-target="authPasswordConfirm" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+							<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+								<path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+								<circle cx="12" cy="12" r="3.2"></circle>
+							</svg>
+						</button>
+					</div>
+
+					<label class="bewerber-checkbox-row" for="registerDatenschutz">
+						<input type="checkbox" id="registerDatenschutz">
+						<span>Ich habe die <a href="datenschutzerklaerung.html" target="_blank">Datenschutzerklärung</a> gelesen und akzeptiere die <a href="nutzungsbedingungen.html" target="_blank">Nutzungsbedingungen</a>.</span>
+					</label>
+
+					<div class="actions auth-actions">
+						<button id="btnAuthRegister" class="btn ghost" type="button">Registrierung abschließen</button>
+					</div>
+				</div>
+
+				<div id="verifyBox" class="auth-register-extra" style="display:none;">
+					<h3>E-Mail-Adresse bestätigen</h3>
+					<p id="verifyHint" class="status" style="margin-top:0;max-width:none;">Wir haben dir einen Bestätigungscode per E-Mail geschickt.</p>
+					<label class="form-label" for="emailVerificationCode">Bestätigungscode</label>
+					<input class="input" id="emailVerificationCode" type="text" placeholder="6-stelliger Code" autocomplete="one-time-code" inputmode="numeric">
+					<p class="field-hint field-hint--always">Den Code findest du in deiner E-Mail. Schau auch im Spam-Ordner nach, falls er nicht sofort ankommt.</p>
+					<div class="actions auth-actions">
+						<button id="btnConfirmEmail" class="btn ghost" type="button">E-Mail bestätigen</button>
+						<button id="btnResendVerification" class="btn ghost small" type="button">Code erneut senden</button>
+					</div>
+				</div>
+
+				<div id="passwordResetBox" class="auth-register-extra" style="display:none;">
+					<h3>Passwort zurücksetzen</h3>
+					<p id="passwordResetHint" class="status" style="margin-top:0;max-width:none;">Gib oben deine registrierte E-Mail-Adresse ein. Wir senden dir einen Reset-Code, mit dem du ein neues Passwort setzen kannst.</p>
+					<label class="form-label" for="passwordResetCode">Reset-Code</label>
+					<input class="input" id="passwordResetCode" type="text" placeholder="6-stelliger Code">
+
+					<label class="form-label" for="passwordResetNewPassword">Neues Passwort</label>
+					<div class="password-field">
+						<input class="input" id="passwordResetNewPassword" type="password" placeholder="Mindestens 6 Zeichen">
+						<button class="pw-toggle" type="button" data-target="passwordResetNewPassword" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+							<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+								<path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+								<circle cx="12" cy="12" r="3.2"></circle>
+							</svg>
+						</button>
+					</div>
+
+					<label class="form-label" for="passwordResetNewPasswordConfirm">Neues Passwort bestätigen</label>
+					<div class="password-field">
+						<input class="input" id="passwordResetNewPasswordConfirm" type="password" placeholder="Passwort wiederholen">
+						<button class="pw-toggle" type="button" data-target="passwordResetNewPasswordConfirm" aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">
+							<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+								<path d="M2 12C4.2 7.8 7.6 5.7 12 5.7C16.4 5.7 19.8 7.8 22 12C19.8 16.2 16.4 18.3 12 18.3C7.6 18.3 4.2 16.2 2 12Z"></path>
+								<circle cx="12" cy="12" r="3.2"></circle>
+							</svg>
+						</button>
+					</div>
+
+					<div class="actions auth-actions">
+						<button id="btnConfirmPasswordReset" class="btn ghost" type="button">Neues Passwort speichern</button>
+						<button id="btnResendPasswordReset" class="btn ghost small" type="button">Code erneut senden</button>
+					</div>
+				</div>
+
+				<p id="authStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Melde dich mit deiner E-Mail-Adresse und deinem Passwort an oder registriere ein neues Profilkonto.</p>
+			</section>
+
+			<section class="panel portal-form bewerber-profile-card" id="profilePanel" style="display:none;">
+				<div class="bewerber-profile-header">
+					<div>
+						<p class="eyebrow" style="margin:0 0 0.5rem 0;">Kurzprofil</p>
+						<h2>Dein professionelles Profil</h2>
+						<p class="bewerber-profile-intro">Vollständige Angaben verbessern dein Matching. Unternehmen sehen zunächst nur dein Kurzprofil und keine vollständigen Unterlagen.</p>
+					</div>
+					<div class="bewerber-profile-account"><span>Angemeldet als</span><strong id="displayName"></strong><span id="displayEmail"></span></div>
+				</div>
+
+				<div class="bewerber-profile-notice">Für Betriebe werden nur die nötigen Kurzprofil-Daten sichtbar. Lebenslauf, Anschreiben und Zeugnisse werden erst nach deiner ausdrücklichen Freigabe geteilt.</div>
+				<p class="portal-support-note">Wenn du eine Behinderung oder einen besonderen Unterstützungsbedarf angeben möchtest, hilft die Information dabei, Betriebe mit passenden Rahmenbedingungen und offener Kommunikation besser zuzuordnen.</p>
+
+				<div class="bewerber-form-grid">
+					<section class="bewerber-form-section">
+						<h3>Persönliche Basisdaten</h3>
+						<div class="bewerber-inline-grid">
+							<div>
+								<label class="form-label" for="name">Name</label>
+								<input class="input" id="name" type="text" placeholder="Vorname Nachname" required>
+							</div>
+							<div>
+								<label class="form-label" for="beruf">Wunschberuf</label>
+								<input class="input" id="beruf" type="text" placeholder="z. B. Fachinformatiker/in" required>
+							</div>
+							<div>
+								<label class="form-label" for="stadt">Stadt</label>
+								<input class="input" id="stadt" type="text" placeholder="z. B. Düsseldorf" required>
+							</div>
+							<div>
+								<label class="form-label" for="plz">PLZ</label>
+								<input class="input" id="plz" type="text" placeholder="z. B. 40210" required pattern="[0-9]{5}">
+							</div>
+							<div>
+								<label class="form-label" for="matchUmkreis">Suchumkreis für passende Firmen</label>
+								<select class="input" id="matchUmkreis">
+									<option value="5">5 km</option>
+									<option value="10">10 km</option>
+									<option value="25">25 km</option>
+									<option value="50">50 km</option>
+									<option value="100">100 km</option>
+									<option value="de" selected>Deutschlandweit</option>
+								</select>
+								<p class="portal-support-note portal-support-note--compact">Dieser Radius steuert, welche Firmen dir im Portal als passende Treffer angezeigt werden.</p>
+							</div>
+							<div>
+								<label class="form-label" for="schulabschluss">Angestrebter Schulabschluss</label>
+								<select class="input" id="schulabschluss" required>
+									<option value="" selected disabled>Schulabschluss auswählen</option>
+									<option value="Hauptschulabschluss">Hauptschulabschluss</option>
+									<option value="Mittlere Reife">Mittlere Reife (Realschulabschluss)</option>
+									<option value="Fachhochschulreife">Fachhochschulreife</option>
+									<option value="Allgemeine Hochschulreife">Allgemeine Hochschulreife (Abitur)</option>
+									<option value="Berufsabschluss">Berufsabschluss</option>
+									<option value="Noch offen">Noch offen</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="abgeschlosseneAusbildungStudium">Abgeschlossene Ausbildung oder Studium (optional)</label>
+								<input class="input" id="abgeschlosseneAusbildungStudium" type="text" placeholder="z. B. Ausbildung als Verkäufer/in oder Studium BWL">
+							</div>
+							<div>
+								<label class="form-label" for="behinderung">Möchtest du angeben, ob eine Behinderung oder ein besonderer Unterstützungsbedarf vorliegt?</label>
+								<select class="input" id="behinderung" required>
+									<option value="" selected disabled>Bitte auswählen</option>
+									<option value="ja">Ja</option>
+									<option value="nein">Nein</option>
+								</select>
+								<p class="portal-support-note portal-support-note--compact">Die Angabe unterstützt ein faireres Matching und hilft dabei, passende Ausbildungsumfelder sichtbarer zu machen.</p>
+							</div>
+							<div class="bewerber-field-group bewerber-field-group--full" id="behinderungDetailsGroup" hidden>
+								<div>
+									<label class="form-label" for="behinderungsArt">Art der Behinderung oder des Unterstützungsbedarfs</label>
+									<select class="input" id="behinderungsArt">
+										<option value="" selected disabled>Bitte auswählen</option>
+										<optgroup label="Körperliche Beeinträchtigungen">
+											<option value="koerperlich-motorisch">Körperlich-motorische Einschränkung</option>
+											<option value="chronisch-krank">Chronische Erkrankung</option>
+											<option value="sehbeeintraechtigung">Sehbeeinträchtigung</option>
+											<option value="blindheit">Blindheit</option>
+											<option value="hoerbeeintraechtigung">Hörbeeinträchtigung</option>
+											<option value="taubheit">Gehörlosigkeit / Taubheit</option>
+											<option value="taubblind">Taubblindheit</option>
+										</optgroup>
+										<optgroup label="Lern- und kognitive Beeinträchtigungen">
+											<option value="lernbehinderung">Lernbehinderung</option>
+											<option value="geistige-behinderung">Geistige Behinderung</option>
+											<option value="legasthenie">Legasthenie / Lese-Rechtschreib-Störung</option>
+											<option value="dyskalkulie">Dyskalkulie</option>
+										</optgroup>
+										<optgroup label="Psychische und neurodivergente Beeinträchtigungen">
+											<option value="adhs">ADHS</option>
+											<option value="autismus">Autismus-Spektrum</option>
+											<option value="psychisch">Psychische Erkrankung</option>
+											<option value="angststoerung">Angststörung</option>
+											<option value="depression">Depression</option>
+										</optgroup>
+										<optgroup label="Sprache und Kommunikation">
+											<option value="sprachbehinderung">Sprachbehinderung / Stottern</option>
+										</optgroup>
+										<optgroup label="Sonstiges">
+											<option value="mehrfachbehinderung">Mehrfachbehinderung</option>
+											<option value="sonstige">Sonstige Beeinträchtigung</option>
+										</optgroup>
+									</select>
+								</div>
+								<div>
+									<label class="form-label" for="behinderungsGrad">Schweregrad</label>
+									<select class="input" id="behinderungsGrad">
+										<option value="" selected disabled>Schweregrad auswählen</option>
+										<option value="leicht">Leicht</option>
+										<option value="mittel">Mittel</option>
+										<option value="hoch">Hoch</option>
+										<option value="komplex">Komplex / hoher Unterstützungsbedarf</option>
+									</select>
+								</div>
+								<p class="portal-support-note portal-support-note--compact">Diese Angaben werden nur dann verlangt, wenn du oben mit Ja antwortest, und helfen dabei, passende inklusive Rahmenbedingungen besser einzuordnen.</p>
+							</div>
+						</div>
+					</section>
+
+					<section class="bewerber-form-section">
+						<h3>Schulischer Werdegang</h3>
+						<div class="bewerber-inline-grid">
+							<div>
+								<label class="form-label" for="grundschuleVon">Grundschule von Jahr</label>
+								<select class="input" id="grundschuleVon" required>
+									<option value="" selected disabled>Von Jahr auswählen</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="grundschuleBis">Grundschule bis Jahr</label>
+								<select class="input" id="grundschuleBis" required>
+									<option value="" selected disabled>Bis Jahr auswählen</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="weiterfuehrendeSchulform">Weiterführende Schule</label>
+								<select class="input" id="weiterfuehrendeSchulform" required>
+									<option value="" selected disabled>Schulform auswählen</option>
+									<option value="Hauptschule">Hauptschule</option>
+									<option value="Realschule">Realschule</option>
+									<option value="Gesamtschule">Gesamtschule</option>
+									<option value="Gymnasium">Gymnasium</option>
+									<option value="Berufskolleg">Berufskolleg</option>
+									<option value="Waldorfschule">Waldorfschule</option>
+									<option value="Sonstige">Sonstige</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="weiterfuehrendeVon">Weiterführende Schule von Jahr</label>
+								<select class="input" id="weiterfuehrendeVon" required>
+									<option value="" selected disabled>Von Jahr auswählen</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="weiterfuehrendeBis">Weiterführende Schule bis Jahr</label>
+								<select class="input" id="weiterfuehrendeBis" required>
+									<option value="" selected disabled>Bis Jahr auswählen</option>
+								</select>
+							</div>
+						</div>
+					</section>
+
+					<section class="bewerber-form-section">
+						<h3>Noten und Stärken</h3>
+						<div class="bewerber-inline-grid">
+							<div>
+								<label class="form-label" for="noteMathe">Mathe</label>
+								<select class="input" id="noteMathe" required>
+									<option value="" selected disabled>Schulnote auswählen</option>
+									<option value="1">1 - sehr gut</option>
+									<option value="2">2 - gut</option>
+									<option value="3">3 - befriedigend</option>
+									<option value="4">4 - ausreichend</option>
+									<option value="5">5 - mangelhaft</option>
+									<option value="6">6 - ungenügend</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="noteDeutsch">Deutsch</label>
+								<select class="input" id="noteDeutsch" required>
+									<option value="" selected disabled>Schulnote auswählen</option>
+									<option value="1">1 - sehr gut</option>
+									<option value="2">2 - gut</option>
+									<option value="3">3 - befriedigend</option>
+									<option value="4">4 - ausreichend</option>
+									<option value="5">5 - mangelhaft</option>
+									<option value="6">6 - ungenügend</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="noteEnglisch">Englisch</label>
+								<select class="input" id="noteEnglisch" required>
+									<option value="" selected disabled>Schulnote auswählen</option>
+									<option value="1">1 - sehr gut</option>
+									<option value="2">2 - gut</option>
+									<option value="3">3 - befriedigend</option>
+									<option value="4">4 - ausreichend</option>
+									<option value="5">5 - mangelhaft</option>
+									<option value="6">6 - ungenügend</option>
+								</select>
+							</div>
+							<div>
+								<label class="form-label" for="wahlfach">Wahlfach</label>
+								<input class="input" id="wahlfach" type="text" placeholder="z. B. Informatik, Biologie, Kunst" required>
+							</div>
+							<div>
+								<label class="form-label" for="noteWahlfach">Wahlfach-Note</label>
+								<select class="input" id="noteWahlfach" required>
+									<option value="" selected disabled>Schulnote auswählen</option>
+									<option value="1">1 - sehr gut</option>
+									<option value="2">2 - gut</option>
+									<option value="3">3 - befriedigend</option>
+									<option value="4">4 - ausreichend</option>
+									<option value="5">5 - mangelhaft</option>
+									<option value="6">6 - ungenügend</option>
+								</select>
+							</div>
+						</div>
+
+						<label class="form-label" for="besondereFaehigkeiten">Besondere Fähigkeiten</label>
+						<input class="input" id="besondereFaehigkeiten" type="text" placeholder="z. B. Teamfähigkeit, Organisationstalent, Programmieren" required>
+
+						<label class="form-label" for="sprachenInput">Sprachen</label>
+						<div class="bewerber-language-row">
+							<input class="input" id="sprachenInput" type="text" placeholder="z. B. Deutsch, Englisch">
+							<button type="button" id="addSpracheBtn" class="btn ghost small">Hinzufügen</button>
+						</div>
+						<ul id="sprachenList" class="bewerber-language-list"></ul>
+					</section>
+
+					<section class="bewerber-form-section bewerber-form-section--full">
+						<h3>Dokumente</h3>
+						<div class="bewerber-inline-grid">
+							<div>
+								<label class="form-label" for="lebenslaufFile">Lebenslauf (PDF, JPG oder PNG)</label>
+								<input class="input" id="lebenslaufFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+							</div>
+							<div>
+								<label class="form-label" for="anschreibenFile">Anschreiben (PDF, JPG oder PNG)</label>
+								<input class="input" id="anschreibenFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+							</div>
+							<div>
+								<label class="form-label" for="zeugnisFile">Zeugnis (PDF, JPG oder PNG)</label>
+								<input class="input" id="zeugnisFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+							</div>
+							<div>
+								<label class="form-label" for="weiteresDokumentFile">Weiteres Dokument (optional; PDF, JPG oder PNG)</label>
+								<input class="input" id="weiteresDokumentFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+							</div>
+							<div>
+								<label class="form-label" for="profilBildFile">Profilbild (JPG, PNG, max. 2 MB)</label>
+								<input class="input" id="profilBildFile" type="file" accept="image/jpeg,image/png,image/webp">
+							</div>
+						</div>
+					</section>
+
+					<section class="bewerber-form-section bewerber-form-section--full internship-access-card" aria-labelledby="studentInternshipAccessHeading">
+						<p class="internship-access-card__eyebrow">Schulpraktikum</p>
+						<div class="internship-access-card__body">
+							<div class="internship-access-card__content">
+								<h3 id="studentInternshipAccessHeading">Separaten Praktikumsbereich auslagern</h3>
+								<p class="internship-access-card__copy">Damit dein Ausbildungsprofil übersichtlich bleibt, pflegst du Schulpraktika in einem eigenen Bereich. Konto und Basisdaten bleiben identisch.</p>
+								<p class="internship-access-card__meta">Nutze den Bereich, wenn du gezielt einen Schulpraktikumsplatz suchst oder dein Praktikumsprofil pflegen willst.</p>
+							</div>
+							<div class="actions internship-access-card__actions">
+								<a class="btn ghost" href="bewerber_praktikum.html">Zum Schulpraktikum wechseln</a>
+							</div>
+						</div>
+					</section>
+				</div>
+
+				<div class="actions">
+					<button id="saveBewerber" class="btn primary">Profil speichern</button>
+					<a id="studentPortalProfileLink" class="btn ghost" href="bewerber_profil.html">Zu meinem Profil</a>
+					<button id="btnLogout" class="btn ghost">Abmelden</button>
+				</div>
+				<p id="bewerberStatus" class="status" role="status" aria-live="polite" aria-atomic="true">Noch nicht gespeichert.</p>
+				<div id="bewerberMatches" style="margin-top:1.5em;"></div>
+			</section>
+
+			<aside class="panel portal-form bewerber-preview-panel" id="messagesPanel" style="display:none;">
+				<p class="bewerber-preview-label">Kurzprofil-Vorschau</p>
+				<h2><span class="title-stack title-stack--card"><span class="title-stack__line">Dein Kurzprofil</span><span class="title-stack__line title-stack__line--offset">steht an erster Stelle</span></span></h2>
+				<p class="bewerber-preview-copy">Vor einer Freigabe sehen Unternehmen nur dein Kurzprofil. Persönliche Unterlagen und Detaildokumente bleiben geschützt, bis du zustimmst.</p>
+
+				<div class="bewerber-preview-card">
+					<p class="bewerber-preview-card__code" id="shortProfilePreviewCode">Kurzprofil-Vorschau</p>
+					<h3 id="shortProfilePreviewName">Dein Name</h3>
+					<p id="shortProfilePreviewRole" class="bewerber-preview-card__role">Wunschberuf</p>
+					<p id="shortProfilePreviewLocation" class="bewerber-preview-card__location">Ort</p>
+
+					<div class="bewerber-preview-detail">
+						<strong>Schulabschluss</strong>
+						<span id="shortProfilePreviewSchool">Schulabschluss</span>
+					</div>
+					<div class="bewerber-preview-detail">
+						<strong>Abgeschlossene Ausbildung / Studium</strong>
+						<span id="shortProfilePreviewQualification">Keine abgeschlossene Ausbildung oder kein Studium angegeben</span>
+					</div>
+					<div class="bewerber-preview-detail">
+						<strong>Schulnoten</strong>
+						<span id="shortProfilePreviewGrades">Noch keine Noten hinterlegt</span>
+					</div>
+					<div class="bewerber-preview-detail">
+						<strong>Besondere Stärken</strong>
+						<span id="shortProfilePreviewStrengths">Besondere Fähigkeiten und persönliche Stärken</span>
+					</div>
+
+					<div>
+						<p class="bewerber-preview-subtitle">Sprachen</p>
+						<div id="shortProfilePreviewLanguages" class="bewerber-preview-chip-row"></div>
+					</div>
+
+					<div>
+						<p class="bewerber-preview-subtitle">Hinterlegte Unterlagen</p>
+						<div id="shortProfilePreviewDocuments" class="bewerber-preview-chip-row"></div>
+					</div>
+
+					<p id="shortProfilePreviewStatus" class="bewerber-preview-status">Unternehmen sehen zuerst nur dieses Kurzprofil. Vollständige Unterlagen bleiben bis zu deiner Freigabe geschützt.</p>
+				</div>
+
+				<div class="bewerber-preview-note">
+					<h3>Was geschützt bleibt</h3>
+					<p>Lebenslauf, Anschreiben, Zeugnisse und weitere Dokumente werden nicht automatisch geteilt. Jede Firma muss aktiv anfragen, und du entscheidest im Profilbereich einzeln über die Freigabe.</p>
+				</div>
+			</aside>
+		</div>
+	</main>
+	</div>
+
+	<script src="privacy-settings.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+	<script src="discovery.js"></script>
+	<script src="script.js"></script>
+</body>
+</html>
