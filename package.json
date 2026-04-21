@@ -14,6 +14,7 @@
     "frontend:build": "next build",
     "frontend:start": "next start",
     "build": "next build",
+    "health:prod": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/check_production_health.ps1",
     "strato:build": "node tools/build_strato_wordpress_theme.mjs",
     "db:setup": "node tools/db_setup.mjs",
     "db:migrate": "node tools/db_migrate.mjs"
