@@ -2238,8 +2238,22 @@ body.page-leave {
 .auth-register-extra .input,
 .auth-register-extra .password-field,
 .auth-register-extra .bewerber-checkbox-row,
+.auth-register-extra .firma-checkbox-row,
 .auth-register-extra .actions {
   width: 100%;
+}
+
+.bewerber-auth-card .actions.auth-actions,
+.firma-auth-card .actions.auth-actions {
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.bewerber-auth-card .actions.auth-actions .btn,
+.firma-auth-card .actions.auth-actions .btn {
+  width: 100%;
+  justify-content: center;
 }
 
 .auth-register-extra .field-hint,
@@ -3006,7 +3020,6 @@ body {
 }
 
 .start-wrapper,
-.site-header,
 .hero,
 .portal-page,
 .training-list,
@@ -8782,7 +8795,6 @@ body.firm-quick-profile-page .btn.primary:hover {
   }
 
   .start-wrapper,
-  .site-header,
   .hero,
   .portal-page,
   .training-list,
