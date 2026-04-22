@@ -1482,6 +1482,15 @@
             <p class="admin-settings-note">Wenn das aktuelle Passwort nicht mehr bekannt ist, können die lokalen Admin-Zugangsdaten in diesem Browser zurückgesetzt werden. Danach ist eine neue Ersteinrichtung erforderlich.</p>
             <button type="button" id="resetAdminPasswordBtn">Lokalen Admin-Zugang zurücksetzen</button>
           </div>
+
+          <div class="admin-settings-reset" id="apiDiagSection">
+            <h3>API-Diagnose (PostgreSQL-Sync)</h3>
+            <p class="admin-settings-note">Prüft ob die Railway-API erreichbar ist, Registrierung und Login funktionieren und Nutzer korrekt in PostgreSQL gespeichert werden. Das Testkonto wird nach dem Test automatisch entfernt.</p>
+            <div class="admin-settings-actions">
+              <button type="button" class="btn primary admin-settings-submit" id="runApiDiagBtn">Tiefentest starten</button>
+            </div>
+            <ul id="apiDiagResults" style="list-style:none;padding:0;margin:0.75rem 0 0;"></ul>
+          </div>
         </div>
       </div>
     </main>
