@@ -1460,6 +1460,41 @@ function purgeCreatedUsersOnce() {
 
 purgeCreatedUsersOnce();
 
+// ---------------------------------------------------------------------------
+// PostgreSQL-Sync: Nutzer bei Registrierung und Login parallel in Railway-DB
+// schreiben. Schlägt der API-Call fehl, läuft die App normal weiter.
+// ---------------------------------------------------------------------------
+function getPostgresApiBase() {
+  return String((window.AzubiMatchRuntime && window.AzubiMatchRuntime.apiEndpoint) || "").replace(/\/$/, "").trim();
+}
+
+async function tryPostgresSync(email, password, role) {
+  const base = getPostgresApiBase();
+  if (!base) return;
+  const body = JSON.stringify({ email: String(email).toLowerCase().trim(), password: String(password), role: String(role) });
+  const headers = { "Content-Type": "application/json" };
+  try {
+    // Erst Registrierung versuchen
+    const regRes = await fetch(base + "/api/auth/register", { method: "POST", headers, body });
+    if (regRes.ok) {
+      const data = await regRes.json();
+      if (data && data.token) localStorage.setItem("azubimatch_api_jwt", data.token);
+      return;
+    }
+    // 409 = bereits registriert → Login
+    if (regRes.status === 409) {
+      const loginRes = await fetch(base + "/api/auth/login", { method: "POST", headers, body });
+      if (loginRes.ok) {
+        const data = await loginRes.json();
+        if (data && data.token) localStorage.setItem("azubimatch_api_jwt", data.token);
+      }
+    }
+  } catch (_) {
+    // Netzwerkfehler ignorieren – App läuft weiter
+  }
+}
+// ---------------------------------------------------------------------------
+
 function readJson(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -3969,6 +4004,7 @@ function updateStudentSearchPreferences(authArg, changesArg) {
 }
 
 const DEFAULT_FIRM_BILLING_PLAN_KEY = "basic";
+const FIRM_SELF_SERVICE_BILLING_PLAN_KEYS = Object.freeze(["basic", "basic_plus", "pro", "pro_plus", "no_subscription"]);
 const FIRM_SUBSCRIPTION_MINIMUM_MONTHS = 3;
 const FIRM_SUBSCRIPTION_CANCELLATION_NOTICE_DAYS = 14;
 
@@ -4256,6 +4292,17 @@ function getFirmBillingDashboardPlanKeys() {
   return Object.keys(FIRM_SUBSCRIPTION_PLANS).filter(function(planKey) {
     return getFirmBillingPlanDefinition(planKey).showInBillingActions !== false;
   });
+}
+
+function normalizeFirmSelfServiceBillingPlan(value, fallbackValue) {
+  const normalizedValue = getNormalizedFirmBillingPlan(value);
+  if (FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedValue)) {
+    return normalizedValue;
+  }
+  const normalizedFallback = getNormalizedFirmBillingPlan(fallbackValue || DEFAULT_FIRM_BILLING_PLAN_KEY);
+  return FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedFallback)
+    ? normalizedFallback
+    : DEFAULT_FIRM_BILLING_PLAN_KEY;
 }
 
 function getFirmAdditionalRequestPriceLabel(planLike) {
@@ -6871,6 +6918,74 @@ function buildLocalDeliveryMessage(code) {
   return text;
 }
 
+function extractMailRelayFailureDetail(error) {
+  const rawMessage = error && typeof error.message === "string"
+    ? error.message.trim()
+    : "";
+  if (!rawMessage) {
+    return "Der Mailserver konnte die Nachricht nicht zustellen.";
+  }
+
+  const jsonStart = rawMessage.indexOf("{");
+  if (jsonStart >= 0) {
+    const possibleJson = rawMessage.slice(jsonStart).trim();
+    try {
+      const parsed = JSON.parse(possibleJson);
+      const parsedMessage = parsed && typeof parsed.message === "string"
+        ? parsed.message.trim()
+        : (parsed && typeof parsed.error === "string" ? parsed.error.trim() : "");
+      if (parsedMessage) {
+        return extractMailRelayFailureDetail({ message: parsedMessage });
+      }
+    } catch (_error) {
+      // Ignore JSON parsing failures and fall through to string cleanup.
+    }
+  }
+
+  const normalized = rawMessage
+    .replace(/^Mail-Relay fehlgeschlagen\.\s*/i, "")
+    .replace(/^SMTP-Benachrichtigung fehlgeschlagen(?:\s*\(HTTP\s*\d+\))?:\s*/i, "")
+    .trim();
+
+  if (/blocked due to complaints|MBL-R/i.test(normalized)) {
+    return "Die Zieladresse wird vom Mailserver derzeit nicht angenommen.";
+  }
+  if (/Account access has been suspended/i.test(normalized)) {
+    return "Der konfigurierte E-Mail-Dienst ist derzeit nicht verfügbar.";
+  }
+  if (/Netzwerkfehler/i.test(normalized)) {
+    return "Der Mailserver ist derzeit nicht erreichbar.";
+  }
+  if (!normalized) {
+    return "Der Mailserver konnte die Nachricht nicht zustellen.";
+  }
+  return normalized;
+}
+
+function buildMailDeliveryFailureMessage(error, payload) {
+  const detail = extractMailRelayFailureDetail(error);
+  const type = String((payload && payload.type) || "").trim();
+  if (type === "otc-code") {
+    return "Der Bestätigungscode konnte nicht per E-Mail zugestellt werden. " + detail;
+  }
+  return "Die E-Mail konnte nicht zugestellt werden. " + detail;
+}
+
+function buildLocalPreviewFallbackResult(payload, userMessage) {
+  const preview = storeLocalMailPreview(payload, {
+    type: payload && payload.type ? payload.type : "notification"
+  });
+  return {
+    deliveryMode: "local-preview",
+    previewId: preview.id,
+    userMessage: String(userMessage || "").trim() || "Lokale Vorschau wurde erstellt."
+  };
+}
+
+function allowsEmailJsFallback(payload) {
+  return !(payload && payload.allowEmailJsFallback === false);
+}
+
 let emailJsInitialized = false;
 
 function buildRuntimeUrl(path) {
@@ -7196,6 +7311,7 @@ function shouldPreferSmtpRelay(payload) {
 async function sendNotificationEmail(payload) {
   const endpoint = resolveSmtpRelayEndpoint();
   const hasRelay = endpoint && canUseRuntimeMailRelayEndpoint(endpoint);
+  const allowEmailJsFallback = allowsEmailJsFallback(payload);
   if (hasRelay) {
     try {
       await sendNotificationViaSmtp(payload);
@@ -7204,21 +7320,25 @@ async function sendNotificationEmail(payload) {
         userMessage: "Die Nachricht wurde an den konfigurierten Mail-Server übergeben."
       };
     } catch (error) {
+      const relayFailureMessage = buildMailDeliveryFailureMessage(error, payload);
+
+      if (!allowEmailJsFallback) {
+        return buildLocalPreviewFallbackResult(payload, relayFailureMessage);
+      }
+
       const fallback = await sendNotificationViaEmailJs(payload);
-      const detail = error && typeof error.message === "string" ? error.message.trim() : "";
-      const prefix = detail ? ("Mail-Relay fehlgeschlagen. Grund: " + detail + " ") : "Mail-Relay fehlgeschlagen. ";
 
       if (fallback && fallback.deliveryMode === "emailjs") {
         return {
           ...fallback,
-          userMessage: prefix + "Die Nachricht wurde stattdessen über EmailJS versendet."
+          userMessage: relayFailureMessage + " Die Nachricht wurde stattdessen über den alternativen E-Mail-Dienst versendet."
         };
       }
 
       if (fallback && fallback.deliveryMode === "local-preview") {
         return {
           ...fallback,
-          userMessage: prefix + String(fallback.userMessage || "Lokale Vorschau wurde erstellt.")
+          userMessage: relayFailureMessage
         };
       }
 
@@ -7226,11 +7346,11 @@ async function sendNotificationEmail(payload) {
     }
   }
 
-  if (hasTemplateDrivenEmailJsDelivery(payload) || !shouldPreferSmtpRelay(payload)) {
+  if (allowEmailJsFallback && (hasTemplateDrivenEmailJsDelivery(payload) || !shouldPreferSmtpRelay(payload))) {
     return await sendNotificationViaEmailJs(payload);
   }
 
-  return await sendNotificationViaEmailJs(payload);
+  return buildLocalPreviewFallbackResult(payload, buildLocalDeliveryMessage(""));
 }
 
 function getDefaultHealthMonitorConfig() {
@@ -7765,6 +7885,7 @@ function buildOtcEmailPayload(config) {
     message: messageLine,
     htmlMessage: renderMailTemplateString(OTC_EMAIL_HTML_TEMPLATE, emailJsParams, "html"),
     type: "otc-code",
+    allowEmailJsFallback: false,
     emailJsTemplateId: String(EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim(),
     emailJsParams: emailJsParams
   };
@@ -12208,11 +12329,14 @@ function renderBerufliste() {
 
 function getSelectedFirmBillingPlanValue() {
   const selectedInput = document.querySelector('input[name="firmBillingPlan"]:checked');
-  return getNormalizedFirmBillingPlan(selectedInput ? selectedInput.value : DEFAULT_FIRM_BILLING_PLAN_KEY);
+  return normalizeFirmSelfServiceBillingPlan(
+    selectedInput ? selectedInput.value : DEFAULT_FIRM_BILLING_PLAN_KEY,
+    DEFAULT_FIRM_BILLING_PLAN_KEY
+  );
 }
 
 function setSelectedFirmBillingPlanValue(value) {
-  const normalizedValue = getNormalizedFirmBillingPlan(value);
+  const normalizedValue = normalizeFirmSelfServiceBillingPlan(value, DEFAULT_FIRM_BILLING_PLAN_KEY);
   const inputs = document.querySelectorAll('input[name="firmBillingPlan"]');
   inputs.forEach(function(input) {
     input.checked = input.value === normalizedValue;
@@ -18196,6 +18320,7 @@ function initFirmAuth() {
       }
       const auth = buildFirmAuthSession(existing);
       saveStoredFirmAuth(auth);
+      tryPostgresSync(input.email, input.password, 'firm').catch(function() {});
       if (firmAuthStatus) firmAuthStatus.textContent = "Anmeldung erfolgreich.";
       setAnimatedDisclosureOpen(firmRegisterBox, false);
       setAnimatedDisclosureOpen(firmVerifyBox, false);
@@ -18247,6 +18372,7 @@ function initFirmAuth() {
       }
       users.unshift(user);
       saveFirmUsers(users);
+      tryPostgresSync(user.email, input.password, 'firm').catch(function() {});
       if (firmAuthStatus) {
         firmAuthStatus.textContent = deliveryResult && deliveryResult.userMessage
           ? "Registrierung erfolgreich. " + deliveryResult.userMessage
@@ -19109,6 +19235,7 @@ function initLandingLoginPage() {
         loggedInAt: new Date().toISOString()
       };
       saveStoredFirmAuth(auth);
+      tryPostgresSync(firmUser.email, password, 'firm').catch(function() {});
       navigateWithTransition(buildRuntimeUrl("firma_profil.html"), "Firmen-Portal wird geöffnet...");
       return;
     }
@@ -20933,6 +21060,7 @@ function initStudentAuth() {
         loggedInAt: new Date().toISOString()
       };
       saveAuth(auth);
+      tryPostgresSync(existing.email, input.password, 'student').catch(function() {});
       if (authStatus) authStatus.textContent = "Anmeldung erfolgreich.";
       setAnimatedDisclosureOpen(registerBox, false);
       setAnimatedDisclosureOpen(verifyBox, false);
@@ -21003,6 +21131,7 @@ function initStudentAuth() {
 
       users.unshift(user);
       saveUsers(users);
+      tryPostgresSync(user.email, input.password, 'student').catch(function() {});
 
       if (authStatus) {
         authStatus.textContent = deliveryResult && deliveryResult.userMessage
@@ -21442,6 +21571,14 @@ function initFirmProfilePage() {
 
     const existingStoredOffer = offersList[offerIndex];
     const currentActivePlanKey = getFirmBillingPlanKey(existingStoredOffer);
+    if (
+      normalizedSelectedPlan !== currentActivePlanKey
+      && !FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedSelectedPlan)
+    ) {
+      firmBillingActionStatusMessage = "Dieser Tarif ist für Firmen derzeit nicht als Selbstbedienungsoption verfügbar.";
+      renderFirmBillingOverview();
+      return;
+    }
     const existingPendingPlanChange = getFirmPendingPlanChange(existingStoredOffer);
     const now = new Date();
     const nowIso = now.toISOString();
@@ -21739,7 +21876,7 @@ function initFirmProfilePage() {
         }).join("")
       : "<div class='firm-billing-empty'>Noch keine Einzelpositionen vorhanden. Sobald Ihr Tarif aktiv ist oder Unterlagen freigegeben werden, erscheinen die Positionen hier.</div>";
     const cancellationActionHtml = contractState.hasMonthlySubscription && cancellationHintCopy && !isCancellationPending
-      ? ("<div class='firm-billing-action-note firm-billing-action-note--warning'><div><strong>Abo kündigen</strong><p class='firm-billing-action-note__text'>" + escapeHtml(cancellationHintCopy) + "</p></div><button class='btn ghost small' type='button' data-billing-plan-cancel='1'>" + escapeHtml(cancellationButtonLabel) + "</button></div>")
+      ? ("<div class='firm-billing-action-note firm-billing-action-note--warning'><div><strong>Abo kündigen</strong><p class='firm-billing-action-note__text'>" + escapeHtml(cancellationHintCopy) + "</p><p class='firm-billing-action-note__text'>Kündigungen ohne Monatstarif sind aktuell nicht als Selbstbedienung verfügbar. Bitte wenden Sie sich an den Support.</p></div></div>")
       : "";
     const billingActionNotesHtml = (firmBillingActionStatusMessage || contractState.pendingChange || cancellationActionHtml)
       ? ("<div class='firm-billing-actions'>"
@@ -21798,21 +21935,6 @@ function initFirmProfilePage() {
       resetPendingButton.onclick = async function() {
         resetPendingButton.disabled = true;
         await applyFirmBillingPlanChangeFromProfile(billing.plan.key, resetPendingButton);
-      };
-    }
-
-    const cancelSubscriptionButton = firmBillingOverview.querySelector("[data-billing-plan-cancel]");
-    if (cancelSubscriptionButton instanceof HTMLButtonElement) {
-      cancelSubscriptionButton.onclick = async function() {
-        if (cancelSubscriptionButton.disabled) return;
-        const confirmationMessage = cancellationEndLabel
-          ? ("Möchten Sie Ihr Abo wirklich mit " + cancellationSchedule.noticeDays + " Tagen Frist zum " + cancellationEndLabel + " kündigen? Die Monatsgebühr wird bis dahin anteilig berechnet. Sie erhalten anschließend eine Bestätigung per E-Mail.")
-          : ("Möchten Sie Ihr Abo wirklich mit " + FIRM_SUBSCRIPTION_CANCELLATION_NOTICE_DAYS + " Tagen Frist kündigen? Sie erhalten anschließend eine Bestätigung per E-Mail.");
-        if (!window.confirm(confirmationMessage)) {
-          return;
-        }
-        cancelSubscriptionButton.disabled = true;
-        await applyFirmBillingPlanChangeFromProfile("no_subscription", cancelSubscriptionButton);
       };
     }
 
@@ -26816,6 +26938,154 @@ function initAdminDashboard() {
       clearAdminCredentials();
       setAdminResetNotice("Lokales Admin-Passwort wurde zurückgesetzt. Bitte jetzt ein neues Passwort einrichten.");
       location.reload();
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // API-Tiefentest
+  // -------------------------------------------------------------------------
+  const runApiDiagBtn = document.getElementById("runApiDiagBtn");
+  const apiDiagResults = document.getElementById("apiDiagResults");
+
+  function diagStep(label, status, detail) {
+    if (!apiDiagResults) return;
+    const icon = status === "ok" ? "✅" : status === "running" ? "⏳" : status === "skip" ? "⚪" : "❌";
+    const color = status === "ok" ? "#15803d" : status === "running" ? "#b45309" : status === "skip" ? "#64748b" : "#dc2626";
+    const existing = apiDiagResults.querySelector('[data-diag-label="' + label + '"]');
+    const html = '<span style="font-weight:600;color:' + color + '">' + icon + ' ' + label + '</span>'
+      + (detail ? '<span style="color:#64748b;margin-left:0.5rem;font-size:0.9em">' + detail + '</span>' : '');
+    if (existing) {
+      existing.innerHTML = html;
+    } else {
+      const li = document.createElement("li");
+      li.setAttribute("data-diag-label", label);
+      li.style.cssText = "padding:0.35rem 0;border-bottom:1px solid #f1f5f9;font-size:0.95em";
+      li.innerHTML = html;
+      apiDiagResults.appendChild(li);
+    }
+  }
+
+  if (runApiDiagBtn) {
+    runApiDiagBtn.addEventListener("click", async function() {
+      runApiDiagBtn.disabled = true;
+      runApiDiagBtn.textContent = "Läuft...";
+      if (apiDiagResults) apiDiagResults.innerHTML = "";
+
+      const base = getPostgresApiBase();
+      if (!base) {
+        diagStep("API-Endpunkt", "fail", "window.AzubiMatchRuntime.apiEndpoint nicht gesetzt – Theme neu deployen.");
+        runApiDiagBtn.disabled = false;
+        runApiDiagBtn.textContent = "Tiefentest starten";
+        return;
+      }
+
+      // Schritt 1: Health
+      diagStep("1. Health-Endpoint", "running", base + "/api/health");
+      try {
+        const r = await fetch(base + "/api/health", { cache: "no-store" });
+        if (r.ok) {
+          const data = await r.json();
+          diagStep("1. Health-Endpoint", "ok", "status=" + data.status + " time=" + (data.time || "–"));
+        } else {
+          diagStep("1. Health-Endpoint", "fail", "HTTP " + r.status);
+          runApiDiagBtn.disabled = false;
+          runApiDiagBtn.textContent = "Tiefentest starten";
+          return;
+        }
+      } catch (err) {
+        diagStep("1. Health-Endpoint", "fail", err.message);
+        runApiDiagBtn.disabled = false;
+        runApiDiagBtn.textContent = "Tiefentest starten";
+        return;
+      }
+
+      // Schritt 2: Registrierung
+      const testEmail = "diag-" + Date.now() + "@azubimatcher-test.invalid";
+      const testPassword = "Diag_" + Math.random().toString(36).slice(2, 10);
+      let diagToken = null;
+      let diagUserId = null;
+      diagStep("2. Test-Registrierung", "running", testEmail);
+      try {
+        const r = await fetch(base + "/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: testEmail, password: testPassword, role: "student" })
+        });
+        if (r.ok) {
+          const data = await r.json();
+          diagToken = data.token || null;
+          diagUserId = data.user && data.user.id ? data.user.id : null;
+          diagStep("2. Test-Registrierung", "ok", "user.id=" + (diagUserId || "?") + " JWT=" + (diagToken ? "erhalten" : "fehlt"));
+        } else {
+          const txt = await r.text();
+          diagStep("2. Test-Registrierung", "fail", "HTTP " + r.status + " " + txt.slice(0, 80));
+        }
+      } catch (err) {
+        diagStep("2. Test-Registrierung", "fail", err.message);
+      }
+
+      // Schritt 3: Login
+      diagStep("3. Test-Login", diagToken ? "running" : "skip", diagToken ? testEmail : "Übersprungen (Registrierung fehlgeschlagen)");
+      if (diagToken) {
+        try {
+          const r = await fetch(base + "/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: testEmail, password: testPassword })
+          });
+          if (r.ok) {
+            const data = await r.json();
+            const loginToken = data.token || null;
+            diagStep("3. Test-Login", "ok", "JWT=" + (loginToken ? "erhalten" : "fehlt") + " role=" + (data.user && data.user.role ? data.user.role : "?"));
+          } else {
+            const txt = await r.text();
+            diagStep("3. Test-Login", "fail", "HTTP " + r.status + " " + txt.slice(0, 80));
+          }
+        } catch (err) {
+          diagStep("3. Test-Login", "fail", err.message);
+        }
+      }
+
+      // Schritt 4: /me abrufen
+      diagStep("4. Profil-Abruf (/me)", diagToken ? "running" : "skip", diagToken ? "" : "Übersprungen");
+      if (diagToken) {
+        try {
+          const r = await fetch(base + "/api/auth/me", {
+            headers: { "Authorization": "Bearer " + diagToken }
+          });
+          if (r.ok) {
+            const data = await r.json();
+            diagStep("4. Profil-Abruf (/me)", "ok", "email=" + (data.user && data.user.email ? data.user.email : "?"));
+          } else {
+            diagStep("4. Profil-Abruf (/me)", "fail", "HTTP " + r.status);
+          }
+        } catch (err) {
+          diagStep("4. Profil-Abruf (/me)", "fail", err.message);
+        }
+      }
+
+      // Schritt 5: Testkonto löschen
+      diagStep("5. Testkonto bereinigen", diagToken && diagUserId ? "running" : "skip", "");
+      if (diagToken && diagUserId) {
+        try {
+          // DELETE-Route falls vorhanden, sonst über /api/auth/me HEAD um zu prüfen ob Route existiert
+          const r = await fetch(base + "/api/auth/account", {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + diagToken }
+          });
+          if (r.ok || r.status === 204) {
+            diagStep("5. Testkonto bereinigen", "ok", "Gelöscht via DELETE /api/auth/account");
+          } else {
+            // Route existiert nicht – Konto bleibt, aber mit Hinweis
+            diagStep("5. Testkonto bereinigen", "skip", "DELETE-Route fehlt (HTTP " + r.status + ") – Konto muss manuell entfernt werden: " + testEmail);
+          }
+        } catch (err) {
+          diagStep("5. Testkonto bereinigen", "skip", "Netzwerkfehler: " + err.message);
+        }
+      }
+
+      runApiDiagBtn.disabled = false;
+      runApiDiagBtn.textContent = "Tiefentest starten";
     });
   }
 }

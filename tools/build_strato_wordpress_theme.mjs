@@ -1065,43 +1065,66 @@ function azubimatch_mail_relay_send($config, $payload) {
     return $attachmentPaths;
   }
 
-  $contentTypeFilter = static function () {
-    return 'text/html';
-  };
-
-  $mailerInit = static function ($phpmailer) use ($payload, $fromEmail, $fromName, $config) {
-    $phpmailer->CharSet = 'UTF-8';
-    $phpmailer->Encoding = 'base64';
-    if (!empty($payload['text'])) {
-      $phpmailer->AltBody = (string) $payload['text'];
-    }
-    if ($fromEmail !== '') {
-      $phpmailer->Sender = $fromEmail;
-      try {
-        $phpmailer->setFrom($fromEmail, $fromName !== '' ? $fromName : 'AzubiMatch', false);
-      } catch (Exception $exception) {
-      }
-    }
-    $smtpPassword = trim((string) ($config['smtpPassword'] ?? ''));
+  $smtpPassword = trim((string) ($config['smtpPassword'] ?? ''));
+  try {
     if ($smtpPassword !== '') {
+      if (!class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
+        require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
+        require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
+        require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
+      }
+
       $smtpHost = trim((string) ($config['smtpHost'] ?? 'smtp.strato.de'));
       $smtpPort = (int) ($config['smtpPort'] ?? 587);
       $smtpEncryption = strtolower(trim((string) ($config['smtpEncryption'] ?? 'tls')));
       $smtpUser = trim((string) ($config['smtpUser'] ?? $fromEmail));
-      $phpmailer->isSMTP();
-      $phpmailer->Host = $smtpHost !== '' ? $smtpHost : 'smtp.strato.de';
-      $phpmailer->SMTPAuth = true;
-      $phpmailer->Username = $smtpUser !== '' ? $smtpUser : $fromEmail;
-      $phpmailer->Password = $smtpPassword;
-      $phpmailer->SMTPSecure = $smtpEncryption === 'ssl' ? 'ssl' : 'tls';
-      $phpmailer->Port = $smtpPort > 0 ? $smtpPort : 587;
+      $replyToName = $fromName !== '' ? $fromName : 'AzubiMatch';
+      $senderEmail = $fromEmail !== '' ? $fromEmail : $smtpUser;
+      $mailer = new PHPMailer\\PHPMailer\\PHPMailer(true);
+
+      $mailer->isSMTP();
+      $mailer->Host = $smtpHost !== '' ? $smtpHost : 'smtp.strato.de';
+      $mailer->SMTPAuth = true;
+      $mailer->Username = $smtpUser !== '' ? $smtpUser : $senderEmail;
+      $mailer->Password = $smtpPassword;
+      if ($smtpEncryption === 'ssl') {
+        $mailer->SMTPSecure = PHPMailer\\PHPMailer\\PHPMailer::ENCRYPTION_SMTPS;
+      } elseif ($smtpEncryption === 'tls') {
+        $mailer->SMTPSecure = PHPMailer\\PHPMailer\\PHPMailer::ENCRYPTION_STARTTLS;
+      }
+      $mailer->Port = $smtpPort > 0 ? $smtpPort : 587;
+      $mailer->CharSet = 'UTF-8';
+      $mailer->Encoding = 'base64';
+      $mailer->Timeout = 20;
+      $mailer->isHTML(true);
+      $mailer->Subject = (string) $payload['subject'];
+      $mailer->Body = (string) $payload['html'];
+      $mailer->AltBody = !empty($payload['text'])
+        ? (string) $payload['text']
+        : wp_strip_all_tags((string) $payload['html']);
+
+      if ($senderEmail !== '') {
+        $mailer->setFrom($senderEmail, $replyToName, false);
+        $mailer->addReplyTo($senderEmail, $replyToName);
+        $mailer->Sender = $senderEmail;
+      }
+
+      $mailer->addAddress((string) $payload['to']);
+
+      foreach ($attachmentPaths as $index => $path) {
+        $attachmentName = (string) ($payload['attachments'][$index]['filename'] ?? basename((string) $path));
+        $mailer->addAttachment((string) $path, $attachmentName !== '' ? $attachmentName : basename((string) $path));
+      }
+
+      $mailer->send();
+      return true;
     }
-  };
 
-  add_filter('wp_mail_content_type', $contentTypeFilter);
-  add_action('phpmailer_init', $mailerInit);
+    $contentTypeFilter = static function () {
+      return 'text/html';
+    };
 
-  try {
+    add_filter('wp_mail_content_type', $contentTypeFilter);
     $sent = wp_mail(
       (string) $payload['to'],
       (string) $payload['subject'],
@@ -1109,9 +1132,17 @@ function azubimatch_mail_relay_send($config, $payload) {
       $headers,
       $attachmentPaths
     );
-  } finally {
     remove_filter('wp_mail_content_type', $contentTypeFilter);
-    remove_action('phpmailer_init', $mailerInit);
+  } catch (Exception $exception) {
+    $detail = trim((string) $exception->getMessage());
+    return new WP_Error(
+      'azubimatch_mail_relay_send_failed',
+      $detail !== ''
+        ? 'Der Servermailer konnte die Nachricht nicht versenden. ' . $detail
+        : 'Der Servermailer konnte die Nachricht nicht versenden. Pruefen Sie die Mail-Konfiguration des Servers.',
+      ['status' => 502]
+    );
+  } finally {
     foreach ($attachmentPaths as $path) {
       if (is_string($path) && is_file($path)) {
         wp_delete_file($path);
@@ -1263,6 +1294,7 @@ ${routeLiteralMapPhp}
     . 'window.AzubiMatchRouteMap = ' . wp_json_encode($routeLiterals) . ';'
     . 'window.AzubiMatchRuntime = Object.assign({}, window.AzubiMatchRuntime || {}, ' . wp_json_encode([
       'assetVersion' => AZUBIMATCH_THEME_ASSET_VERSION,
+      'apiEndpoint' => 'https://azubimatcher-production.up.railway.app',
       'mailRelayEndpoint' => '/' . trim((string) rest_get_url_prefix(), '/') . '/azubimatch/v1/mail-relay',
       'stateEndpoint' => '/' . trim((string) rest_get_url_prefix(), '/') . '/azubimatch/v1/state',
       'mobileAppUrl' => esc_url_raw(azubimatch_theme_page_url('app')),
