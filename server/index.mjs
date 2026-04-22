@@ -17,6 +17,7 @@ const allowedOrigins = new Set([
   'http://localhost:3000',
   'http://127.0.0.1:4176',
   'https://azubimatcher.com',
+  'http://azubimatcher.com',
   // Produktions-Frontend (Vercel) – wird per Env-Variable gesetzt
   ...(process.env.ALLOWED_ORIGIN ? [process.env.ALLOWED_ORIGIN] : []),
 ]);
