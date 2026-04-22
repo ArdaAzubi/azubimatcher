@@ -6,10 +6,14 @@ import { signToken } from '../auth.mjs';
 const router = Router();
 
 let ensureUsersTablePromise = null;
-let usersColumnsCache = null;
 
-const roleColumnCandidates = ['role', 'user_role', 'account_type', 'user_type', 'portal_role'];
-const firmFlagColumnCandidates = ['is_firm', 'is_company', 'company_account'];
+function normalizeRoleInput(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (normalized === 'firm' || normalized === 'company' || normalized === 'firma' || normalized === 'unternehmen' || normalized === 'betrieb' || normalized === 'employer') {
+    return 'firm';
+  }
+  return 'student';
+}
 
 async function ensureUsersTable() {
   if (!ensureUsersTablePromise) {
@@ -32,49 +36,6 @@ async function ensureUsersTable() {
 
 ensureUsersTable().catch((err) => console.error('[users] Tabelle konnte nicht angelegt werden:', err.message));
 
-async function getUsersColumns() {
-  if (usersColumnsCache) {
-    return usersColumnsCache;
-  }
-
-  const result = await pool.query(
-    `SELECT column_name
-       FROM information_schema.columns
-      WHERE table_catalog = current_database()
-        AND table_schema = current_schema()
-        AND table_name = 'users'`
-  );
-
-  usersColumnsCache = new Set(result.rows.map((row) => row.column_name));
-  return usersColumnsCache;
-}
-
-function normalizeRole(value) {
-  const normalized = String(value ?? '').toLowerCase().trim();
-  if (!normalized) {
-    return 'student';
-  }
-
-  const firmRoles = new Set(['firm', 'firma', 'company', 'unternehmen', 'betrieb', 'employer']);
-  return firmRoles.has(normalized) ? 'firm' : 'student';
-}
-
-function resolveUserRole(userRow) {
-  for (const column of roleColumnCandidates) {
-    if (column in userRow && String(userRow[column] ?? '').trim() !== '') {
-      return normalizeRole(userRow[column]);
-    }
-  }
-
-  for (const column of firmFlagColumnCandidates) {
-    if (column in userRow && userRow[column]) {
-      return 'firm';
-    }
-  }
-
-  return 'student';
-}
-
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   const { email, password, role } = req.body ?? {};
@@ -92,14 +53,10 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Passwort muss mindestens 6 Zeichen haben.' });
   }
 
-  const normalizedRole = normalizeRole(role);
+  const normalizedRole = normalizeRoleInput(role);
 
   try {
     await ensureUsersTable();
-    const columns = await getUsersColumns();
-    const roleColumn = roleColumnCandidates.find((column) => columns.has(column));
-    const firmFlagColumn = firmFlagColumnCandidates.find((column) => columns.has(column));
-    const hasCreatedAt = columns.has('created_at');
 
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
     if (existing.rowCount > 0) {
@@ -107,39 +64,20 @@ router.post('/register', async (req, res) => {
     }
 
     const hash = await bcrypt.hash(String(password), 12);
-
-    if (roleColumn) {
-      await pool.query(
-        `INSERT INTO users (email, password, ${roleColumn}) VALUES ($1, $2, $3)`,
-        [normalizedEmail, hash, normalizedRole]
-      );
-    } else if (firmFlagColumn) {
-      await pool.query(
-        `INSERT INTO users (email, password, ${firmFlagColumn}) VALUES ($1, $2, $3)`,
-        [normalizedEmail, hash, normalizedRole === 'firm']
-      );
-    } else {
-      await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [normalizedEmail, hash]);
-    }
-
-    const selectColumns = hasCreatedAt
-      ? 'id, email, created_at, *'
-      : 'id, email, *';
     const result = await pool.query(
-      `SELECT ${selectColumns} FROM users WHERE email = $1 LIMIT 1`,
-      [normalizedEmail]
+      'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role, created_at',
+      [normalizedEmail, hash, normalizedRole]
     );
 
     const user = result.rows[0];
-    const resolvedRole = resolveUserRole(user);
-    const token = signToken({ id: user.id, email: user.email, role: resolvedRole });
+    const token = signToken({ id: user.id, email: user.email, role: user.role });
 
     return res.status(201).json({
       token,
-      user: { id: user.id, email: user.email, role: resolvedRole },
+      user: { id: user.id, email: user.email, role: user.role },
     });
   } catch (err) {
-    console.error('[register]', err.message, err.code ? `(code: ${err.code})` : '');
+    console.error('[register]', err.message);
     return res.status(500).json({ error: 'Registrierung fehlgeschlagen. Bitte erneut versuchen.' });
   }
 });
@@ -158,7 +96,7 @@ router.post('/login', async (req, res) => {
     await ensureUsersTable();
 
     const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
+      'SELECT id, email, password, role FROM users WHERE email = $1',
       [normalizedEmail]
     );
 
@@ -173,15 +111,14 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'E-Mail oder Passwort falsch.' });
     }
 
-    const resolvedRole = resolveUserRole(user);
-    const token = signToken({ id: user.id, email: user.email, role: resolvedRole });
+    const token = signToken({ id: user.id, email: user.email, role: user.role });
 
     return res.json({
       token,
-      user: { id: user.id, email: user.email, role: resolvedRole },
+      user: { id: user.id, email: user.email, role: user.role },
     });
   } catch (err) {
-    console.error('[login]', err.message, err.code ? `(code: ${err.code})` : '');
+    console.error('[login]', err.message);
     return res.status(500).json({ error: 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.' });
   }
 });
@@ -200,21 +137,39 @@ router.get('/me', async (req, res) => {
 
     const { verifyToken } = await import('../auth.mjs');
     const payload = verifyToken(token);
-    const result = await pool.query('SELECT * FROM users WHERE id = $1', [payload.id]);
+    const result = await pool.query('SELECT id, email, role, created_at FROM users WHERE id = $1', [payload.id]);
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
     }
 
-    const user = result.rows[0];
-    return res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        role: resolveUserRole(user),
-        created_at: user.created_at ?? null,
-      },
-    });
+    return res.json({ user: result.rows[0] });
+  } catch {
+    return res.status(401).json({ error: 'Sitzung abgelaufen.' });
+  }
+});
+
+// DELETE /api/auth/account  – löscht das eigene Konto (inkl. Kaskaden)
+router.delete('/account', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  try {
+    const { verifyToken } = await import('../auth.mjs');
+    const payload = verifyToken(token);
+
+    await ensureUsersTable();
+    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING id', [payload.id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+    }
+
+    return res.status(204).end();
   } catch {
     return res.status(401).json({ error: 'Sitzung abgelaufen.' });
   }
