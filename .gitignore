@@ -19,3 +19,12 @@ test-results/
 # Betriebssystem
 .DS_Store
 Thumbs.db
+
+# Deploy-Skripte mit hartcodierten Zugangsdaten
+tools/deploy_to_strato.ps1
+
+# VS Code-Tasks koennen Zugangsdaten enthalten
+.vscode/tasks.json
+
+# Vendor-Dateien
+vendor/
