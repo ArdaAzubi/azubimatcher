@@ -1,0 +1,555 @@
+import { Router } from 'express';
+import pool from '../db.mjs';
+
+const router = Router();
+
+const TRAFFIC_TEST_TARGETS = Object.freeze({
+  homepage: {
+    label: 'Startseite',
+    url: 'https://azubimatcher.com/'
+  },
+  themeCss: {
+    label: 'Theme-CSS',
+    url: 'https://azubimatcher.com/wp-content/themes/azubimatch-strato/style.css'
+  },
+  wpLogin: {
+    label: 'WordPress-Login',
+    url: 'https://azubimatcher.com/wp-login.php'
+  }
+});
+
+function clampNumber(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function percentileFromSorted(sortedValues, percentile) {
+  if (!Array.isArray(sortedValues) || sortedValues.length === 0) return 0;
+  const index = Math.max(0, Math.min(sortedValues.length - 1, Math.ceil((percentile / 100) * sortedValues.length) - 1));
+  return sortedValues[index];
+}
+
+function resolveServerOrigin(req) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const forwardedHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
+  const protocol = forwardedProto || req.protocol || 'https';
+  const host = forwardedHost || req.get('host') || '';
+  if (!host) return '';
+  return protocol + '://' + host;
+}
+
+async function runTrafficLoadProbe({ url, connections, durationSeconds, requestTimeoutMs = 8000 }) {
+  const statusCounts = Object.create(null);
+  const latencies = [];
+  let requestCount = 0;
+  let errorCount = 0;
+  const startedAt = Date.now();
+  const stopAt = startedAt + (durationSeconds * 1000);
+
+  const workers = Array.from({ length: connections }, async () => {
+    while (Date.now() < stopAt) {
+      const requestStartedAt = Date.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          cache: 'no-store',
+          redirect: 'manual',
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'AzubiMatchAdminTrafficProbe/1.0'
+          }
+        });
+
+        const statusKey = String(response.status || 0);
+        statusCounts[statusKey] = (statusCounts[statusKey] || 0) + 1;
+        await response.arrayBuffer().catch(() => null);
+      } catch (_err) {
+        errorCount += 1;
+        statusCounts.error = (statusCounts.error || 0) + 1;
+      } finally {
+        clearTimeout(timeoutId);
+        const latencyMs = Math.max(0, Date.now() - requestStartedAt);
+        latencies.push(latencyMs);
+        requestCount += 1;
+      }
+    }
+  });
+
+  await Promise.all(workers);
+
+  const endedAt = Date.now();
+  const elapsedSeconds = Math.max(0.001, (endedAt - startedAt) / 1000);
+  const sorted = latencies.slice().sort((a, b) => a - b);
+  const avgLatency = sorted.length
+    ? (sorted.reduce((sum, value) => sum + value, 0) / sorted.length)
+    : 0;
+
+  return {
+    startedAt: new Date(startedAt).toISOString(),
+    endedAt: new Date(endedAt).toISOString(),
+    elapsedSeconds: Number(elapsedSeconds.toFixed(2)),
+    requestCount,
+    errorCount,
+    requestsPerSecond: Number((requestCount / elapsedSeconds).toFixed(2)),
+    statusCounts,
+    latencyMs: {
+      min: sorted.length ? sorted[0] : 0,
+      p50: percentileFromSorted(sorted, 50),
+      p95: percentileFromSorted(sorted, 95),
+      p99: percentileFromSorted(sorted, 99),
+      max: sorted.length ? sorted[sorted.length - 1] : 0,
+      avg: Number(avgLatency.toFixed(2))
+    }
+  };
+}
+
+async function runRegistrationBurstProbe({ baseUrl, totalRequests, parallelism, requestTimeoutMs = 10000 }) {
+  const statusCounts = Object.create(null);
+  const latencies = [];
+  let successCount = 0;
+  let errorCount = 0;
+  let completed = 0;
+
+  const runId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  const attemptedEmails = [];
+  let cursor = 0;
+  const startedAt = Date.now();
+
+  const nextJobIndex = () => {
+    if (cursor >= totalRequests) return null;
+    const current = cursor;
+    cursor += 1;
+    return current;
+  };
+
+  const workers = Array.from({ length: parallelism }, async () => {
+    while (true) {
+      const index = nextJobIndex();
+      if (index === null) break;
+
+      const email = 'burst-' + runId + '-' + String(index + 1).padStart(3, '0') + '@azubimatcher-test.invalid';
+      attemptedEmails.push(email);
+
+      const password = 'Burst_' + Math.random().toString(36).slice(2, 10) + '9A!';
+      const requestStartedAt = Date.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+
+      try {
+        const response = await fetch(baseUrl + '/api/auth/register', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'AzubiMatchAdminRegistrationBurst/1.0'
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            role: 'student'
+          })
+        });
+
+        const statusKey = String(response.status || 0);
+        statusCounts[statusKey] = (statusCounts[statusKey] || 0) + 1;
+        if (response.ok) {
+          successCount += 1;
+        }
+        await response.arrayBuffer().catch(() => null);
+      } catch (_err) {
+        errorCount += 1;
+        statusCounts.error = (statusCounts.error || 0) + 1;
+      } finally {
+        clearTimeout(timeoutId);
+        const latencyMs = Math.max(0, Date.now() - requestStartedAt);
+        latencies.push(latencyMs);
+        completed += 1;
+      }
+    }
+  });
+
+  await Promise.all(workers);
+
+  let cleanupDeletedUsers = 0;
+  try {
+    if (attemptedEmails.length > 0) {
+      const cleanupResult = await pool.query(
+        'DELETE FROM users WHERE email = ANY($1::text[])',
+        [attemptedEmails]
+      );
+      cleanupDeletedUsers = Number(cleanupResult.rowCount || 0);
+    }
+  } catch (cleanupError) {
+    console.error('[admin/registration-burst cleanup]', cleanupError.message);
+  }
+
+  const endedAt = Date.now();
+  const elapsedSeconds = Math.max(0.001, (endedAt - startedAt) / 1000);
+  const sorted = latencies.slice().sort((a, b) => a - b);
+  const avgLatency = sorted.length
+    ? (sorted.reduce((sum, value) => sum + value, 0) / sorted.length)
+    : 0;
+
+  return {
+    startedAt: new Date(startedAt).toISOString(),
+    endedAt: new Date(endedAt).toISOString(),
+    elapsedSeconds: Number(elapsedSeconds.toFixed(2)),
+    totalRequests,
+    completedRequests: completed,
+    successCount,
+    errorCount,
+    requestsPerSecond: Number((completed / elapsedSeconds).toFixed(2)),
+    statusCounts,
+    cleanup: {
+      attemptedEmails: attemptedEmails.length,
+      deletedUsers: cleanupDeletedUsers
+    },
+    latencyMs: {
+      min: sorted.length ? sorted[0] : 0,
+      p50: percentileFromSorted(sorted, 50),
+      p95: percentileFromSorted(sorted, 95),
+      p99: percentileFromSorted(sorted, 99),
+      max: sorted.length ? sorted[sorted.length - 1] : 0,
+      avg: Number(avgLatency.toFixed(2))
+    }
+  };
+}
+
+// Admin-Authentifizierung über statisches Secret (Env-Variable)
+function requireAdmin(req, res, next) {
+  const secret = process.env.AZUBIMATCH_ADMIN_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'Admin-Zugang nicht konfiguriert.' });
+  }
+  const authHeader = req.headers['authorization'] ?? '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!provided || provided !== secret) {
+    return res.status(403).json({ error: 'Ungültiger Admin-Token.' });
+  }
+  next();
+}
+
+// Sicherstellen, dass alle Tabellen mit erweiterten Feldern existieren
+async function ensureExtendedSchema() {
+  // student_profiles erweitern
+  const studentCols = [
+    'kurzprofil_einzeiler TEXT',
+    'besondere_faehigkeiten TEXT',
+    'abgeschlossene_ausbildung TEXT',
+    'behinderung VARCHAR(100)',
+    'behinderungs_art VARCHAR(200)',
+    'behinderungs_grad VARCHAR(50)',
+    'grundschule_von VARCHAR(20)',
+    'grundschule_bis VARCHAR(20)',
+    'weiterfuehrende_von VARCHAR(20)',
+    'weiterfuehrende_schulform VARCHAR(100)',
+    'weiterfuehrende_bis VARCHAR(20)',
+    'wahlfach VARCHAR(100)',
+    'note_mathe VARCHAR(10)',
+    'note_deutsch VARCHAR(10)',
+    'note_englisch VARCHAR(10)',
+    'note_wahlfach VARCHAR(10)',
+    'profilbid VARCHAR(30)',
+    'profil_code VARCHAR(20)',
+    'verified BOOLEAN DEFAULT FALSE',
+    'registrierung_abgeschlossen BOOLEAN DEFAULT FALSE',
+    'vollprofil_freigegeben BOOLEAN DEFAULT FALSE',
+    'user_email VARCHAR(320)',
+    'berufswunsch VARCHAR(200)',
+    'match_umkreis INTEGER DEFAULT 25',
+  ];
+  for (const col of studentCols) {
+    const colName = col.split(' ')[0];
+    await pool.query(
+      `ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS ${col}`
+    ).catch(() => {});
+  }
+
+  // firm_profiles erweitern
+  const firmCols = [
+    'kontaktperson VARCHAR(200)',
+    'telefon VARCHAR(60)',
+    'email VARCHAR(320)',
+    'profilbid VARCHAR(30)',
+    'verified BOOLEAN DEFAULT FALSE',
+    'user_email VARCHAR(320)',
+  ];
+  for (const col of firmCols) {
+    await pool.query(
+      `ALTER TABLE firm_profiles ADD COLUMN IF NOT EXISTS ${col}`
+    ).catch(() => {});
+  }
+}
+
+ensureExtendedSchema().catch((err) =>
+  console.error('[admin] Schema-Erweiterung fehlgeschlagen:', err.message)
+);
+
+// GET /api/admin/stats
+router.get('/stats', requireAdmin, async (_req, res) => {
+  try {
+    const [usersResult, studentsResult, firmsResult, verifiedStudents, verifiedFirms] =
+      await Promise.all([
+        pool.query('SELECT COUNT(*) FROM users'),
+        pool.query("SELECT COUNT(*) FROM users WHERE role = 'student'"),
+        pool.query("SELECT COUNT(*) FROM users WHERE role = 'firm'"),
+        pool.query('SELECT COUNT(*) FROM student_profiles WHERE verified = TRUE'),
+        pool.query('SELECT COUNT(*) FROM firm_profiles WHERE verified = TRUE'),
+      ]);
+    return res.json({
+      totalUsers: Number(usersResult.rows[0].count),
+      totalStudents: Number(studentsResult.rows[0].count),
+      totalFirms: Number(firmsResult.rows[0].count),
+      verifiedStudents: Number(verifiedStudents.rows[0].count),
+      verifiedFirms: Number(verifiedFirms.rows[0].count),
+    });
+  } catch (err) {
+    console.error('[admin/stats]', err.message);
+    return res.status(500).json({ error: 'Statistiken konnten nicht geladen werden.' });
+  }
+});
+
+// POST /api/admin/traffic-test
+router.post('/traffic-test', requireAdmin, async (req, res) => {
+  const body = req.body ?? {};
+  const targetKey = String(body.targetKey || 'themeCss').trim();
+  const target = TRAFFIC_TEST_TARGETS[targetKey];
+
+  if (!target) {
+    return res.status(400).json({
+      error: 'Ungültiger Test-Endpunkt.',
+      availableTargets: Object.keys(TRAFFIC_TEST_TARGETS)
+    });
+  }
+
+  const connections = Math.round(clampNumber(body.connections, 1, 30, 8));
+  const durationSeconds = Math.round(clampNumber(body.durationSeconds, 5, 60, 12));
+
+  try {
+    const result = await runTrafficLoadProbe({
+      url: target.url,
+      connections,
+      durationSeconds
+    });
+
+    return res.json({
+      success: true,
+      target: {
+        key: targetKey,
+        label: target.label,
+        url: target.url
+      },
+      config: {
+        connections,
+        durationSeconds
+      },
+      result
+    });
+  } catch (err) {
+    console.error('[admin/traffic-test]', err.message);
+    return res.status(500).json({ error: 'Traffic-Test konnte nicht ausgeführt werden.' });
+  }
+});
+
+// POST /api/admin/registration-burst-test
+router.post('/registration-burst-test', requireAdmin, async (req, res) => {
+  const body = req.body ?? {};
+  const totalRequests = Math.round(clampNumber(body.totalRequests, 5, 120, 20));
+  const parallelism = Math.round(clampNumber(body.parallelism, 1, 20, 5));
+  const baseUrl = resolveServerOrigin(req);
+
+  if (!baseUrl) {
+    return res.status(500).json({ error: 'Server-URL konnte nicht ermittelt werden.' });
+  }
+
+  try {
+    const result = await runRegistrationBurstProbe({
+      baseUrl,
+      totalRequests,
+      parallelism
+    });
+
+    return res.json({
+      success: true,
+      config: {
+        totalRequests,
+        parallelism
+      },
+      result
+    });
+  } catch (err) {
+    console.error('[admin/registration-burst-test]', err.message);
+    return res.status(500).json({ error: 'Registrierungsburst-Test konnte nicht ausgeführt werden.' });
+  }
+});
+
+// GET /api/admin/users?role=student|firm&q=suche&limit=100&offset=0
+router.get('/users', requireAdmin, async (req, res) => {
+  const { role, q, limit = 100, offset = 0 } = req.query;
+  const lim = Math.min(Number(limit) || 100, 500);
+  const off = Number(offset) || 0;
+
+  try {
+    let query = `
+      SELECT
+        u.id,
+        u.email,
+        u.role,
+        u.created_at,
+        sp.id            AS student_profile_id,
+        sp.name          AS student_name,
+        sp.stadt         AS student_stadt,
+        sp.plz           AS student_plz,
+        sp.beruf         AS student_beruf,
+        sp.schulabschluss,
+        sp.sprachen,
+        sp.kurzprofil_einzeiler,
+        sp.besondere_faehigkeiten,
+        sp.behinderung,
+        sp.behinderungs_art,
+        sp.behinderungs_grad,
+        sp.verified      AS student_verified,
+        sp.registrierung_abgeschlossen,
+        sp.vollprofil_freigegeben,
+        sp.profilbid,
+        sp.profil_code,
+        sp.berufswunsch,
+        sp.match_umkreis AS student_umkreis,
+        sp.updated_at    AS student_updated_at,
+        fp.id            AS firm_profile_id,
+        fp.firmenname,
+        fp.stadt         AS firm_stadt,
+        fp.plz           AS firm_plz,
+        fp.branche,
+        fp.ausbildungsberufe,
+        fp.beschreibung,
+        fp.website,
+        fp.kontaktperson,
+        fp.telefon,
+        fp.email         AS firm_email,
+        fp.verified      AS firm_verified,
+        fp.match_umkreis AS firm_umkreis,
+        fp.updated_at    AS firm_updated_at
+      FROM users u
+      LEFT JOIN student_profiles sp ON sp.user_id = u.id
+      LEFT JOIN firm_profiles fp ON fp.user_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (role === 'student' || role === 'firm') {
+      params.push(role);
+      query += ` AND u.role = $${params.length}`;
+    }
+
+    if (q) {
+      params.push(`%${q.toLowerCase()}%`);
+      const n = params.length;
+      query += ` AND (
+        LOWER(u.email) LIKE $${n}
+        OR LOWER(sp.name) LIKE $${n}
+        OR LOWER(sp.beruf) LIKE $${n}
+        OR LOWER(sp.stadt) LIKE $${n}
+        OR LOWER(fp.firmenname) LIKE $${n}
+        OR LOWER(fp.branche) LIKE $${n}
+      )`;
+    }
+
+    query += ` ORDER BY u.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(lim, off);
+
+    const result = await pool.query(query, params);
+
+    // Gesamtanzahl für Pagination
+    let countQuery = `SELECT COUNT(*) FROM users u
+      LEFT JOIN student_profiles sp ON sp.user_id = u.id
+      LEFT JOIN firm_profiles fp ON fp.user_id = u.id
+      WHERE 1=1`;
+    const countParams = [];
+    if (role === 'student' || role === 'firm') {
+      countParams.push(role);
+      countQuery += ` AND u.role = $${countParams.length}`;
+    }
+    if (q) {
+      countParams.push(`%${q.toLowerCase()}%`);
+      const n = countParams.length;
+      countQuery += ` AND (LOWER(u.email) LIKE $${n} OR LOWER(sp.name) LIKE $${n} OR LOWER(sp.beruf) LIKE $${n} OR LOWER(sp.stadt) LIKE $${n} OR LOWER(fp.firmenname) LIKE $${n} OR LOWER(fp.branche) LIKE $${n})`;
+    }
+    const countResult = await pool.query(countQuery, countParams);
+
+    return res.json({
+      total: Number(countResult.rows[0].count),
+      limit: lim,
+      offset: off,
+      users: result.rows,
+    });
+  } catch (err) {
+    console.error('[admin/users]', err.message);
+    return res.status(500).json({ error: 'Nutzer konnten nicht geladen werden.' });
+  }
+});
+
+// GET /api/admin/user/:id  – Einzelner Nutzer mit vollständigem Profil
+router.get('/user/:id', requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'Ungültige ID.' });
+
+  try {
+    const result = await pool.query(
+      `SELECT u.*, sp.*, fp.*
+       FROM users u
+       LEFT JOIN student_profiles sp ON sp.user_id = u.id
+       LEFT JOIN firm_profiles fp ON fp.user_id = u.id
+       WHERE u.id = $1`,
+      [id]
+    );
+    if (!result.rowCount) return res.status(404).json({ error: 'Nicht gefunden.' });
+    const row = { ...result.rows[0] };
+    delete row.password; // Passwort-Hash niemals zurückgeben
+    return res.json({ user: row });
+  } catch (err) {
+    console.error('[admin/user/:id]', err.message);
+    return res.status(500).json({ error: 'Nutzer konnte nicht geladen werden.' });
+  }
+});
+
+// PATCH /api/admin/user/:id/verify  – Student oder Firma verifizieren/sperren
+router.patch('/user/:id/verify', requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'Ungültige ID.' });
+  const { verified, role } = req.body ?? {};
+
+  try {
+    const table = role === 'firm' ? 'firm_profiles' : 'student_profiles';
+    await pool.query(
+      `UPDATE ${table} SET verified = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2`,
+      [!!verified, id]
+    );
+    return res.json({ ok: true, verified: !!verified });
+  } catch (err) {
+    console.error('[admin/user/:id/verify]', err.message);
+    return res.status(500).json({ error: 'Status konnte nicht gesetzt werden.' });
+  }
+});
+
+// DELETE /api/admin/user/:id  – Nutzer löschen (CASCADE löscht Profile mit)
+router.delete('/user/:id', requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'Ungültige ID.' });
+
+  try {
+    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
+    if (!result.rowCount) return res.status(404).json({ error: 'Nicht gefunden.' });
+    return res.json({ ok: true, deleted: id });
+  } catch (err) {
+    console.error('[admin/user/:id DELETE]', err.message);
+    return res.status(500).json({ error: 'Nutzer konnte nicht gelöscht werden.' });
+  }
+});
+
+export default router;

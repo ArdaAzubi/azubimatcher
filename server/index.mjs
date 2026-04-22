@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.mjs';
 import studentRoutes from './routes/student.mjs';
 import firmRoutes from './routes/firm.mjs';
+import adminRoutes from './routes/admin.mjs';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -49,6 +50,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/firm', firmRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health-Check
 app.get('/api/health', (_req, res) => {
@@ -74,6 +76,13 @@ app.listen(PORT, listenHost, () => {
   console.log('  GET  /api/firm/profile     (JWT erforderlich)');
   console.log('  PUT  /api/firm/profile     (JWT erforderlich)');
   console.log('  GET  /api/health');
+  console.log('  GET  /api/admin/stats      (Admin-Token)');
+  console.log('  GET  /api/admin/users      (Admin-Token)');
+  console.log('  GET  /api/admin/user/:id   (Admin-Token)');
+  console.log('  PATCH /api/admin/user/:id/verify (Admin-Token)');
+  console.log('  DELETE /api/admin/user/:id (Admin-Token)');
+  console.log('  POST /api/admin/traffic-test (Admin-Token)');
+  console.log('  POST /api/admin/registration-burst-test (Admin-Token)');
 });
 
 export default app;
