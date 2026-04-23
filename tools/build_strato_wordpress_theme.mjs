@@ -670,7 +670,7 @@ function azubimatch_mail_relay_load_config() {
   $config = [
     'apiKey' => '',
     'fromEmail' => 'noreply@a-zu-bio.de',
-    'fromName' => 'AzubiMatch',
+    'fromName' => 'AzubiMatcher',
     'smtpHost' => '',
     'smtpPort' => 587,
     'smtpEncryption' => 'tls',
@@ -1047,7 +1047,7 @@ function azubimatch_mail_relay_create_temp_attachments($attachments) {
 
 function azubimatch_mail_relay_send($config, $payload) {
   $fromEmail = trim((string) ($config['fromEmail'] ?? ''));
-  $fromName = trim((string) ($config['fromName'] ?? 'AzubiMatch'));
+  $fromName = trim((string) ($config['fromName'] ?? 'AzubiMatcher'));
   $fromHeader = $fromEmail;
   $headers = [];
 
@@ -1078,7 +1078,7 @@ function azubimatch_mail_relay_send($config, $payload) {
       $smtpPort = (int) ($config['smtpPort'] ?? 587);
       $smtpEncryption = strtolower(trim((string) ($config['smtpEncryption'] ?? 'tls')));
       $smtpUser = trim((string) ($config['smtpUser'] ?? $fromEmail));
-      $replyToName = $fromName !== '' ? $fromName : 'AzubiMatch';
+      $replyToName = $fromName !== '' ? $fromName : 'AzubiMatcher';
       $senderEmail = $fromEmail !== '' ? $fromEmail : $smtpUser;
       $mailer = new PHPMailer\\PHPMailer\\PHPMailer(true);
 
