@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.mjs';
 import studentRoutes from './routes/student.mjs';
 import firmRoutes from './routes/firm.mjs';
 import adminRoutes from './routes/admin.mjs';
+import { runProfileCompletionReminderJob } from './routes/admin.mjs';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -53,6 +54,57 @@ app.use('/api/student', studentRoutes);
 app.use('/api/firm', firmRoutes);
 app.use('/api/admin', adminRoutes);
 
+function toBooleanEnv(value, fallback = false) {
+  if (value == null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+}
+
+function startProfileReminderScheduler() {
+  const schedulerEnabled = toBooleanEnv(process.env.AZUBIMATCH_PROFILE_REMINDER_SCHEDULER_ENABLED, true);
+  if (!schedulerEnabled) {
+    console.log('[profile-reminder] Scheduler deaktiviert.');
+    return;
+  }
+
+  const intervalMsRaw = Number(process.env.AZUBIMATCH_PROFILE_REMINDER_SCHEDULER_INTERVAL_MS || 3600000);
+  const intervalMs = Number.isFinite(intervalMsRaw) && intervalMsRaw >= 60000 ? intervalMsRaw : 3600000;
+  const startupDelayMs = 30000;
+  let running = false;
+
+  const runOnce = async () => {
+    if (running) return;
+    running = true;
+    try {
+      const result = await runProfileCompletionReminderJob({
+        origin: 'scheduler',
+        portalBaseUrl: String(process.env.AZUBIMATCH_PORTAL_BASE_URL || 'https://azubimatcher.com').replace(/\/$/, '')
+      });
+      if (result.skipped) {
+        console.log('[profile-reminder] Skip:', result.reason || 'unknown');
+      } else {
+        console.log('[profile-reminder] Lauf abgeschlossen. Kandidaten:', result.candidates, 'Gesendet:', result.sent, 'Fehler:', result.failed);
+      }
+    } catch (err) {
+      console.error('[profile-reminder] Scheduler-Fehler:', err?.message || err);
+    } finally {
+      running = false;
+    }
+  };
+
+  setTimeout(() => {
+    runOnce().catch(() => {});
+  }, startupDelayMs);
+
+  setInterval(() => {
+    runOnce().catch(() => {});
+  }, intervalMs);
+
+  console.log('[profile-reminder] Scheduler aktiv. Intervall (ms):', intervalMs);
+}
+
 // Health-Check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
@@ -84,6 +136,8 @@ app.listen(PORT, listenHost, () => {
   console.log('  DELETE /api/admin/user/:id (Admin-Token)');
   console.log('  POST /api/admin/traffic-test (Admin-Token)');
   console.log('  POST /api/admin/registration-burst-test (Admin-Token)');
+  console.log('  POST /api/admin/profile-reminders/run (Admin-Token)');
+  startProfileReminderScheduler();
 });
 
 export default app;
