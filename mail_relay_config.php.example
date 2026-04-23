@@ -5,7 +5,7 @@ return [
   // Valide Absenderadresse Ihrer Domain, z. B. no-reply@azubimatch.de
   'fromEmail' => 'info@azubimatcher.com',
   // Sichtbarer Absendername
-  'fromName' => 'AzubiMatch',
+  'fromName' => 'AzubiMatcher',
   // SMTP-Zugangsdaten (leer lassen = PHP mail() wird verwendet)
   'smtpHost' => 'smtp.strato.de',
   'smtpPort' => 587,

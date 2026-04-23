@@ -109,7 +109,7 @@ function buildReminderMailPayload(candidate, portalBaseUrl) {
     '        <table role="presentation" width="680" cellspacing="0" cellpadding="0" border="0" style="width:680px; max-width:680px; margin:0 auto; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt; background:#fffaf4; border:1px solid #ddd2c5; border-radius:20px; overflow:hidden; font-family:Georgia, \"Times New Roman\", serif; color:#1e2430;">',
     '          <tr>',
     '            <td style="padding:32px 36px; background:linear-gradient(135deg, #123b4f, #0d6a58); color:#fffdf8;">',
-    '              <div style="display:inline-block; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,0.15); font-size:28px; font-weight:700; margin-bottom:18px;">AzubiMatch</div>',
+    '              <div style="display:inline-block; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,0.15); font-size:28px; font-weight:700; margin-bottom:18px;">AzubiMatcher</div>',
     '              <div style="font-size:13px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.84; margin-bottom:14px;">Profil vervollständigen</div>',
     '              <h1 style="margin:0 0 14px; font-size:34px; line-height:1.1; font-weight:700;">' + escapeReminderMailHtml(heroTitle) + '</h1>',
     '              <p style="margin:0; font-size:18px; line-height:1.6; color:rgba(255,253,248,0.86);">Ergänze nur noch die fehlenden Angaben, damit du Matching und direkte Kontakte vollständig nutzen kannst.</p>',

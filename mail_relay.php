@@ -30,7 +30,7 @@ function azubimatch_mail_relay_load_config(): array {
   $config = [
     'apiKey' => '',
     'fromEmail' => 'info@azubimatcher.com',
-    'fromName' => 'AzubiMatch'
+    'fromName' => 'AzubiMatcher'
   ];
 
   $configPath = __DIR__ . '/mail_relay_config.php';
@@ -196,7 +196,7 @@ function azubimatch_mail_relay_build_message(array $payload): array {
 function azubimatch_mail_relay_send(array $config, array $payload): bool {
   $message = azubimatch_mail_relay_build_message($payload);
   $fromEmail = trim((string) ($config['fromEmail'] ?? ''));
-  $fromName = trim((string) ($config['fromName'] ?? 'AzubiMatch'));
+  $fromName = trim((string) ($config['fromName'] ?? 'AzubiMatcher'));
   $fromHeader = $fromEmail;
 
   if ($fromEmail !== '' && $fromName !== '') {
