@@ -1158,20 +1158,23 @@ function azubimatch_mail_relay_send($config, $payload) {
 }
 
 function azubimatch_mail_relay_permission_callback($request) {
-  if (!azubimatch_mail_relay_is_same_origin_request($request)) {
-    return new WP_Error('azubimatch_mail_relay_forbidden', 'Same-Origin-Pruefung fuer den Mail-Relay fehlgeschlagen.', ['status' => 403]);
-  }
-
   $config = azubimatch_mail_relay_load_config();
   $expectedApiKey = trim((string) ($config['apiKey'] ?? ''));
-  if ($expectedApiKey !== '') {
-    $providedApiKey = trim((string) $request->get_header('x-api-key'));
-    if ($providedApiKey === '' || !hash_equals($expectedApiKey, $providedApiKey)) {
-      return new WP_Error('azubimatch_mail_relay_invalid_api_key', 'Ungueltiger API-Schluessel fuer den Mail-Relay.', ['status' => 403]);
-    }
+  $providedApiKey = trim((string) $request->get_header('x-api-key'));
+
+  if ($expectedApiKey !== '' && $providedApiKey !== '' && hash_equals($expectedApiKey, $providedApiKey)) {
+    return true;
   }
 
-  return true;
+  if (azubimatch_mail_relay_is_same_origin_request($request)) {
+    return true;
+  }
+
+  if ($expectedApiKey !== '') {
+    return new WP_Error('azubimatch_mail_relay_invalid_api_key', 'Ungueltiger API-Schluessel fuer den Mail-Relay.', ['status' => 403]);
+  }
+
+  return new WP_Error('azubimatch_mail_relay_forbidden', 'Same-Origin-Pruefung fuer den Mail-Relay fehlgeschlagen.', ['status' => 403]);
 }
 
 function azubimatch_mail_relay_rest_callback($request) {

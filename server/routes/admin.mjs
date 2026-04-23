@@ -47,34 +47,138 @@ function resolveReminderMailConfig() {
   return { endpoint, apiKey, enabled };
 }
 
+function escapeReminderMailHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildReminderMailPayload(candidate, portalBaseUrl) {
-  const roleLabel = candidate.role === 'firm' ? 'Unternehmen' : 'Bewerberprofil';
+  const roleLabel = candidate.role === 'firm' ? 'Unternehmensprofil' : 'Bewerberprofil';
   const profileUrl = candidate.role === 'firm'
     ? portalBaseUrl + '/firma_profil.html'
     : portalBaseUrl + '/bewerber_profil.html';
-  const subject = 'Erinnerung: Bitte Profil vervollständigen für Matching';
+  const subject = 'AzubiMatcher: Bitte Profil vervollständigen';
   const salutationName = String(candidate.profile_name || '').trim();
   const salutation = salutationName ? ('Hallo ' + salutationName + ',') : 'Hallo,';
+  const escapedSalutation = escapeReminderMailHtml(salutation);
+  const escapedProfileUrl = escapeReminderMailHtml(profileUrl);
+  const heroTitle = candidate.role === 'firm'
+    ? 'Dein Unternehmensprofil ist fast startklar.'
+    : 'Dein Profil ist fast startklar.';
+  const benefitCopy = candidate.role === 'firm'
+    ? 'Sobald dein Profil vollständig ist, kannst du passende Bewerbende besser einschätzen und schneller mit Interessierten in Kontakt kommen.'
+    : 'Sobald dein Profil vollständig ist, kannst du passende Ausbildungsplätze besser einschätzen und schneller mit Unternehmen in Kontakt kommen.';
+  const highlightCopy = candidate.role === 'firm'
+    ? 'Je vollständiger dein Unternehmensprofil ist, desto besser können Bewerbende und Matching-Funktionen dein Angebot einordnen.'
+    : 'Je vollständiger dein Profil ist, desto besser kann AzubiMatcher passende Ausbildungsplätze und Kontakte für dich sichtbar machen.';
   const text = [
     salutation,
     '',
-    'dein Konto bei AzubiMatcher ist aktuell noch im Status "Nur Konto".',
-    'Bitte vervollständige dein ' + roleLabel + ', damit du am Matching teilnehmen kannst.',
+    'dein Zugang zu AzubiMatcher ist bereits angelegt.',
+    'Aktuell steht dein Konto aber noch im Status "Nur Konto", weil wichtige Angaben in deinem ' + roleLabel + ' fehlen.',
+    '',
+    benefitCopy,
     '',
     'Direkt zum Profil: ' + profileUrl,
     '',
-    'Nach dem Ausfüllen kannst du Bewerber bzw. Ausbildungsplätze finden und kontaktiert werden.',
+    'Deine nächsten Schritte:',
+    '1. Profil öffnen',
+    '2. Fehlende Angaben ergänzen',
+    '3. Matching und Kontakte nutzen',
     '',
     'Viele Grüße',
     'AzubiMatcher Team'
   ].join('\n');
   const html = [
-    '<p>' + salutation + '</p>',
-    '<p>dein Konto bei <strong>AzubiMatcher</strong> ist aktuell noch im Status <strong>"Nur Konto"</strong>.</p>',
-    '<p>Bitte vervollständige dein ' + roleLabel + ', damit du am Matching teilnehmen kannst.</p>',
-    '<p><a href="' + profileUrl + '">Jetzt Profil vervollständigen</a></p>',
-    '<p>Nach dem Ausfüllen kannst du Bewerber bzw. Ausbildungsplätze finden und kontaktiert werden.</p>',
-    '<p>Viele Grüße<br>AzubiMatcher Team</p>'
+    '<!DOCTYPE html>',
+    '<html lang="de">',
+    '<head>',
+    '  <meta charset="UTF-8">',
+    '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    '  <title>AzubiMatcher Erinnerung</title>',
+    '</head>',
+    '<body style="margin:0; padding:0; background:#f4efe7; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">',
+    '  <div style="display:none; max-height:0; max-width:0; overflow:hidden; opacity:0; mso-hide:all; font-size:1px; line-height:1px; color:transparent; white-space:nowrap;">Dein Profil ist fast startklar. Ergänze nur noch die fehlenden Angaben, damit du Matching und Kontakte nutzen kannst.</div>',
+    '  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f4efe7; margin:0; padding:0 0 24px; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt;">',
+    '    <tr>',
+    '      <td align="center" style="padding:0;">',
+    '        <table role="presentation" width="680" cellspacing="0" cellpadding="0" border="0" style="width:680px; max-width:680px; margin:0 auto; border-collapse:separate; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt; background:#fffaf4; border:1px solid #ddd2c5; border-radius:20px; overflow:hidden; font-family:Georgia, \"Times New Roman\", serif; color:#1e2430;">',
+    '          <tr>',
+    '            <td style="padding:32px 36px; background:linear-gradient(135deg, #123b4f, #0d6a58); color:#fffdf8;">',
+    '              <div style="display:inline-block; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,0.15); font-size:28px; font-weight:700; margin-bottom:18px;">AzubiMatch</div>',
+    '              <div style="font-size:13px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.84; margin-bottom:14px;">Profil vervollständigen</div>',
+    '              <h1 style="margin:0 0 14px; font-size:34px; line-height:1.1; font-weight:700;">' + escapeReminderMailHtml(heroTitle) + '</h1>',
+    '              <p style="margin:0; font-size:18px; line-height:1.6; color:rgba(255,253,248,0.86);">Ergänze nur noch die fehlenden Angaben, damit du Matching und direkte Kontakte vollständig nutzen kannst.</p>',
+    '            </td>',
+    '          </tr>',
+    '          <tr>',
+    '            <td style="padding:32px 36px 18px; font-size:18px; line-height:1.7; color:#5e6778;">',
+    '              <p style="margin:0 0 18px;">' + escapedSalutation + '</p>',
+    '              <p style="margin:0 0 18px;">dein Zugang zu <strong>AzubiMatcher</strong> ist bereits angelegt. Aktuell steht dein Konto aber noch im Status <strong>"Nur Konto"</strong>, weil wichtige Angaben in deinem <strong>' + escapeReminderMailHtml(roleLabel) + '</strong> fehlen.</p>',
+    '              <p style="margin:0;">' + escapeReminderMailHtml(benefitCopy) + '</p>',
+    '            </td>',
+    '          </tr>',
+    '          <tr>',
+    '            <td style="padding:0 36px 12px;">',
+    '              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">',
+    '                <tr>',
+    '                  <td style="padding:0 0 16px;">',
+    '                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff; border:1px solid #ddd2c5; border-radius:16px;">',
+    '                      <tr>',
+    '                        <td style="padding:20px 22px;">',
+    '                          <h2 style="margin:0 0 10px; font-size:21px; line-height:1.3; color:#1e2430;">Deine nächsten Schritte</h2>',
+    '                          <ol style="margin:0; padding-left:20px; color:#5e6778; font-size:17px; line-height:1.7;">',
+    '                            <li>Öffne dein Profil direkt über den Button unten</li>',
+    '                            <li>Ergänze die fehlenden Angaben und speichere sie ab</li>',
+    '                            <li>Nutze danach Matching und direkte Kontakte vollständig</li>',
+    '                          </ol>',
+    '                        </td>',
+    '                      </tr>',
+    '                    </table>',
+    '                  </td>',
+    '                </tr>',
+    '                <tr>',
+    '                  <td style="padding:0 0 16px;">',
+    '                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#dff4ec; border:1px solid #b7e0d3; border-radius:16px;">',
+    '                      <tr>',
+    '                        <td style="padding:20px 22px;">',
+    '                          <h2 style="margin:0 0 10px; font-size:21px; line-height:1.3; color:#0b5d4d;">Warum sich das lohnt</h2>',
+    '                          <p style="margin:0; font-size:17px; line-height:1.7; color:#24594e;">' + escapeReminderMailHtml(highlightCopy) + '</p>',
+    '                        </td>',
+    '                      </tr>',
+    '                    </table>',
+    '                  </td>',
+    '                </tr>',
+    '              </table>',
+    '            </td>',
+    '          </tr>',
+    '          <tr>',
+    '            <td style="padding:6px 36px 12px;">',
+    '              <a href="' + escapedProfileUrl + '" style="display:inline-block; padding:15px 24px; background:#0d7a64; color:#ffffff; text-decoration:none; font-size:17px; font-weight:700; border-radius:999px;">Profil jetzt vervollständigen</a>',
+    '            </td>',
+    '          </tr>',
+    '          <tr>',
+    '            <td style="padding:0 36px 12px; font-size:14px; line-height:1.6; color:#7b8596;">',
+    '              Falls der Button nicht funktioniert, öffne diesen Link direkt:<br>',
+    '              <a href="' + escapedProfileUrl + '" style="color:#0d6a58; text-decoration:underline;">' + escapedProfileUrl + '</a>',
+    '            </td>',
+    '          </tr>',
+    '          <tr>',
+    '            <td style="padding:12px 36px 28px; font-size:17px; line-height:1.7; color:#5e6778;">',
+    '              Viele Grüße<br>',
+    '              <strong style="color:#1e2430;">AzubiMatcher Team</strong>',
+    '            </td>',
+    '          </tr>',
+    '        </table>',
+    '      </td>',
+    '    </tr>',
+    '  </table>',
+    '</body>',
+    '</html>'
   ].join('');
 
   return {

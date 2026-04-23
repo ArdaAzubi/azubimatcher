@@ -88,6 +88,19 @@ function azubimatch_mail_relay_is_same_origin_request(): bool {
   return false;
 }
 
+function azubimatch_mail_relay_has_valid_api_key(string $expectedApiKey): bool {
+  if ($expectedApiKey === '') {
+    return false;
+  }
+
+  $providedApiKey = azubimatch_mail_relay_header('X-API-Key');
+  if ($providedApiKey === '') {
+    return false;
+  }
+
+  return hash_equals($expectedApiKey, $providedApiKey);
+}
+
 function azubimatch_mail_relay_normalize_payload(array $data): array {
   $recipient = filter_var((string) ($data['to'] ?? ''), FILTER_VALIDATE_EMAIL);
   $subject = trim((string) ($data['subject'] ?? ''));
@@ -219,15 +232,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
   azubimatch_mail_relay_json_response(405, ['error' => 'Nur POST ist erlaubt.']);
 }
 
-if (!azubimatch_mail_relay_is_same_origin_request()) {
+$config = azubimatch_mail_relay_load_config();
+$expectedApiKey = trim((string) ($config['apiKey'] ?? ''));
+$validApiKey = azubimatch_mail_relay_has_valid_api_key($expectedApiKey);
+
+if (!$validApiKey && !azubimatch_mail_relay_is_same_origin_request()) {
   azubimatch_mail_relay_json_response(403, ['error' => 'Same-Origin-Prüfung für den Mail-Relay fehlgeschlagen.']);
 }
 
-$config = azubimatch_mail_relay_load_config();
-$expectedApiKey = trim((string) ($config['apiKey'] ?? ''));
 if ($expectedApiKey !== '') {
-  $providedApiKey = azubimatch_mail_relay_header('X-API-Key');
-  if ($providedApiKey === '' || !hash_equals($expectedApiKey, $providedApiKey)) {
+  if (!$validApiKey) {
     azubimatch_mail_relay_json_response(403, ['error' => 'Ungültiger API-Schlüssel für den Mail-Relay.']);
   }
 }
