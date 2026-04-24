@@ -33,32 +33,62 @@ if (document && document.documentElement) {
 document.addEventListener('DOMContentLoaded', function() {
   const deleteBtn = document.getElementById('deleteProfileBtn');
   if (deleteBtn) {
-    deleteBtn.addEventListener('click', function() {
+    deleteBtn.addEventListener('click', async function() {
+      if (deleteBtn.dataset.deleting === '1') return;
       if (!confirm('Willst du dein Profil wirklich unwiderruflich löschen?')) return;
+
+      const redirectTarget = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+      const abortDeletion = function(message) {
+        alert(message);
+        deleteBtn.dataset.deleting = '0';
+        deleteBtn.disabled = false;
+        deleteBtn.removeAttribute('aria-busy');
+      };
+
+      deleteBtn.dataset.deleting = '1';
+      deleteBtn.disabled = true;
+      deleteBtn.setAttribute('aria-busy', 'true');
+
       const studentAuth = getStoredStudentAuth();
+      const remoteStudentDeletion = await deleteOwnAccountFromApi('student');
+      if (studentAuth && remoteStudentDeletion.status === 'error') {
+        abortDeletion('Dein Online-Konto konnte noch nicht geloescht werden (' + remoteStudentDeletion.message + '). Es wurden noch keine lokalen Daten entfernt. Bitte versuche es erneut.');
+        return;
+      }
       const student = studentAuth ? findStudentByAuth(studentAuth) : null;
       if (student && deleteStudentAccountById(student.id)) {
-        window.location.href = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+        _setApiToken(_API_TOKEN_STUDENT, null);
+        window.location.href = redirectTarget;
         return;
       }
       if (studentAuth && studentAuth.id && deleteStudentRegistrationByUserId(studentAuth.id)) {
-        window.location.href = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+        _setApiToken(_API_TOKEN_STUDENT, null);
+        window.location.href = redirectTarget;
         return;
       }
       clearStoredStudentAuth();
+      _setApiToken(_API_TOKEN_STUDENT, null);
 
       const firmAuth = getStoredFirmAuth();
+      const remoteFirmDeletion = await deleteOwnAccountFromApi('firm');
+      if (firmAuth && remoteFirmDeletion.status === 'error') {
+        abortDeletion('Dein Online-Konto konnte noch nicht geloescht werden (' + remoteFirmDeletion.message + '). Es wurden noch keine lokalen Daten entfernt. Bitte versuche es erneut.');
+        return;
+      }
       const offer = firmAuth ? findFirmOfferByAuth(firmAuth) : null;
       if (offer && deleteFirmAccountById(offer.id)) {
-        window.location.href = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+        _setApiToken(_API_TOKEN_FIRM, null);
+        window.location.href = redirectTarget;
         return;
       }
       if (firmAuth && firmAuth.id && deleteFirmRegistrationByUserId(firmAuth.id)) {
-        window.location.href = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+        _setApiToken(_API_TOKEN_FIRM, null);
+        window.location.href = redirectTarget;
         return;
       }
       clearStoredFirmAuth();
-      window.location.href = (window.AzubiMatchRoutes && window.AzubiMatchRoutes.index) ? window.AzubiMatchRoutes.index : 'index.html';
+      _setApiToken(_API_TOKEN_FIRM, null);
+      window.location.href = redirectTarget;
     });
   }
 });
@@ -287,9 +317,68 @@ function verschiebeMatchesInMatchOrdner() {
 }
 // Zeigt die vollstaendige Matching-Uebersicht im Admin-Tab an.
 // Gruppiert Bewerber und Firmen nach Beruf und zeigt sie gemeinsam an.
-function renderMatchingByProfession() {
-  const students = loadStudents();
-  const firms = (typeof loadOffers === 'function' ? loadOffers() : []);
+// Konvertiert API-Nutzerrows (aus /api/admin/users) in das Matching-Format
+function convertApiUsersToMatchData(rows) {
+  var students = [];
+  var firms = [];
+  (rows || []).forEach(function(row) {
+    if (row.role === 'student' && row.student_beruf) {
+      students.push({
+        id: String(row.profilbid || row.student_profile_id || row.id),
+        userEmail: row.email || '',
+        name: row.student_name || '',
+        beruf: row.student_beruf || '',
+        stadt: row.student_stadt || '',
+        plz: row.student_plz || '',
+        matchUmkreis: Number(row.student_umkreis || 25),
+        behinderung: row.behinderung || '',
+        behinderungsArt: row.behinderungs_art || '',
+        behinderungsGrad: row.behinderungs_grad || '',
+        art9ConsentGranted: !!String(row.behinderung || '').trim(),
+        verified: !!row.student_verified,
+        vollprofilFreigegeben: !!row.vollprofil_freigegeben,
+        registrierungAbgeschlossen: !!row.registrierung_abgeschlossen,
+        profilCode: row.profil_code || '',
+        kurzprofilEinzeiler: row.kurzprofil_einzeiler || '',
+        besondereFaehigkeiten: row.besondere_faehigkeiten || '',
+        sprachen: row.sprachen ? String(row.sprachen).split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [],
+        schulabschluss: row.schulabschluss || '',
+        apprenticeshipSearchStatus: 'active',
+        internshipSearchStatus: 'active',
+        gesperrteAbsender: [],
+      });
+    } else if (row.role === 'firm' && row.firmenname) {
+      var ausbildungsberufe = row.ausbildungsberufe
+        ? String(row.ausbildungsberufe).split(',').map(function(b) { return b.trim(); }).filter(Boolean)
+        : [];
+      firms.push({
+        id: String(row.firm_profile_id || row.id),
+        userEmail: row.email || '',
+        firma: row.firmenname || '',
+        firmenname: row.firmenname || '',
+        stadt: row.firm_stadt || '',
+        plz: row.firm_plz || '',
+        branche: row.branche || '',
+        berufe: ausbildungsberufe,
+        ausbildungsberufe: row.ausbildungsberufe || '',
+        matchUmkreis: Number(row.firm_umkreis || 25),
+        beschreibung: row.beschreibung || '',
+        website: row.website || '',
+        kontaktPerson: row.kontaktperson || '',
+        telefon: row.telefon || '',
+        email: row.firm_email || row.email || '',
+        verified: !!row.firm_verified,
+        paymentApproved: !!row.firm_verified,
+        registrierungAbgeschlossen: !!row.firm_verified,
+      });
+    }
+  });
+  return { students: students, firms: firms };
+}
+
+function renderMatchingByProfession(studentsArg, firmsArg) {
+  const students = studentsArg || loadStudents();
+  const firms = firmsArg || (typeof loadOffers === 'function' ? loadOffers() : []);
   const requests = loadFullProfileRequests();
   const groupedMatches = {};
   firms.forEach(function(firm) {
@@ -400,7 +489,34 @@ function initAdminMatchingOverview() {
     return;
   }
 
-  renderMatchingByProfession();
+  // Versuche zuerst Daten aus der Railway-API zu laden (API-First)
+  var adminToken = (function() {
+    try { return localStorage.getItem('azubimatch_admin_api_token') || ''; } catch(e) { return ''; }
+  })();
+
+  if (adminToken && typeof AZUBIMATCH_API_BASE === 'string') {
+    container.innerHTML = '<p style="color:#64748b;text-align:center;padding:1rem;">Lade Daten aus Datenbank …</p>';
+
+    fetch(AZUBIMATCH_API_BASE + '/api/admin/users?limit=500', {
+      headers: { Authorization: 'Bearer ' + adminToken }
+    })
+      .then(function(res) { return res.ok ? res.json() : null; })
+      .then(function(data) {
+        if (data && Array.isArray(data.users) && data.users.length > 0) {
+          var converted = convertApiUsersToMatchData(data.users);
+          renderMatchingByProfession(converted.students, converted.firms);
+        } else {
+          // Fallback auf localStorage
+          renderMatchingByProfession();
+        }
+      })
+      .catch(function() {
+        // Netzwerkfehler: Fallback auf localStorage
+        renderMatchingByProfession();
+      });
+  } else {
+    renderMatchingByProfession();
+  }
 }
 // Benachrichtigt Firmen, wenn ein Bewerber in derselben Berufsgruppe ist
 function benachrichtigeFirmenBeiMatching(student) {
@@ -709,7 +825,9 @@ function collectStudentProfileCompletionIssues(dataArg) {
   const grundschuleBis = String(data.grundschuleBis || "").trim();
   const weiterfuehrendeVon = String(data.weiterfuehrendeVon || "").trim();
   const weiterfuehrendeBis = String(data.weiterfuehrendeBis || "").trim();
-  const needsSupportDetails = studentNeedsInclusionSupport({ behinderung: data.behinderung });
+  const sensitiveDataState = getStudentSensitiveDataState(data);
+  const needsSupportDetails = sensitiveDataState.needsSupportDetails;
+  const wantsSensitiveData = !!String(data.behinderung || "").trim();
 
   addIssue(!String(data.name || "").trim(), "Name");
   addIssue(!String(data.beruf || "").trim(), "Wunschberuf");
@@ -717,7 +835,7 @@ function collectStudentProfileCompletionIssues(dataArg) {
   addIssue(!plz, "PLZ");
   addIssue(!!plz && !/^[0-9]{5}$/.test(plz), "gültige PLZ");
   addIssue(!String(data.schulabschluss || "").trim(), "Schulabschluss");
-  addIssue(!String(data.behinderung || "").trim(), "Angabe zu Unterstützungsbedarf");
+  addIssue(wantsSensitiveData && !sensitiveDataState.hasConsent, "Einwilligung zu sensiblen Angaben");
   addIssue(!grundschuleVon, "Grundschule von Jahr");
   addIssue(!grundschuleBis, "Grundschule bis Jahr");
   addIssue(!String(data.weiterfuehrendeSchulform || "").trim(), "Weiterführende Schule");
@@ -751,8 +869,8 @@ function collectStudentProfileCompletionIssues(dataArg) {
   }
 
   if (needsSupportDetails) {
-    addIssue(!String(data.behinderungsArt || "").trim(), "Art der Behinderung");
-    addIssue(!String(data.behinderungsGrad || "").trim(), "Schweregrad");
+    addIssue(!sensitiveDataState.behinderungsArt, "Art der Behinderung");
+    addIssue(!sensitiveDataState.behinderungsGrad, "Schweregrad");
   }
 
   return issues;
@@ -764,6 +882,514 @@ function formatStudentProfileDraftStatus(issuesArg) {
     return "Profil gespeichert.";
   }
   return "Entwurf gespeichert. Für dein vollständiges Profil fehlen oder passen noch nicht: " + issues.join(", ") + ".";
+}
+
+// ─── Railway API Sync ─────────────────────────────────────────────────────────
+// Alle Profildaten werden zusätzlich zur localStorage-Kopie auch in die Railway-
+// PostgreSQL-Datenbank geschrieben. Fehler (offline, API-Down) werden still
+// ignoriert, damit der lokale Fluss nie unterbrochen wird.
+//
+// Dev-URL-Switching: Auf localhost/127.0.0.1 wird automatisch der lokale
+// API-Server (Port 3001) verwendet, in Produktion die Railway-URL.
+const AZUBIMATCH_API_BASE = (() => {
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') {
+    return 'http://127.0.0.1:3001';
+  }
+  return 'https://azubimatcher-production.up.railway.app';
+})();
+const _API_TOKEN_STUDENT = 'azubimatch_api_token_student';
+const _API_TOKEN_FIRM    = 'azubimatch_api_token_firm';
+
+function _getApiToken(key) {
+  const privacyApi = window.AzubiMatchPrivacy;
+  if (privacyApi && typeof privacyApi.readAuthSessionRaw === 'function') {
+    return privacyApi.readAuthSessionRaw(key)
+      || privacyApi.readAuthSessionRaw('azubimatch_api_jwt')
+      || null;
+  }
+  try {
+    return localStorage.getItem(key)
+      || sessionStorage.getItem(key)
+      || localStorage.getItem('azubimatch_api_jwt')
+      || sessionStorage.getItem('azubimatch_api_jwt')
+      || null;
+  } catch(e) { return null; }
+}
+function _setApiToken(key, token) {
+  const privacyApi = window.AzubiMatchPrivacy;
+  if (privacyApi) {
+    if (token) {
+      if (typeof privacyApi.writeAuthSession === 'function') {
+        privacyApi.writeAuthSession(key, token);
+        privacyApi.writeAuthSession('azubimatch_api_jwt', token);
+      }
+    } else if (typeof privacyApi.clearAuthSession === 'function') {
+      privacyApi.clearAuthSession(key);
+      privacyApi.clearAuthSession('azubimatch_api_jwt');
+    }
+    if (token || typeof privacyApi.clearAuthSession === 'function') {
+      return;
+    }
+  }
+  try {
+    if (token) {
+      localStorage.setItem(key, token);
+      localStorage.setItem('azubimatch_api_jwt', token);
+    } else {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+      localStorage.removeItem('azubimatch_api_jwt');
+      sessionStorage.removeItem('azubimatch_api_jwt');
+    }
+  } catch(e) {}
+}
+
+async function deleteOwnAccountFromApi(role) {
+  var tokenKey = role === 'firm' ? _API_TOKEN_FIRM : _API_TOKEN_STUDENT;
+  var token = _getApiToken(tokenKey);
+  if (!token) {
+    return { status: 'skipped' };
+  }
+
+  try {
+    var response = await fetch(AZUBIMATCH_API_BASE + '/api/auth/account', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (response.ok || response.status === 204 || response.status === 404) {
+      _setApiToken(tokenKey, null);
+      return { status: 'deleted' };
+    }
+
+    if (response.status === 401) {
+      _setApiToken(tokenKey, null);
+      return { status: 'expired' };
+    }
+
+    return { status: 'error', message: 'HTTP ' + response.status };
+  } catch (error) {
+    return {
+      status: 'error',
+      message: error && error.message ? error.message : 'Netzwerkfehler'
+    };
+  }
+}
+
+function isNumericAdminUserId(value) {
+  return /^\d+$/.test(String(value || '').trim());
+}
+
+function getStoredAdminApiToken() {
+  try {
+    return String(localStorage.getItem('azubimatch_admin_api_token') || '').trim();
+  } catch (error) {
+    return '';
+  }
+}
+
+function isLocalAdminRuntime() {
+  var host = String(window.location.hostname || '').trim().toLowerCase();
+  return !host || host === 'localhost' || host === '127.0.0.1';
+}
+
+function shouldAttemptAdminApiDelete(userId) {
+  return isNumericAdminUserId(userId) && (!isLocalAdminRuntime() || !!getStoredAdminApiToken());
+}
+
+async function deleteAdminUserFromApiById(userId) {
+  var apiUserId = String(userId || '').trim();
+  if (!shouldAttemptAdminApiDelete(apiUserId)) {
+    return { ok: true, skipped: true };
+  }
+
+  var adminToken = getStoredAdminApiToken();
+  if (!adminToken) {
+    return {
+      ok: false,
+      message: 'Für Live-Löschungen fehlt das Admin-API-Token. Bitte im Datenbank-Tab speichern und die Löschung erneut ausführen.'
+    };
+  }
+
+  try {
+    var response = await fetch(AZUBIMATCH_API_BASE + '/api/admin/user/' + encodeURIComponent(apiUserId), {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + adminToken }
+    });
+
+    if (response.ok || response.status === 404) {
+      return {
+        ok: true,
+        deleted: response.ok,
+        alreadyMissing: response.status === 404
+      };
+    }
+
+    var errorMessage = 'HTTP ' + response.status;
+    try {
+      var data = await response.json();
+      if (data && data.error) {
+        errorMessage = String(data.error);
+      }
+    } catch (_error) {
+      // ignore JSON parse failures and keep HTTP status text
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        ok: false,
+        message: 'Das Admin-API-Token ist ungültig oder abgelaufen. Bitte im Datenbank-Tab erneut speichern.'
+      };
+    }
+
+    return {
+      ok: false,
+      message: 'Railway-Löschung fehlgeschlagen: ' + errorMessage
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error && error.message
+        ? 'Railway-Löschung fehlgeschlagen: ' + error.message
+        : 'Railway-Löschung fehlgeschlagen.'
+    };
+  }
+}
+
+function resolveStudentAdminUserId(student) {
+  if (student && isNumericAdminUserId(student.userId)) {
+    return String(student.userId).trim();
+  }
+  var normalizedEmail = normalizeText(student && (student.userEmail || student.email));
+  if (!normalizedEmail) return '';
+  var user = loadRegisteredStudentUsers().find(function(entry) {
+    return normalizeText(entry && entry.email) === normalizedEmail;
+  }) || null;
+  return user && isNumericAdminUserId(user.id) ? String(user.id).trim() : '';
+}
+
+function resolveFirmAdminUserId(offer) {
+  if (offer && isNumericAdminUserId(offer.userId)) {
+    return String(offer.userId).trim();
+  }
+  var normalizedEmail = normalizeText(offer && (offer.userEmail || offer.email));
+  if (!normalizedEmail) return '';
+  var user = loadRegisteredFirmUsers().find(function(entry) {
+    return normalizeText(entry && entry.email) === normalizedEmail;
+  }) || null;
+  return user && isNumericAdminUserId(user.id) ? String(user.id).trim() : '';
+}
+
+function cleanupLocalAdminUserByIdentity(role, userId, email) {
+  var normalizedEmail = normalizeText(email);
+
+  if (role === 'firm') {
+    if (userId && deleteFirmRegistrationByUserId(String(userId))) {
+      return true;
+    }
+
+    if (normalizedEmail) {
+      var firmUser = loadRegisteredFirmUsers().find(function(entry) {
+        return normalizeText(entry && entry.email) === normalizedEmail;
+      }) || null;
+      if (firmUser && deleteFirmRegistrationByUserId(String(firmUser.id))) {
+        return true;
+      }
+
+      var offer = loadOffers().find(function(entry) {
+        return normalizeText(entry && (entry.userEmail || entry.email)) === normalizedEmail;
+      }) || null;
+      if (offer) {
+        return deleteFirmAccountById(offer.id);
+      }
+    }
+
+    return false;
+  }
+
+  if (userId && deleteStudentRegistrationByUserId(String(userId))) {
+    return true;
+  }
+
+  if (normalizedEmail) {
+    var studentUser = loadRegisteredStudentUsers().find(function(entry) {
+      return normalizeText(entry && entry.email) === normalizedEmail;
+    }) || null;
+    if (studentUser && deleteStudentRegistrationByUserId(String(studentUser.id))) {
+      return true;
+    }
+
+    var student = loadStudents().find(function(entry) {
+      return normalizeText(entry && (entry.userEmail || entry.email)) === normalizedEmail;
+    }) || null;
+    if (student) {
+      return deleteStudentAccountById(student.id);
+    }
+  }
+
+  return false;
+}
+
+// Authentifizierung gegen Railway (Register-oder-Login, Fallback gegenseitig)
+function _apiEnsureToken(email, password, role) {
+  if (!email || !password) return Promise.resolve(null);
+  const key = role === 'firm' ? _API_TOKEN_FIRM : _API_TOKEN_STUDENT;
+  const tryAuth = function(path, body) {
+    return fetch(AZUBIMATCH_API_BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+  };
+  return tryAuth('/api/auth/login', { email: email, password: password })
+    .then(function(data) {
+      if (data && data.token) { _setApiToken(key, data.token); return data.token; }
+      // Noch nicht in Railway: Registrierung versuchen
+      return tryAuth('/api/auth/register', { email: email, password: password, role: role })
+        .then(function(regData) {
+          if (regData && regData.token) { _setApiToken(key, regData.token); return regData.token; }
+          return null;
+        });
+    }).catch(function() { return null; });
+}
+
+function _syncStudentToApi(student) {
+  var token = _getApiToken(_API_TOKEN_STUDENT);
+  if (!token || !student) return;
+  var sprachen = student.sprachen;
+  var inclusionState = getStudentSensitiveDataState(student);
+  if (Array.isArray(sprachen)) sprachen = sprachen.join(', ');
+  var berufe = student.berufe;
+  if (Array.isArray(berufe)) berufe = berufe.join(', ');
+  var payload = {
+    name: student.name || null,
+    stadt: student.stadt || null,
+    plz: student.plz || null,
+    schulabschluss: student.schulabschluss || null,
+    beruf: student.beruf || null,
+    match_umkreis: student.matchUmkreis || 25,
+    sprachen: sprachen || null,
+    hinweis: student.besondereFaehigkeiten || null,
+    kurzprofil_einzeiler: student.kurzprofilEinzeiler || null,
+    besondere_faehigkeiten: student.besondereFaehigkeiten || null,
+    abgeschlossene_ausbildung: student.abgeschlosseneAusbildungStudium || null,
+    behinderung: inclusionState.behinderung || null,
+    behinderungs_art: inclusionState.behinderungsArt || null,
+    behinderungs_grad: inclusionState.behinderungsGrad || null,
+    grundschule_von: student.grundschuleVon || null,
+    grundschule_bis: student.grundschuleBis || null,
+    weiterfuehrende_von: student.weiterfuehrendeVon || null,
+    weiterfuehrende_schulform: student.weiterfuehrendeSchulform || null,
+    weiterfuehrende_bis: student.weiterfuehrendeBis || null,
+    wahlfach: student.wahlfach || null,
+    note_mathe: student.noteMathe || null,
+    note_deutsch: student.noteDeutsch || null,
+    note_englisch: student.noteEnglisch || null,
+    note_wahlfach: student.noteWahlfach || null,
+    profilbid: student.id || null,
+    profil_code: student.profilCode || null,
+    registrierung_abgeschlossen: !!student.registrierungAbgeschlossen,
+    vollprofil_freigegeben: !!student.vollprofilFreigegeben,
+    user_email: student.userEmail || null,
+    berufswunsch: student.beruf || null,
+  };
+  fetch(AZUBIMATCH_API_BASE + '/api/student/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(payload),
+  }).catch(function() {});
+}
+
+function _syncFirmToApi(firm) {
+  var token = _getApiToken(_API_TOKEN_FIRM);
+  if (!token || !firm) return;
+  var ausbildungsberufe = firm.berufe;
+  if (Array.isArray(ausbildungsberufe)) ausbildungsberufe = ausbildungsberufe.join(', ');
+  var payload = {
+    firmenname: firm.firma || firm.firmenname || null,
+    stadt: firm.stadt || null,
+    plz: firm.plz || null,
+    branche: firm.branche || null,
+    ausbildungsberufe: ausbildungsberufe || firm.ausbildungsberufe || null,
+    match_umkreis: firm.matchUmkreis || 25,
+    beschreibung: firm.beschreibung || null,
+    website: firm.website || null,
+    kontaktperson: firm.kontaktPerson || firm.kontaktperson || null,
+    telefon: firm.telefon || null,
+    email: firm.email || firm.userEmail || null,
+    profilbid: firm.id || null,
+    user_email: firm.userEmail || firm.email || null,
+  };
+  fetch(AZUBIMATCH_API_BASE + '/api/firm/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(payload),
+  }).catch(function() {});
+}
+
+// Aktiven Bewerber aus localStorage ermitteln und zur API syncen
+function _syncActiveStudentToApi() {
+  try {
+    var auth = typeof getStoredStudentAuth === 'function' ? getStoredStudentAuth() : null;
+    if (!auth) return;
+    var student = typeof findStudentByAuth === 'function' ? findStudentByAuth(auth) : null;
+    if (student) _syncStudentToApi(student);
+  } catch(e) {}
+}
+
+// Aktive Firma aus localStorage ermitteln und zur API syncen
+function _syncActiveFirmToApi() {
+  try {
+    var auth = typeof getStoredFirmAuth === 'function' ? getStoredFirmAuth() : null;
+    if (!auth) return;
+    var offer = typeof findFirmOfferByAuth === 'function' ? findFirmOfferByAuth(auth) : null;
+    if (offer) _syncFirmToApi(offer);
+  } catch(e) {}
+}
+
+// ─── Phase 2: API-First Functions ─────────────────────────────────────────────
+// Lädt das Student-Profil vom Railway-API (für eingeloggte Nutzer)
+// Returns: Promise<{profile: Object|null}> oder null bei Fehler
+async function _loadStudentFromAPI(token) {
+  if (!token) return null;
+  try {
+    var res = await fetch(AZUBIMATCH_API_BASE + '/api/student/profile', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      var data = await res.json();
+      return data.profile || null;
+    }
+    return null;
+  } catch (err) {
+    console.error('[_loadStudentFromAPI] Error:', err);
+    return null;
+  }
+}
+
+// Speichert ein Student-Profil zum Railway-API (für eingeloggte Nutzer)
+// Returns: Promise<{profile: Object}> oder null bei Fehler
+async function _saveStudentToAPI(token, studentData) {
+  if (!token || !studentData) return null;
+  try {
+    // Konvertiere camelCase zu snake_case für den Server
+    var sprachen = studentData.sprachen;
+    var inclusionState = getStudentSensitiveDataState(studentData);
+    if (Array.isArray(sprachen)) sprachen = sprachen.join(', ');
+    var payload = {
+      name: studentData.name || null,
+      stadt: studentData.stadt || null,
+      plz: studentData.plz || null,
+      schulabschluss: studentData.schulabschluss || null,
+      beruf: studentData.beruf || null,
+      match_umkreis: studentData.matchUmkreis || 25,
+      sprachen: sprachen || null,
+      hinweis: studentData.besondereFaehigkeiten || null,
+      kurzprofil_einzeiler: studentData.kurzprofilEinzeiler || null,
+      besondere_faehigkeiten: studentData.besondereFaehigkeiten || null,
+      abgeschlossene_ausbildung: studentData.abgeschlosseneAusbildungStudium || null,
+      behinderung: inclusionState.behinderung || null,
+      behinderungs_art: inclusionState.behinderungsArt || null,
+      behinderungs_grad: inclusionState.behinderungsGrad || null,
+      grundschule_von: studentData.grundschuleVon || null,
+      grundschule_bis: studentData.grundschuleBis || null,
+      weiterfuehrende_von: studentData.weiterfuehrendeVon || null,
+      weiterfuehrende_schulform: studentData.weiterfuehrendeSchulform || null,
+      weiterfuehrende_bis: studentData.weiterfuehrendeBis || null,
+      wahlfach: studentData.wahlfach || null,
+      note_mathe: studentData.noteMathe || null,
+      note_deutsch: studentData.noteDeutsch || null,
+      note_englisch: studentData.noteEnglisch || null,
+      note_wahlfach: studentData.noteWahlfach || null,
+      profilbid: studentData.id || null,
+      profil_code: studentData.profilCode || null,
+      registrierung_abgeschlossen: !!studentData.registrierungAbgeschlossen,
+      vollprofil_freigegeben: !!studentData.vollprofilFreigegeben,
+      user_email: studentData.userEmail || null,
+      berufswunsch: studentData.beruf || null,
+    };
+    var res = await fetch(AZUBIMATCH_API_BASE + '/api/student/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      var data = await res.json();
+      return data.profile || null;
+    }
+    return null;
+  } catch (err) {
+    console.error('[_saveStudentToAPI] Error:', err);
+    return null;
+  }
+}
+
+// Lädt Firma-Profil vom Railway-API
+async function _loadFirmFromAPI(token) {
+  if (!token) return null;
+  try {
+    var res = await fetch(AZUBIMATCH_API_BASE + '/api/firm/profile', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      var data = await res.json();
+      return data.profile || null;
+    }
+    return null;
+  } catch (err) {
+    console.error('[_loadFirmFromAPI] Error:', err);
+    return null;
+  }
+}
+
+// Speichert ein Firma-Profil zum Railway-API
+async function _saveFirmToAPI(token, firmData) {
+  if (!token || !firmData) return null;
+  try {
+    var ausbildungsberufe = firmData.berufe;
+    if (Array.isArray(ausbildungsberufe)) ausbildungsberufe = ausbildungsberufe.join(', ');
+    var payload = {
+      firmenname: firmData.firma || firmData.firmenname || null,
+      stadt: firmData.stadt || null,
+      plz: firmData.plz || null,
+      branche: firmData.branche || null,
+      ausbildungsberufe: ausbildungsberufe || firmData.ausbildungsberufe || null,
+      match_umkreis: firmData.matchUmkreis || 25,
+      beschreibung: firmData.beschreibung || null,
+      website: firmData.website || null,
+      kontaktperson: firmData.kontaktPerson || firmData.kontaktperson || null,
+      telefon: firmData.telefon || null,
+      email: firmData.email || firmData.userEmail || null,
+      profilbid: firmData.id || null,
+      user_email: firmData.userEmail || firmData.email || null,
+    };
+    var res = await fetch(AZUBIMATCH_API_BASE + '/api/firm/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      var data = await res.json();
+      return data.profile || null;
+    }
+    return null;
+  } catch (err) {
+    console.error('[_saveFirmToAPI] Error:', err);
+    return null;
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+const STUDENT_SHORT_PROFILE_ONE_LINER_MAX_LENGTH = 160;
+
+function normalizeStudentShortProfileOneLiner(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, STUDENT_SHORT_PROFILE_ONE_LINER_MAX_LENGTH);
 }
 
 const VERIFIED_STUDENT_POST_RELEASE_DOCUMENT_FIELDS = [
@@ -787,7 +1413,7 @@ function getVerifiedStudentMissingDocumentLabels(studentArg) {
 }
 
 function getVerifiedStudentEditableInputIds(studentArg) {
-  const editableIds = new Set(["beruf", "saveBewerber", "btnLogout"]);
+  const editableIds = new Set(["beruf", "kurzprofilEinzeiler", "saveBewerber", "btnLogout"]);
   VERIFIED_STUDENT_POST_RELEASE_DOCUMENT_FIELDS.forEach(function(field) {
     if (!studentHasStoredDocument(studentArg, field.key)) {
       editableIds.add(field.inputId);
@@ -799,9 +1425,9 @@ function getVerifiedStudentEditableInputIds(studentArg) {
 function buildVerifiedStudentPostReleaseMessage(studentArg) {
   const missingLabels = getVerifiedStudentMissingDocumentLabels(studentArg);
   if (missingLabels.length) {
-    return "Dein Profil ist freigegeben. Du kannst nur noch deinen Wunschberuf ändern und fehlende Dokumente hochladen: " + missingLabels.join(", ") + ".";
+    return "Dein Profil ist freigegeben. Du kannst nur noch deinen Wunschberuf, deinen Kurzprofil-Einzeiler ändern und fehlende Dokumente hochladen: " + missingLabels.join(", ") + ".";
   }
-  return "Dein Profil ist freigegeben. Du kannst nur noch deinen Wunschberuf ändern. Es fehlen aktuell keine Dokumente mehr.";
+  return "Dein Profil ist freigegeben. Du kannst nur noch deinen Wunschberuf und deinen Kurzprofil-Einzeiler ändern. Es fehlen aktuell keine Dokumente mehr.";
 }
 
 function applyVerifiedStudentPostReleaseChanges(existingArg, changesArg) {
@@ -818,6 +1444,13 @@ function applyVerifiedStudentPostReleaseChanges(existingArg, changesArg) {
     existing.beruf = nextBeruf;
     result.changed = true;
     result.updatedFields.push("Wunschberuf");
+  }
+
+  const nextOneLiner = normalizeStudentShortProfileOneLiner(changes.kurzprofilEinzeiler);
+  if (nextOneLiner !== normalizeStudentShortProfileOneLiner(existing.kurzprofilEinzeiler)) {
+    existing.kurzprofilEinzeiler = nextOneLiner;
+    result.changed = true;
+    result.updatedFields.push("Kurzprofil-Einzeiler");
   }
 
   VERIFIED_STUDENT_POST_RELEASE_DOCUMENT_FIELDS.forEach(function(field) {
@@ -853,6 +1486,7 @@ if (saveBewerber && saveBewerber.dataset.boundStudentSave !== "1") {
   saveBewerber.addEventListener("click", async () => {
     // Besondere Fähigkeiten und Sprachen auslesen
     const besondereFaehigkeiten = (document.getElementById("besondereFaehigkeiten") || {}).value || "";
+    const kurzprofilEinzeiler = normalizeStudentShortProfileOneLiner((document.getElementById("kurzprofilEinzeiler") || {}).value || "");
     const abgeschlosseneAusbildungStudium = (document.getElementById("abgeschlosseneAusbildungStudium") || {}).value || "";
     let sprachen = [];
     const sprachenList = document.getElementById("sprachenList");
@@ -879,7 +1513,20 @@ if (saveBewerber && saveBewerber.dataset.boundStudentSave !== "1") {
     const behinderung = (document.getElementById("behinderung") || {}).value || "";
     const behinderungsArt = (document.getElementById("behinderungsArt") || {}).value || "";
     const behinderungsGrad = (document.getElementById("behinderungsGrad") || {}).value || "";
+    const art9ConsentGranted = !!((document.getElementById("art9ConsentCheckbox") || {}).checked);
     const out = document.getElementById("bewerberStatus");
+
+    if (behinderung && !art9ConsentGranted) {
+      if (out) out.textContent = "Bitte bestätige die ausdrückliche Einwilligung, bevor Angaben zu Behinderung oder Unterstützungsbedarf gespeichert werden.";
+      return;
+    }
+
+    const sensitiveDataState = getStudentSensitiveDataState({
+      art9ConsentGranted: art9ConsentGranted,
+      behinderung: behinderung,
+      behinderungsArt: behinderungsArt,
+      behinderungsGrad: behinderungsGrad
+    });
 
     const studentBerufSuggestion = getProfessionSuggestion(beruf);
     if (studentBerufSuggestion && !studentBerufSuggestion.exact && studentBerufSuggestion.needsSuggestion) {
@@ -890,16 +1537,16 @@ if (saveBewerber && saveBewerber.dataset.boundStudentSave !== "1") {
         if (berufInputEl) berufInputEl.value = beruf;
       }
     }
-    const needsSupportDetails = studentNeedsInclusionSupport({ behinderung: behinderung });
     const profileIssues = collectStudentProfileCompletionIssues({
       name: name,
       beruf: beruf,
       stadt: stadt,
       plz: plz,
       schulabschluss: schulabschluss,
-      behinderung: behinderung,
-      behinderungsArt: behinderungsArt,
-      behinderungsGrad: behinderungsGrad,
+      behinderung: sensitiveDataState.behinderung,
+      behinderungsArt: sensitiveDataState.behinderungsArt,
+      behinderungsGrad: sensitiveDataState.behinderungsGrad,
+      art9ConsentGranted: sensitiveDataState.hasConsent,
       grundschuleVon: grundschuleVon,
       grundschuleBis: grundschuleBis,
       weiterfuehrendeSchulform: weiterfuehrendeSchulform,
@@ -972,9 +1619,12 @@ if (saveBewerber && saveBewerber.dataset.boundStudentSave !== "1") {
       existing.profilCode = createProfileCode();
     }
 
+    const hadArt9ConsentBefore = hasStudentArt9Consent(existing);
+
     if (existing.verified) {
       const verifiedUpdateResult = applyVerifiedStudentPostReleaseChanges(existing, {
         beruf: beruf,
+        kurzprofilEinzeiler: kurzprofilEinzeiler,
         lebenslauf: lebenslaufData,
         anschreiben: anschreibenData,
         zeugnis: zeugnisData,
@@ -992,13 +1642,17 @@ if (saveBewerber && saveBewerber.dataset.boundStudentSave !== "1") {
     existing.name = name.trim();
     existing.plz = plz.trim();
   existing.matchUmkreis = matchUmkreis;
+    existing.kurzprofilEinzeiler = kurzprofilEinzeiler;
     existing.besondereFaehigkeiten = (besondereFaehigkeiten || '').trim();
     existing.abgeschlosseneAusbildungStudium = (abgeschlosseneAusbildungStudium || '').trim();
     existing.sprachen = sprachen;
     existing.schulabschluss = schulabschluss.trim();
-    existing.behinderung = behinderung.trim();
-    existing.behinderungsArt = needsSupportDetails ? behinderungsArt.trim() : "";
-    existing.behinderungsGrad = needsSupportDetails ? behinderungsGrad.trim() : "";
+    existing.behinderung = sensitiveDataState.behinderung;
+    existing.behinderungsArt = sensitiveDataState.behinderungsArt;
+    existing.behinderungsGrad = sensitiveDataState.behinderungsGrad;
+    existing.art9ConsentGranted = sensitiveDataState.hasConsent;
+    existing.art9ConsentVersion = sensitiveDataState.hasConsent ? STUDENT_ART9_CONSENT_VERSION : "";
+    existing.art9ConsentAt = sensitiveDataState.hasConsent ? ((hadArt9ConsentBefore && existing.art9ConsentAt) ? existing.art9ConsentAt : now) : "";
     if (auth) {
       existing.userId = auth.id;
       // TESTMODUS: E-Mail-Bestätigung deaktiviert, immer als bestätigt behandeln
@@ -1399,21 +2053,6 @@ const SECRET_HASH_ITERATIONS = 120000;
 const OTP_HASH_ITERATIONS = 60000;
 
 const EMAIL_SETTINGS = {
-  // Optionaler EmailJS-Versand fuer Hinweise ohne eigenen Relay-Endpunkt.
-  serviceId: "service_knabj1m",
-  templateId: "",
-  otcTemplateId: "template_i0wmpgf",
-  studentRequestTemplateId: "template_9v2l56g",
-  documentReleaseTemplateId: "template_kzf8bpt",
-  publicKey: "tg0aGSx0qIs6OyrXx",
-  studentMatchTemplateId: "template_qpfctow",
-  firmMatchTemplateId: "template_rczmx0d",
-  adminMatchTemplateId: "",
-  // Willkommens-Mails nach E-Mail-Bestätigung
-  studentWelcomeTemplateId: "template_3v9wdv9",
-  firmWelcomeTemplateId: "template_3v9wdv9",
-  // Admin-Benachrichtigungen (Health-Monitor u. ä.)
-  adminAlertTemplateId: "template_i0wmpgf",
   internalRecipient: "info@azubimatcher.com",
   internalRecipientName: "AzubiMatch Team"
 };
@@ -1468,29 +2107,328 @@ function getPostgresApiBase() {
   return String((window.AzubiMatchRuntime && window.AzubiMatchRuntime.apiEndpoint) || "").replace(/\/$/, "").trim();
 }
 
-async function tryPostgresSync(email, password, role) {
-  const base = getPostgresApiBase();
-  if (!base) return;
-  const body = JSON.stringify({ email: String(email).toLowerCase().trim(), password: String(password), role: String(role) });
-  const headers = { "Content-Type": "application/json" };
-  try {
-    // Erst Registrierung versuchen
-    const regRes = await fetch(base + "/api/auth/register", { method: "POST", headers, body });
-    if (regRes.ok) {
-      const data = await regRes.json();
-      if (data && data.token) localStorage.setItem("azubimatch_api_jwt", data.token);
-      return;
+function buildPostgresSyncSourceLabel(source) {
+  const normalizedSource = String(source || "").trim().toLowerCase();
+  if (normalizedSource === "email-confirmation") return "E-Mail-Bestaetigung";
+  if (normalizedSource === "registration") return "Registrierung";
+  if (normalizedSource === "login") return "Login";
+  return "Synchronisierung";
+}
+
+function reportPostgresSyncFailure(options) {
+  const config = options && typeof options === "object" ? options : {};
+  const roleLabel = String(config.role || "").trim() === "firm" ? "Firmenkonto" : "Bewerberkonto";
+  const sourceLabel = buildPostgresSyncSourceLabel(config.source);
+  const detail = String(config.message || "Unbekannter Fehler").trim() || "Unbekannter Fehler";
+  const apiBase = getPostgresApiBase() || AZUBIMATCH_API_BASE;
+
+  console.warn("AzubiMatch Railway-Sync fehlgeschlagen:", {
+    role: config.role || "student",
+    source: config.source || "sync",
+    email: config.email || "",
+    message: detail
+  });
+
+  appendHealthMonitorReport({
+    id: uniqueId("health-sync"),
+    status: "error",
+    targetKey: "railway-auth-sync",
+    targetLabel: "Railway-Registrierungssync",
+    url: (apiBase ? apiBase + "/api/auth/register" : window.location.href),
+    kind: "runtime",
+    message: roleLabel + ": " + sourceLabel + " konnte nicht nach Railway synchronisiert werden. " + detail,
+    count: 1,
+    createdAt: new Date().toISOString()
+  });
+}
+
+function hydrateStudentProfileFromApi(base, token, email) {
+  return fetch(base + "/api/student/profile", {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token
     }
-    // 409 = bereits registriert → Login
-    if (regRes.status === 409) {
-      const loginRes = await fetch(base + "/api/auth/login", { method: "POST", headers, body });
-      if (loginRes.ok) {
-        const data = await loginRes.json();
-        if (data && data.token) localStorage.setItem("azubimatch_api_jwt", data.token);
+  }).then(function(res) {
+    if (!res.ok) return null;
+    return res.json();
+  }).then(function(data) {
+    const profile = data && data.profile ? data.profile : null;
+    if (!profile) return;
+
+    const students = loadStudents();
+    const existing = students.find(function(s) {
+      return (s && (
+        (profile.profilbid && s.id === profile.profilbid)
+        || (email && (s.userEmail === email || s.email === email))
+      ));
+    });
+
+    const target = existing || {
+      id: String(profile.profilbid || ("dbstudent-" + Date.now())),
+      createdAt: new Date().toISOString()
+    };
+
+    target.id = String(profile.profilbid || target.id);
+    target.userEmail = profile.user_email || email || target.userEmail || "";
+    target.email = target.userEmail;
+    target.name = profile.name || target.name || "";
+    target.stadt = profile.stadt || target.stadt || "";
+    target.plz = profile.plz || target.plz || "";
+    target.schulabschluss = profile.schulabschluss || target.schulabschluss || "";
+    target.beruf = profile.beruf || target.beruf || "";
+    target.matchUmkreis = Number(profile.match_umkreis || target.matchUmkreis || 25);
+    target.sprachen = profile.sprachen || target.sprachen || "";
+    target.besondereFaehigkeiten = profile.besondere_faehigkeiten || profile.hinweis || target.besondereFaehigkeiten || "";
+    target.kurzprofilEinzeiler = profile.kurzprofil_einzeiler || target.kurzprofilEinzeiler || "";
+    target.abgeschlosseneAusbildungStudium = profile.abgeschlossene_ausbildung || target.abgeschlosseneAusbildungStudium || "";
+    const inclusionState = getStudentSensitiveDataState({
+      art9ConsentGranted: target.art9ConsentGranted,
+      behinderung: profile.behinderung || target.behinderung || "",
+      behinderungsArt: profile.behinderungs_art || target.behinderungsArt || "",
+      behinderungsGrad: profile.behinderungs_grad || target.behinderungsGrad || ""
+    });
+    target.behinderung = inclusionState.behinderung;
+    target.behinderungsArt = inclusionState.behinderungsArt;
+    target.behinderungsGrad = inclusionState.behinderungsGrad;
+    target.art9ConsentGranted = inclusionState.hasConsent;
+    target.art9ConsentVersion = inclusionState.hasConsent ? (target.art9ConsentVersion || STUDENT_ART9_CONSENT_VERSION) : "";
+    target.art9ConsentAt = inclusionState.hasConsent ? (target.art9ConsentAt || profile.updated_at || new Date().toISOString()) : "";
+    target.grundschuleVon = profile.grundschule_von || target.grundschuleVon || "";
+    target.grundschuleBis = profile.grundschule_bis || target.grundschuleBis || "";
+    target.weiterfuehrendeVon = profile.weiterfuehrende_von || target.weiterfuehrendeVon || "";
+    target.weiterfuehrendeSchulform = profile.weiterfuehrende_schulform || target.weiterfuehrendeSchulform || "";
+    target.weiterfuehrendeBis = profile.weiterfuehrende_bis || target.weiterfuehrendeBis || "";
+    target.wahlfach = profile.wahlfach || target.wahlfach || "";
+    target.noteMathe = profile.note_mathe || target.noteMathe || "";
+    target.noteDeutsch = profile.note_deutsch || target.noteDeutsch || "";
+    target.noteEnglisch = profile.note_englisch || target.noteEnglisch || "";
+    target.noteWahlfach = profile.note_wahlfach || target.noteWahlfach || "";
+    target.profilCode = profile.profil_code || target.profilCode || "";
+    target.verified = !!profile.verified;
+    target.registrierungAbgeschlossen = !!profile.registrierung_abgeschlossen;
+    target.vollprofilFreigegeben = !!profile.vollprofil_freigegeben;
+    target.updatedAt = profile.updated_at || new Date().toISOString();
+
+    if (!existing) {
+      students.push(target);
+    }
+    writeJson(STORAGE_KEYS.students, students);
+  }).catch(function() {
+    // Offline/Fehler ignorieren
+  });
+}
+
+function hydrateFirmProfileFromApi(base, token, email) {
+  return fetch(base + "/api/firm/profile", {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  }).then(function(res) {
+    if (!res.ok) return null;
+    return res.json();
+  }).then(function(data) {
+    const profile = data && data.profile ? data.profile : null;
+    if (!profile) return;
+
+    const offers = loadOffers();
+    const existing = offers.find(function(o) {
+      return (o && (
+        (profile.profilbid && o.id === profile.profilbid)
+        || (email && (o.userEmail === email || o.email === email))
+      ));
+    });
+
+    const target = existing || {
+      id: String(profile.profilbid || ("dbfirm-" + Date.now())),
+      createdAt: new Date().toISOString()
+    };
+
+    target.id = String(profile.profilbid || target.id);
+    target.userEmail = profile.user_email || profile.email || email || target.userEmail || "";
+    target.email = profile.email || target.userEmail;
+    target.firma = profile.firmenname || target.firma || "";
+    target.firmenname = profile.firmenname || target.firmenname || target.firma || "";
+    target.stadt = profile.stadt || target.stadt || "";
+    target.plz = profile.plz || target.plz || "";
+    target.branche = profile.branche || target.branche || "";
+    target.ausbildungsberufe = profile.ausbildungsberufe || target.ausbildungsberufe || "";
+    target.berufe = String(profile.ausbildungsberufe || "").split(",").map(function(v) { return v.trim(); }).filter(Boolean);
+    target.matchUmkreis = Number(profile.match_umkreis || target.matchUmkreis || 25);
+    target.beschreibung = profile.beschreibung || target.beschreibung || "";
+    target.website = profile.website || target.website || "";
+    target.kontaktPerson = profile.kontaktperson || target.kontaktPerson || "";
+    target.telefon = profile.telefon || target.telefon || "";
+    target.verified = !!profile.verified;
+    target.paymentApproved = !!profile.verified;
+    target.updatedAt = profile.updated_at || new Date().toISOString();
+
+    if (!existing) {
+      offers.push(target);
+    }
+    writeJson(STORAGE_KEYS.offers, offers);
+  }).catch(function() {
+    // Offline/Fehler ignorieren
+  });
+}
+
+async function tryPostgresSync(email, password, role, options) {
+  const opts = options && typeof options === "object" ? options : {};
+  const base = getPostgresApiBase() || (typeof AZUBIMATCH_API_BASE === "string" ? AZUBIMATCH_API_BASE : "");
+  const normalizedEmail = String(email || "").toLowerCase().trim();
+  const normalizedRole = String(role || "student");
+  const passwordText = typeof password === "string" ? String(password) : "";
+  const hasPasswordRecord = Object.prototype.hasOwnProperty.call(opts, "passwordRecord") && opts.passwordRecord != null;
+
+  if (!base) {
+    const failure = {
+      ok: false,
+      stage: "config",
+      role: normalizedRole,
+      email: normalizedEmail,
+      message: "API-Endpunkt nicht konfiguriert."
+    };
+    if (opts.reportFailure) {
+      reportPostgresSyncFailure({
+        role: normalizedRole,
+        source: opts.source,
+        email: normalizedEmail,
+        message: failure.message
+      });
+    }
+    return failure;
+  }
+
+  if (!normalizedEmail || (!passwordText && !hasPasswordRecord)) {
+    const failure = {
+      ok: false,
+      stage: "input",
+      role: normalizedRole,
+      email: normalizedEmail,
+      message: "E-Mail oder Passwortdaten fehlen fuer den PostgreSQL-Sync."
+    };
+    if (opts.reportFailure) {
+      reportPostgresSyncFailure({
+        role: normalizedRole,
+        source: opts.source,
+        email: normalizedEmail,
+        message: failure.message
+      });
+    }
+    return failure;
+  }
+
+  const headers = { "Content-Type": "application/json" };
+  let failureMessage = "";
+
+  try {
+    let token = null;
+    let authMethod = "";
+
+    // Bevorzugt den neuen token-basierten Ensure-Flow nutzen
+    if (passwordText && typeof _apiEnsureToken === "function") {
+      token = await _apiEnsureToken(normalizedEmail, passwordText, normalizedRole);
+      if (token) {
+        authMethod = "ensure-token";
       }
     }
+
+    if (!token) {
+      const registerPayload = {
+        email: normalizedEmail,
+        role: normalizedRole
+      };
+      if (passwordText) {
+        registerPayload.password = passwordText;
+      }
+      if (hasPasswordRecord) {
+        registerPayload.passwordRecord = opts.passwordRecord;
+      }
+
+      // Fallback: direkte Register/Login-Strategie
+      const regRes = await fetch(base + "/api/auth/register", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(registerPayload)
+      });
+      if (regRes.ok) {
+        const data = await regRes.json().catch(function() { return null; });
+        token = data && data.token ? data.token : null;
+        authMethod = "register";
+      } else if (regRes.status === 409 && passwordText) {
+        const loginRes = await fetch(base + "/api/auth/login", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ email: normalizedEmail, password: passwordText, role: normalizedRole })
+        });
+        if (loginRes.ok) {
+          const data = await loginRes.json().catch(function() { return null; });
+          token = data && data.token ? data.token : null;
+          authMethod = "login";
+        } else {
+          const loginError = await loginRes.json().catch(function() { return null; });
+          failureMessage = loginError && loginError.error
+            ? String(loginError.error)
+            : ("HTTP " + loginRes.status);
+        }
+      } else {
+        const registerError = await regRes.json().catch(function() { return null; });
+        failureMessage = registerError && registerError.error
+          ? String(registerError.error)
+          : ("HTTP " + regRes.status);
+      }
+    }
+
+    if (!token) {
+      const failure = {
+        ok: false,
+        stage: authMethod || "register",
+        role: normalizedRole,
+        email: normalizedEmail,
+        message: failureMessage || "Kein API-Token erhalten."
+      };
+      if (opts.reportFailure) {
+        reportPostgresSyncFailure({
+          role: normalizedRole,
+          source: opts.source,
+          email: normalizedEmail,
+          message: failure.message
+        });
+      }
+      return failure;
+    }
+
+    if (normalizedRole === "firm") {
+      _setApiToken(_API_TOKEN_FIRM, token);
+      await hydrateFirmProfileFromApi(base, token, normalizedEmail);
+    } else {
+      _setApiToken(_API_TOKEN_STUDENT, token);
+      await hydrateStudentProfileFromApi(base, token, normalizedEmail);
+    }
+    return {
+      ok: true,
+      stage: authMethod || "token",
+      role: normalizedRole,
+      email: normalizedEmail,
+      token: token
+    };
   } catch (_) {
-    // Netzwerkfehler ignorieren – App läuft weiter
+    const failure = {
+      ok: false,
+      stage: "network",
+      role: normalizedRole,
+      email: normalizedEmail,
+      message: _ && _.message ? _.message : "Netzwerkfehler"
+    };
+    if (opts.reportFailure) {
+      reportPostgresSyncFailure({
+        role: normalizedRole,
+        source: opts.source,
+        email: normalizedEmail,
+        message: failure.message
+      });
+    }
+    return failure;
   }
 }
 // ---------------------------------------------------------------------------
@@ -2373,6 +3311,37 @@ function normalizeFirmInclusionValue(value) {
   return "";
 }
 
+const STUDENT_ART9_CONSENT_VERSION = "2026-04-24";
+
+function hasStudentArt9Consent(dataArg) {
+  const data = dataArg && typeof dataArg === "object" ? dataArg : {};
+  const hasSelection = !!String(data.behinderung || "").trim();
+  if (!hasSelection) {
+    return false;
+  }
+  if (data.art9ConsentGranted === true) {
+    return true;
+  }
+  if (data.art9ConsentGranted === false) {
+    return false;
+  }
+  return true;
+}
+
+function getStudentSensitiveDataState(dataArg) {
+  const data = dataArg && typeof dataArg === "object" ? dataArg : {};
+  const hasConsent = hasStudentArt9Consent(data);
+  const behinderung = hasConsent ? String(data.behinderung || "").trim() : "";
+  const needsSupportDetails = hasConsent && studentNeedsInclusionSupport({ behinderung: behinderung });
+  return {
+    hasConsent: hasConsent,
+    behinderung: behinderung,
+    needsSupportDetails: needsSupportDetails,
+    behinderungsArt: needsSupportDetails ? String(data.behinderungsArt || "").trim() : "",
+    behinderungsGrad: needsSupportDetails ? String(data.behinderungsGrad || "").trim() : ""
+  };
+}
+
 function studentNeedsInclusionSupport(student) {
   const value = normalizeAnswerValue(student && student.behinderung);
   return value === "ja" || value === "yes" || value === "true" || value === "1";
@@ -3135,10 +4104,25 @@ function getBehinderungsArtLabel(value) {
 function syncStudentDisabilityFields(options) {
   const config = options || {};
   const behinderungInput = document.getElementById(config.selectId || "behinderung");
+  const consentGroup = document.getElementById(config.consentGroupId || "behinderungConsentGroup");
+  const consentInput = document.getElementById(config.consentId || "art9ConsentCheckbox");
   const detailsGroup = document.getElementById(config.groupId || "behinderungDetailsGroup");
   const artInput = document.getElementById(config.artId || "behinderungsArt");
   const gradInput = document.getElementById(config.gradeId || "behinderungsGrad");
-  const isActive = studentNeedsInclusionSupport({ behinderung: behinderungInput && behinderungInput.value });
+  const wantsSensitiveData = !!String((behinderungInput && behinderungInput.value) || "").trim();
+  const hasConsent = wantsSensitiveData && !!(consentInput && consentInput.checked);
+  const isActive = hasConsent && studentNeedsInclusionSupport({ behinderung: behinderungInput && behinderungInput.value });
+
+  if (consentGroup) {
+    consentGroup.hidden = !wantsSensitiveData;
+  }
+
+  if (consentInput) {
+    consentInput.disabled = !wantsSensitiveData;
+    if (!wantsSensitiveData && config.clearWhenHidden) {
+      consentInput.checked = false;
+    }
+  }
 
   if (detailsGroup) {
     detailsGroup.hidden = !isActive;
@@ -3849,6 +4833,8 @@ function saveStudents(list) {
   if (typeof verschiebeMatchesInMatchOrdner === 'function') {
     try { verschiebeMatchesInMatchOrdner(); } catch(e) { /* ignore */ }
   }
+  // Railway-API-Sync (non-blocking, silent)
+  try { if (typeof _syncActiveStudentToApi === 'function') _syncActiveStudentToApi(); } catch(e) {}
 }
 
 const STUDENT_SEARCH_STATUS_ACTIVE = "active";
@@ -4004,6 +4990,10 @@ function updateStudentSearchPreferences(authArg, changesArg) {
 }
 
 const DEFAULT_FIRM_BILLING_PLAN_KEY = "basic";
+const FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED = false;
+const FIRM_SUBSCRIPTION_BOOKING_DISABLED_PLAN_KEY = "no_subscription";
+const FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT = "Monatstarife für Unternehmen sind aktuell vorübergehend deaktiviert. Ein Abo kann derzeit nicht gebucht werden. Bitte nutzen Sie vorerst \"Ohne Abo\". Bestehende aktive Tarife bleiben unverändert.";
+const FIRM_SUBSCRIPTION_BOOKING_DISABLED_CARD_NOTE = "Aktuell kann kein Abo gebucht werden.";
 const FIRM_SELF_SERVICE_BILLING_PLAN_KEYS = Object.freeze(["basic", "basic_plus", "pro", "pro_plus", "no_subscription"]);
 const FIRM_SUBSCRIPTION_MINIMUM_MONTHS = 3;
 const FIRM_SUBSCRIPTION_CANCELLATION_NOTICE_DAYS = 14;
@@ -4294,15 +5284,39 @@ function getFirmBillingDashboardPlanKeys() {
   });
 }
 
+function getDefaultFirmSelfServicePlanSelection() {
+  return FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED
+    ? DEFAULT_FIRM_BILLING_PLAN_KEY
+    : FIRM_SUBSCRIPTION_BOOKING_DISABLED_PLAN_KEY;
+}
+
+function isFirmSelfServicePlanCurrentlyAvailable(planLike) {
+  const normalizedPlan = getNormalizedFirmBillingPlan(planLike);
+  if (!FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedPlan)) {
+    return false;
+  }
+  return FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED || !doesFirmPlanChargeMonthlyBase(normalizedPlan);
+}
+
+function buildFirmSubscriptionBookingUnavailableHint(baseHint) {
+  const baseText = String(baseHint || "").trim();
+  if (FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED) {
+    return baseText;
+  }
+  return baseText
+    ? (FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT + " " + baseText)
+    : FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT;
+}
+
 function normalizeFirmSelfServiceBillingPlan(value, fallbackValue) {
   const normalizedValue = getNormalizedFirmBillingPlan(value);
   if (FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedValue)) {
     return normalizedValue;
   }
-  const normalizedFallback = getNormalizedFirmBillingPlan(fallbackValue || DEFAULT_FIRM_BILLING_PLAN_KEY);
+  const normalizedFallback = getNormalizedFirmBillingPlan(fallbackValue || getDefaultFirmSelfServicePlanSelection());
   return FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedFallback)
     ? normalizedFallback
-    : DEFAULT_FIRM_BILLING_PLAN_KEY;
+    : getDefaultFirmSelfServicePlanSelection();
 }
 
 function getFirmAdditionalRequestPriceLabel(planLike) {
@@ -5200,6 +6214,8 @@ function persistOffers(list) {
 
 function saveOffers(list) {
   persistOffers(list);
+  // Railway-API-Sync (non-blocking, silent)
+  try { if (typeof _syncActiveFirmToApi === 'function') _syncActiveFirmToApi(); } catch(e) {}
   // Nach dem Speichern auf das eigene Firmenprofil weiterleiten, wenn wir uns auf der Profilseite befinden
   if (window.location.pathname.endsWith('firma_profil.html')) {
     const redirectToProfile = function() {
@@ -6767,7 +7783,7 @@ function buildStudentRequestEmailPayload(request, student, firm, matchedProfessi
   const profession = matchedProfession || (student && student.beruf) || "deinen Wunschberuf";
   const dashboardUrl = buildRuntimeUrl("bewerber_profil.html");
   const quickProfileUrl = buildRuntimeUrl("firma_schnellprofil.html?firmId=" + encodeURIComponent((firm && firm.id) || "") + "&readonly=1");
-  const emailJsParams = {
+  const templateValues = {
     recipient_name: target.name || student.name || "",
     firm_name: firmName,
     matched_profession: profession,
@@ -6780,10 +7796,8 @@ function buildStudentRequestEmailPayload(request, student, firm, matchedProfessi
     name: target.name || student.name || "Profil",
     title: "Neue Anfrage für deine Bewerbungsunterlagen",
     message: buildStudentRequestEmailText(student, firm, matchedProfession),
-    htmlMessage: renderMailTemplateString(STUDENT_REQUEST_EMAIL_HTML_TEMPLATE, emailJsParams, "html"),
-    type: "student-request-notification",
-    emailJsTemplateId: String(EMAIL_SETTINGS.studentRequestTemplateId || EMAIL_SETTINGS.templateId || "").trim(),
-    emailJsParams: emailJsParams
+    htmlMessage: renderMailTemplateString(STUDENT_REQUEST_EMAIL_HTML_TEMPLATE, templateValues, "html"),
+    type: "student-request-notification"
   };
 }
 
@@ -6819,7 +7833,7 @@ function buildDocumentReleaseEmailPayload(request, student, firm, documents, mat
   const profession = matchedProfession || (student && student.beruf) || "den angefragten Beruf";
   const documentList = formatSharedDocumentList(documents);
   const dashboardUrl = buildRuntimeUrl("firma_profil.html");
-  const emailJsParams = {
+  const templateValues = {
     recipient_name: recipientName,
     student_name: studentName,
     matched_profession: profession,
@@ -6833,10 +7847,8 @@ function buildDocumentReleaseEmailPayload(request, student, firm, documents, mat
     name: recipientName,
     title: "Bewerbungsunterlagen freigegeben",
     message: buildDocumentReleaseText(request, student, firm, documents, matchedProfession, releaseNote),
-    htmlMessage: renderMailTemplateString(DOCUMENT_RELEASE_EMAIL_HTML_TEMPLATE, emailJsParams, "html"),
+    htmlMessage: renderMailTemplateString(DOCUMENT_RELEASE_EMAIL_HTML_TEMPLATE, templateValues, "html"),
     type: "document-release",
-    emailJsTemplateId: String(EMAIL_SETTINGS.documentReleaseTemplateId || EMAIL_SETTINGS.templateId || "").trim(),
-    emailJsParams: emailJsParams,
     attachments: documents
   };
 }
@@ -6982,12 +7994,6 @@ function buildLocalPreviewFallbackResult(payload, userMessage) {
   };
 }
 
-function allowsEmailJsFallback(payload) {
-  return !(payload && payload.allowEmailJsFallback === false);
-}
-
-let emailJsInitialized = false;
-
 function buildRuntimeUrl(path) {
   const target = String(path || "").trim();
   if (!target) return window.location.href;
@@ -7111,6 +8117,30 @@ function getStudentPortalEditUrl() {
   return buildRuntimeUrl("bewerber.html" + buildCurrentQueryString({ removeKeys: ["forgot", "auth", "start"], setValues: { edit: "1" } }));
 }
 
+function getStudentPortalStartUrl(options) {
+  const config = options || {};
+  const startMode = String(config.start || "").trim();
+  const setValues = {
+    ...(config.setValues && typeof config.setValues === "object" ? config.setValues : {})
+  };
+
+  if (startMode) {
+    setValues.start = startMode;
+  }
+
+  return buildRuntimeUrl("bewerber.html" + buildCurrentQueryString({
+    removeKeys: ["forgot", "auth", "edit", "start", "section", "thread"],
+    setValues: setValues
+  }));
+}
+
+function getStudentPortalForgotPasswordUrl() {
+  return buildRuntimeUrl("bewerber.html" + buildCurrentQueryString({
+    removeKeys: ["auth", "edit", "start", "section", "thread"],
+    setValues: { forgot: "1" }
+  }));
+}
+
 function getFirmPortalEditUrl() {
   return buildRuntimeUrl("firma.html" + buildCurrentQueryString({ removeKeys: ["forgot"], setValues: { edit: "1" } }));
 }
@@ -7132,45 +8162,6 @@ function resolveSmtpRelayEndpoint() {
   }
 
   return "";
-}
-
-function resolveEmailJsTemplateId(payload) {
-  const explicitTemplateId = String((payload && (payload.emailJsTemplateId || payload.templateId)) || "").trim();
-  if (explicitTemplateId) return explicitTemplateId;
-
-  const type = String((payload && payload.type) || "").trim();
-  if (type === "otc-code") return String(EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  if (type === "student-request-notification") return String(EMAIL_SETTINGS.studentRequestTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  if (type === "document-release") return String(EMAIL_SETTINGS.documentReleaseTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  if (type === "student-match-digest") return String(EMAIL_SETTINGS.studentMatchTemplateId || EMAIL_SETTINGS.otcTemplateId || "").trim();
-  if (type === "firm-match-digest") return String(EMAIL_SETTINGS.firmMatchTemplateId || EMAIL_SETTINGS.otcTemplateId || "").trim();
-  if (type === "admin-match-digest") return String(EMAIL_SETTINGS.adminMatchTemplateId || EMAIL_SETTINGS.otcTemplateId || "").trim();
-  if (type === "student-welcome") return String(EMAIL_SETTINGS.studentWelcomeTemplateId || EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  if (type === "firm-welcome") return String(EMAIL_SETTINGS.firmWelcomeTemplateId || EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  if (type === "admin-health-alert") return String(EMAIL_SETTINGS.adminAlertTemplateId || EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim();
-  return String(EMAIL_SETTINGS.templateId || "").trim();
-}
-
-function buildEmailJsTemplateParams(payload, normalized) {
-  const customParams = payload && payload.emailJsParams && typeof payload.emailJsParams === "object"
-    ? payload.emailJsParams
-    : {};
-
-  return {
-    to_email: normalized.recipientEmail,
-    recipient_email: normalized.recipientEmail,
-    recipient_name: normalized.name,
-    name: normalized.name,
-    from_name: String(SMTP_SETTINGS.fromName || "AzubiMatch"),
-    from_email: String(SMTP_SETTINGS.fromEmail || "no-reply@azubimatch.local"),
-    subject: normalized.title,
-    title: normalized.title,
-    message: normalized.message,
-    message_line: normalized.message,
-    html_message: normalized.htmlMessage || "",
-    app_name: "AzubiMatch",
-    ...customParams
-  };
 }
 
 async function sendNotificationViaSmtp(payload) {
@@ -7246,72 +8237,9 @@ async function sendNotificationViaSmtp(payload) {
   }
 }
 
-async function sendNotificationViaEmailJs(payload) {
-  const normalized = normalizeNotificationPayload(payload);
-  const emailJs = window.emailjs && typeof window.emailjs.send === "function" ? window.emailjs : null;
-  const serviceId = String(EMAIL_SETTINGS.serviceId || "").trim();
-  const templateId = resolveEmailJsTemplateId(payload);
-  const publicKey = String(EMAIL_SETTINGS.publicKey || "").trim();
-
-  if (emailJs && serviceId && templateId) {
-    try {
-      if (!emailJsInitialized && typeof emailJs.init === "function" && publicKey) {
-        emailJs.init(publicKey);
-        emailJsInitialized = true;
-      }
-      const templateParams = buildEmailJsTemplateParams(payload, normalized);
-      if (publicKey && !emailJsInitialized) {
-        await emailJs.send(serviceId, templateId, templateParams, publicKey);
-      } else {
-        await emailJs.send(serviceId, templateId, templateParams);
-      }
-      return {
-        deliveryMode: "emailjs",
-        userMessage: "Die Nachricht wurde an den E-Mail-Dienst übergeben."
-      };
-    } catch (e) {
-      const preview = storeLocalMailPreview(payload, {
-        type: payload && payload.type ? payload.type : "notification"
-      });
-      const detail = e && typeof e.text === "string" && e.text.trim()
-        ? e.text.trim()
-        : (e && typeof e.message === "string" && e.message.trim() ? e.message.trim() : "");
-      return {
-        deliveryMode: "local-preview",
-        previewId: preview.id,
-        userMessage: detail
-          ? "EmailJS-Versand fehlgeschlagen. Lokale Vorschau wurde erstellt. Grund: " + detail
-          : "EmailJS-Versand fehlgeschlagen. Lokale Vorschau wurde erstellt."
-      };
-    }
-  }
-
-  const preview = storeLocalMailPreview(payload, {
-    type: payload && payload.type ? payload.type : "notification"
-  });
-  return {
-    deliveryMode: "local-preview",
-    previewId: preview.id,
-    userMessage: buildLocalDeliveryMessage("")
-  };
-}
-
-function hasTemplateDrivenEmailJsDelivery(payload) {
-  const emailJs = window.emailjs && typeof window.emailjs.send === "function" ? window.emailjs : null;
-  const serviceId = String(EMAIL_SETTINGS.serviceId || "").trim();
-  const templateId = resolveEmailJsTemplateId(payload);
-  return Boolean(emailJs && serviceId && templateId);
-}
-
-function shouldPreferSmtpRelay(payload) {
-  const normalized = normalizeNotificationPayload(payload);
-  return normalized.attachments.length > 0;
-}
-
 async function sendNotificationEmail(payload) {
   const endpoint = resolveSmtpRelayEndpoint();
   const hasRelay = endpoint && canUseRuntimeMailRelayEndpoint(endpoint);
-  const allowEmailJsFallback = allowsEmailJsFallback(payload);
   if (hasRelay) {
     try {
       await sendNotificationViaSmtp(payload);
@@ -7320,34 +8248,8 @@ async function sendNotificationEmail(payload) {
         userMessage: "Die Nachricht wurde an den konfigurierten Mail-Server übergeben."
       };
     } catch (error) {
-      const relayFailureMessage = buildMailDeliveryFailureMessage(error, payload);
-
-      if (!allowEmailJsFallback) {
-        return buildLocalPreviewFallbackResult(payload, relayFailureMessage);
-      }
-
-      const fallback = await sendNotificationViaEmailJs(payload);
-
-      if (fallback && fallback.deliveryMode === "emailjs") {
-        return {
-          ...fallback,
-          userMessage: relayFailureMessage + " Die Nachricht wurde stattdessen über den alternativen E-Mail-Dienst versendet."
-        };
-      }
-
-      if (fallback && fallback.deliveryMode === "local-preview") {
-        return {
-          ...fallback,
-          userMessage: relayFailureMessage
-        };
-      }
-
-      return fallback;
+      return buildLocalPreviewFallbackResult(payload, buildMailDeliveryFailureMessage(error, payload));
     }
-  }
-
-  if (allowEmailJsFallback && (hasTemplateDrivenEmailJsDelivery(payload) || !shouldPreferSmtpRelay(payload))) {
-    return await sendNotificationViaEmailJs(payload);
   }
 
   return buildLocalPreviewFallbackResult(payload, buildLocalDeliveryMessage(""));
@@ -7867,7 +8769,7 @@ function buildOtcEmailPayload(config) {
   const expiresHint = String((config && config.expiresHint) || "Der Code ist nur kurz gültig.").trim();
   const loginUrl = buildRuntimeUrl("anmeldung.html");
   const supportName = String((config && config.supportName) || "AzubiMatch").trim() || "AzubiMatch";
-  const emailJsParams = {
+  const templateValues = {
     recipient_name: recipientName,
     recipient_email: recipientEmail,
     otp_code: code,
@@ -7883,11 +8785,8 @@ function buildOtcEmailPayload(config) {
     name: recipientName,
     title: title,
     message: messageLine,
-    htmlMessage: renderMailTemplateString(OTC_EMAIL_HTML_TEMPLATE, emailJsParams, "html"),
-    type: "otc-code",
-    allowEmailJsFallback: false,
-    emailJsTemplateId: String(EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim(),
-    emailJsParams: emailJsParams
+    htmlMessage: renderMailTemplateString(OTC_EMAIL_HTML_TEMPLATE, templateValues, "html"),
+    type: "otc-code"
   };
 }
 
@@ -7915,7 +8814,7 @@ async function sendOtcEmail(config) {
   }
 
   return result || {
-    deliveryMode: "emailjs",
+    deliveryMode: "smtp",
     userMessage: "Der Sicherheitscode wurde versendet."
   };
 }
@@ -9056,8 +9955,7 @@ function buildFirmStudentConversationEmailPayload(config) {
     message: messageLines.join("\n"),
     htmlMessage: htmlMessage,
     type: "firm-student-conversation",
-    emailJsTemplateId: String(EMAIL_SETTINGS.templateId || "").trim(),
-    emailJsParams: {
+    templateValues: {
       recipient_name: recipientName || (recipientType === "firm" ? firmLabel : studentLabel),
       recipient_email: recipientEmail,
       sender_name: senderLabel,
@@ -9841,9 +10739,6 @@ function buildWelcomeEmailPayload(user, type) {
   const supportName = normalizedType === "firm"
     ? "AzubiMatch | Unternehmensservice"
     : "AzubiMatch | Bewerbendenservice";
-  const templateId = normalizedType === "firm"
-    ? String(EMAIL_SETTINGS.firmWelcomeTemplateId || EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim()
-    : String(EMAIL_SETTINGS.studentWelcomeTemplateId || EMAIL_SETTINGS.otcTemplateId || EMAIL_SETTINGS.templateId || "").trim();
   const templateValues = {
     recipient_name: recipientName,
     recipient_email: recipientEmail,
@@ -9858,9 +10753,7 @@ function buildWelcomeEmailPayload(user, type) {
     title: welcomeTemplate.subject,
     message: renderMailTemplateString(welcomeTemplate.text, templateValues),
     htmlMessage: renderMailTemplateString(welcomeTemplate.html, templateValues, "html"),
-    type: normalizedType === "firm" ? "firm-welcome" : "student-welcome",
-    emailJsTemplateId: templateId,
-    emailJsParams: templateValues
+    type: normalizedType === "firm" ? "firm-welcome" : "student-welcome"
   };
 }
 
@@ -9891,7 +10784,6 @@ async function sendAdminNewRegistrationNotification(user, registrantType) {
     "",
     "Admin-Bereich: " + adminUrl
   ].join("\n");
-  const templateId = String(EMAIL_SETTINGS.adminAlertTemplateId || EMAIL_SETTINGS.otcTemplateId || "").trim();
   const htmlMessage = buildBrandedNotificationEmailHtml({
     recipientType: "firm",
     preheader: "Im Admin-Bereich liegt eine neue Registrierung zur Prüfung bereit.",
@@ -9920,25 +10812,13 @@ async function sendAdminNewRegistrationNotification(user, registrantType) {
     closingGreeting: "Freundliche Grüße",
     supportName: "AzubiMatch System"
   });
-  const emailJsParams = {
-    recipient_name: String(EMAIL_SETTINGS.internalRecipientName || "AzubiMatch Team").trim(),
-    recipient_email: adminEmail,
-    otp_code: "",
-    flow_label: "neue Registrierung",
-    expires_hint: "",
-    message_line: message.replace(/\n/g, "<br>"),
-    login_url: adminUrl,
-    support_name: "AzubiMatch System"
-  };
   await sendNotificationEmail({
     email: adminEmail,
     name: String(EMAIL_SETTINGS.internalRecipientName || "AzubiMatch Team").trim(),
     title: subject,
     message: message,
     htmlMessage: htmlMessage,
-    type: "admin-alert",
-    emailJsTemplateId: templateId,
-    emailJsParams: emailJsParams
+    type: "admin-alert"
   });
 }
 
@@ -9992,7 +10872,7 @@ function buildStudentPossibleMatchEmailPayload(student, target, matches) {
     "Login: " + loginUrl
   ].filter(Boolean).join("\n");
 
-  const studentMatchEmailJsParams = {
+  const templateValues = {
     recipient_name: target.name || student.name || "",
     recipient_email: target.email,
     match_count: matches.length,
@@ -10012,10 +10892,8 @@ function buildStudentPossibleMatchEmailPayload(student, target, matches) {
     name: target.name || student.name || "Bewerbende Person",
     title: subject,
     message: message,
-    htmlMessage: renderMailTemplateString(STUDENT_MATCH_EMAIL_HTML_TEMPLATE, studentMatchEmailJsParams, "html"),
-    type: "student-match-digest",
-    emailJsTemplateId: String(EMAIL_SETTINGS.studentMatchTemplateId || "").trim(),
-    emailJsParams: studentMatchEmailJsParams
+    htmlMessage: renderMailTemplateString(STUDENT_MATCH_EMAIL_HTML_TEMPLATE, templateValues, "html"),
+    type: "student-match-digest"
   };
 }
 
@@ -10037,7 +10915,7 @@ function buildFirmPossibleMatchEmailPayload(offer, target, matches) {
     "Login: " + loginUrl
   ].filter(Boolean).join("\n");
 
-  const firmMatchEmailJsParams = {
+  const templateValues = {
     recipient_name: target.name || offer.firma || "",
     recipient_email: target.email,
     match_count: matches.length,
@@ -10057,10 +10935,8 @@ function buildFirmPossibleMatchEmailPayload(offer, target, matches) {
     name: target.name || offer.firma || "Firmenprofil",
     title: subject,
     message: message,
-    htmlMessage: renderMailTemplateString(FIRM_MATCH_EMAIL_HTML_TEMPLATE, firmMatchEmailJsParams, "html"),
-    type: "firm-match-digest",
-    emailJsTemplateId: String(EMAIL_SETTINGS.firmMatchTemplateId || "").trim(),
-    emailJsParams: firmMatchEmailJsParams
+    htmlMessage: renderMailTemplateString(FIRM_MATCH_EMAIL_HTML_TEMPLATE, templateValues, "html"),
+    type: "firm-match-digest"
   };
 }
 
@@ -10092,8 +10968,7 @@ function buildInternalPossibleMatchEmailPayload(config) {
       "Distanz: " + (firstMatch.distanceLabel || "-")
     ].join("\n"),
     type: "admin-match-digest",
-    emailJsTemplateId: String(EMAIL_SETTINGS.adminMatchTemplateId || "").trim(),
-    emailJsParams: {
+    templateValues: {
       recipient_name: recipientName,
       recipient_email: recipientEmail,
       trigger_type: isFirm ? "Firmenangebot" : "Bewerberprofil",
@@ -10324,10 +11199,6 @@ async function deliverStudentDocumentsToFirm(request, student, firm) {
     if (mode === "smtp" && documents.length) {
       mode = "smtp-attachments";
       userMessage = "Die Firma wurde per Mail inklusive Dokumentanhängen informiert.";
-    } else if (mode === "emailjs" && documents.length) {
-      mode = "emailjs-without-attachments";
-      userMessage = (userMessage ? (userMessage + " ") : "")
-        + "Dokumente konnten browserseitig nicht als Anhang übertragen werden und stehen zusätzlich im AzubiMatch-Portal bereit.";
     }
 
     result.emailResult = {
@@ -10448,6 +11319,98 @@ function getConversationParticipantLabel(participant) {
   if (participant === "firm") return "Firma";
   if (participant === "student") return "Bewerber";
   return "System";
+}
+
+function getConversationInitials(value, fallback) {
+  const words = String(value || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!words.length) {
+    return String(fallback || "AM").slice(0, 2).toUpperCase();
+  }
+
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+}
+
+function getFirmStudentQuickReplies(messages, viewerType, senderType) {
+  const conversation = sortConversationMessages(messages, "asc");
+  const latestMessage = conversation.length ? conversation[conversation.length - 1] : null;
+  const latestAppointment = getLatestFirmStudentInterviewAppointment(conversation);
+  const isFormal = viewerType === "firm";
+
+  if (latestAppointment && latestAppointment.status === "proposed" && latestAppointment.proposedBy !== senderType) {
+    return isFormal
+      ? [
+          { label: "Termin passt", text: "Danke, der vorgeschlagene Termin passt für mich. Ich bestätige ihn gleich." },
+          { label: "Spätere Uhrzeit?", text: "Danke für den Vorschlag. Wäre eine etwas spätere Uhrzeit ebenfalls möglich?" },
+          { label: "Link vorab", text: "Danke. Den Meeting-Link und die Gesprächsdetails schicke ich vorab noch separat." }
+        ]
+      : [
+          { label: "Termin passt", text: "Danke, der Termin passt für mich. Ich bestätige ihn gleich." },
+          { label: "Etwas später?", text: "Danke für den Vorschlag. Wäre etwas später am Tag auch möglich?" },
+          { label: "Link vorab?", text: "Kannst du mir den Link und kurze Infos zum Ablauf vorab schicken?" }
+        ];
+  }
+
+  if (latestAppointment && latestAppointment.status === "confirmed") {
+    return isFormal
+      ? [
+          { label: "Danke", text: "Vielen Dank für die Bestätigung. Der Termin ist bei mir eingeplant." },
+          { label: "Vorab-Infos", text: "Ich schicke Ihnen vorab noch die wichtigsten Infos zum Gespräch." },
+          { label: "Unterlagen okay?", text: "Falls noch Unterlagen fehlen, geben Sie mir bitte kurz Bescheid." }
+        ]
+      : [
+          { label: "Danke", text: "Danke, ich habe den Termin eingeplant und freue mich auf das Gespräch." },
+          { label: "Noch etwas offen?", text: "Gibt es bis dahin noch etwas, das ich vorbereiten soll?" },
+          { label: "Unterlagen okay?", text: "Sind meine aktuellen Unterlagen für das Gespräch so in Ordnung?" }
+        ];
+  }
+
+  if (!latestMessage) {
+    return isFormal
+      ? [
+          { label: "Begrüßung", text: "Guten Tag, vielen Dank für Ihr Interesse. Ich melde mich hier mit den nächsten Schritten." },
+          { label: "Terminvorschlag", text: "Guten Tag, ich schicke Ihnen gleich einen Terminvorschlag für ein erstes Gespräch." },
+          { label: "Rückfrage", text: "Guten Tag, ich hätte vorab noch eine kurze Rückfrage zu Ihrem Profil." }
+        ]
+      : [
+          { label: "Kurze Antwort", text: "Danke für die Nachricht. Ich melde mich gleich mit einer kurzen Rückmeldung." },
+          { label: "Interesse", text: "Ich habe Interesse und freue mich über weitere Infos zum Ablauf." },
+          { label: "Rückfrage", text: "Ich hätte noch eine kurze Rückfrage, bevor wir weitermachen." }
+        ];
+  }
+
+  if (latestMessage.from !== senderType && latestMessage.from !== "system") {
+    return isFormal
+      ? [
+          { label: "Danke", text: "Vielen Dank für Ihre Rückmeldung." },
+          { label: "Ich prüfe das", text: "Danke. Ich prüfe das intern und melde mich zeitnah zurück." },
+          { label: "Terminvorschlag", text: "Danke. Ich schicke Ihnen gleich einen konkreten Terminvorschlag." }
+        ]
+      : [
+          { label: "Klingt gut", text: "Klingt gut, danke für die Info." },
+          { label: "Kurze Rückfrage", text: "Ich habe noch eine kurze Rückfrage zum Ablauf." },
+          { label: "Ich melde mich", text: "Danke, ich melde mich heute noch dazu." }
+        ];
+  }
+
+  return isFormal
+    ? [
+        { label: "Kurzes Update", text: "Kurzes Update: Ich melde mich in Kürze mit den nächsten Schritten." },
+        { label: "Danke", text: "Vielen Dank für Ihre Nachricht." },
+        { label: "Rückfrage", text: "Ich hätte noch eine kurze Rückfrage zu Ihren Angaben." }
+      ]
+    : [
+        { label: "Noch eine Info", text: "Noch als kurze Info: Ich bin weiterhin interessiert." },
+        { label: "Nachhaken", text: "Ich wollte kurz nachhaken, ob es schon ein Update gibt." },
+        { label: "Danke", text: "Danke für die Rückmeldung." }
+      ];
 }
 
 function normalizeFirmStudentInterviewAppointment(value) {
@@ -10978,14 +11941,19 @@ function buildFirmStudentInterviewAppointmentText(appointmentArg) {
 
 function renderFirmStudentConversationMessages(messages, includeDeleteButton) {
   const viewerType = arguments.length > 2 && arguments[2] === "firm" ? "firm" : "student";
+  const renderOptions = arguments.length > 3 && arguments[3] && typeof arguments[3] === "object" ? arguments[3] : {};
+  const unreadTimestamp = Number(renderOptions.unreadTimestamp || 0);
+  const unreadLabel = String(renderOptions.unreadLabel || "Neu seit deinem letzten Besuch").trim() || "Neu seit deinem letzten Besuch";
   const liveFirmOffer = viewerType === "firm"
     ? (findFirmOfferByAuth(getStoredFirmAuth(), loadOffers()) || null)
     : null;
   const firmCalendarCapabilities = viewerType === "firm"
     ? getFirmCalendarCapabilities(liveFirmOffer)
     : null;
+  let unreadMarkerInserted = false;
   return sortConversationMessages(messages, "asc").map((message, index) => {
     const senderLabel = getConversationParticipantLabel(message.from);
+    const senderInitials = getConversationInitials(senderLabel, message.from === "system" ? "SY" : "AM");
     const senderClass = message.from === 'system'
       ? 'conversation-message conversation-message--system'
       : (message.from === viewerType
@@ -10994,18 +11962,19 @@ function renderFirmStudentConversationMessages(messages, includeDeleteButton) {
     const interviewAppointment = getFirmStudentInterviewAppointment(message);
     const documents = Array.isArray(message.documents) ? message.documents : [];
     const documentsHtml = documents.length
-      ? `<div class="firm-student-documents">${documents.map((doc) => {
+      ? `<div class='conversation-message__documents'><div class="firm-student-documents">${documents.map((doc) => {
           const fileName = escapeHtml(doc.name || doc.label || 'Dokument');
           const fileSize = doc.size || doc.size === 0 ? ` <span style='color:#64748b;'>(${escapeHtml(formatSize(doc.size))})</span>` : '';
           if (doc.dataUrl) {
             return `<a href="${doc.dataUrl}" download="${fileName}" class="firm-student-document-link">${fileName}${fileSize}</a>`;
           }
           return `<span class="firm-student-document-link">${fileName}${fileSize}</span>`;
-        }).join('')}</div>`
+        }).join('')}</div></div>`
       : '';
     const deleteButton = includeDeleteButton
-      ? `<button class='btn ghost small delete-msg-btn' data-msg-idx='${index}' title='Nachricht löschen' style='padding:0 0.5em;font-size:1em;'>&#128465;</button>`
+      ? `<button class='btn ghost small delete-msg-btn' type='button' data-msg-idx='${index}' title='Nachricht löschen' aria-label='Nachricht löschen'>Löschen</button>`
       : '';
+    const messageTimestampValue = getMessageTimestampValue(message);
     const timestamp = getMessageTimestampValue(message)
       ? new Date(getMessageTimestampValue(message)).toLocaleString('de-DE')
       : '-';
@@ -11057,16 +12026,30 @@ function renderFirmStudentConversationMessages(messages, includeDeleteButton) {
     const messageBodyHtml = interviewAppointment
       ? `<div class='conversation-message__body conversation-message__body--appointment'>${escapeHtml(message.text || buildFirmStudentInterviewAppointmentText(interviewAppointment))}</div>`
       : `<div class='conversation-message__body'>${escapeHtml(message.text || '') || 'Nachricht'}</div>`;
+    const showUnreadMarker = !unreadMarkerInserted
+      && unreadTimestamp > 0
+      && message.from !== viewerType
+      && message.from !== "system"
+      && messageTimestampValue > unreadTimestamp;
 
-    return `<article class='${senderClass}'>
-      <div class='conversation-message__meta'>
-        <span class='conversation-message__sender'>${senderLabel}</span>
-        <span class='conversation-message__time'>${timestamp}</span>
+    if (showUnreadMarker) {
+      unreadMarkerInserted = true;
+    }
+
+    return `${showUnreadMarker ? `<div class='conversation-unread-separator' role='separator' aria-label='Ungelesene Nachrichten'><span>${escapeHtml(unreadLabel)}</span></div>` : ""}<article class='${senderClass}'>
+      <div class='conversation-message__cluster'>
+        <span class='conversation-message__avatar' aria-hidden='true'>${escapeHtml(senderInitials)}</span>
+        <div class='conversation-message__content'>
+          <div class='conversation-message__meta'>
+            <span class='conversation-message__sender'>${senderLabel}</span>
+            <span class='conversation-message__time'>${timestamp}</span>
+          </div>
+          ${messageBodyHtml}
+          ${appointmentHtml}
+          ${documentsHtml}
+          ${deleteButton ? `<div class='conversation-message__actions'>${deleteButton}</div>` : ''}
+        </div>
       </div>
-      ${messageBodyHtml}
-      ${appointmentHtml}
-      ${documentsHtml}
-      ${deleteButton ? `<div class='conversation-message__actions'>${deleteButton}</div>` : ''}
     </article>`;
   }).join('');
 }
@@ -11138,6 +12121,13 @@ function createFirmStudentConversationThread(options) {
   const statusChipLabel = options && options.statusChipLabel ? String(options.statusChipLabel) : "";
   const statusChipClass = options && options.statusChipClass ? String(options.statusChipClass) : "student-contact-chip--muted";
   const threadBodyId = `${threadId}-body`;
+  const threadInitials = getConversationInitials(title, viewerType === "firm" ? "BK" : "FK");
+  const threadEyebrow = viewerType === "firm" ? "Bewerberkontakt" : "Firmenkontakt";
+  const composerHint = senderType === "firm"
+    ? "Nutzen Sie den Chat für Rückfragen, Rückmeldungen und Terminabsprachen."
+    : "Nutze den Chat für Rückfragen, Rückmeldungen und Terminabsprachen.";
+  const unreadMarkerTimestamp = viewerType === "student" ? getStudentSeenTimestamp("messages") : 0;
+  const unreadMarkerLabel = viewerType === "firm" ? "Neu seit dem letzten Besuch" : "Neu seit deinem letzten Besuch";
 
   const panel = document.createElement("div");
   panel.id = threadId;
@@ -11146,13 +12136,17 @@ function createFirmStudentConversationThread(options) {
   panel.dataset.contactName = options && options.contactName ? String(options.contactName) : String(title || "");
   panel.dataset.studentId = String(studentId || "");
   panel.dataset.firmId = String(firmId || "");
+  panel.dataset.unreadMarkerTimestamp = String(unreadMarkerTimestamp || 0);
   panel.innerHTML = ""
-    + "<div class='student-contact-thread__header'><div>"
-    + "<p class='student-contact-card__eyebrow'>Direkter Kontakt</p>"
+    + "<div class='student-contact-thread__header'>"
+    + "<div class='student-contact-thread__identity'>"
+    + `<div class='student-contact-thread__avatar' aria-hidden='true'>${escapeHtml(threadInitials)}</div>`
+    + "<div class='student-contact-thread__identity-copy'>"
+    + `<p class='student-contact-card__eyebrow'>${escapeHtml(threadEyebrow)}</p>`
     + `<h3 class='student-contact-thread__title'>${escapeHtml(title)}</h3>`
     + subtitleHtml
     + (statusChipLabel ? `<p class='firm-direct-contact-status'><span class='student-contact-chip ${escapeHtml(statusChipClass)}'>${escapeHtml(statusChipLabel)}</span></p>` : "")
-    + "</div><div class='student-contact-thread__header-actions'>"
+    + "</div></div><div class='student-contact-thread__header-actions'>"
     + (enableThreadCollapse
         ? `<button class='btn ghost small' type='button' data-thread-toggle aria-expanded='${initiallyCollapsed ? "false" : "true"}' aria-controls='${threadBodyId}'>${initiallyCollapsed ? "Kontakt öffnen" : "Kontakt schließen"}</button>`
         : "")
@@ -11183,11 +12177,27 @@ function createFirmStudentConversationThread(options) {
     + "<button class='btn ghost small' type='button' data-interview-ics hidden>ICS herunterladen</button>"
     + "</div>"
     + "</div>"
+    + "<div class='student-contact-thread__feed-shell'>"
+    + "<div class='student-contact-thread__feed-head'>"
+    + "<p class='student-contact-thread__section-label'>Verlauf</p>"
+    + "<p class='student-contact-thread__section-copy'>Alle Nachrichten und Terminabsprachen erscheinen in einem gemeinsamen Feed.</p>"
+    + "</div>"
     + "<div class='msg-list student-contact-thread__messages'></div>"
+    + "</div>"
     + "<p class='student-contact-thread__lock-note' data-thread-lock-note hidden></p>"
-    + `<label class='form-label' for='${textareaId}'>Neue Nachricht</label>`
-    + `<textarea id='${textareaId}' class='msg-input student-contact-thread__input'></textarea>`
-    + "<button class='btn primary small send-msg-btn' type='button'>Senden</button>"
+    + "<div class='student-contact-thread__composer'>"
+    + "<div class='student-contact-thread__composer-head'>"
+    + `<label class='form-label student-contact-thread__composer-label' for='${textareaId}'>Neue Nachricht</label>`
+    + `<p class='student-contact-thread__composer-hint'>${escapeHtml(composerHint)}</p>`
+    + "</div>"
+    + "<div class='student-contact-thread__quick-replies' data-thread-quick-replies hidden></div>"
+    + `<textarea id='${textareaId}' class='msg-input student-contact-thread__input' placeholder='Schreibe hier deine Nachricht ...'></textarea>`
+    + "<p class='student-contact-thread__typing' data-thread-typing-status hidden aria-live='polite'></p>"
+    + "<div class='student-contact-thread__composer-actions'>"
+    + "<span class='student-contact-thread__composer-meta' data-thread-composer-meta>Antworten werden direkt im gemeinsamen Verlauf angezeigt.</span>"
+    + "<button class='btn primary small send-msg-btn' type='button'>Nachricht senden</button>"
+    + "</div>"
+    + "</div>"
     + "</div>";
 
   const deleteChatBtn = panel.querySelector(".delete-chat-btn");
@@ -11197,6 +12207,9 @@ function createFirmStudentConversationThread(options) {
   const lockNote = panel.querySelector("[data-thread-lock-note]");
   const sendBtn = panel.querySelector(".send-msg-btn");
   const textarea = panel.querySelector(".msg-input");
+  const quickReplies = panel.querySelector("[data-thread-quick-replies]");
+  const typingStatus = panel.querySelector("[data-thread-typing-status]");
+  const composerMeta = panel.querySelector("[data-thread-composer-meta]");
   const interviewCurrent = panel.querySelector("[data-interview-current]");
   const interviewChip = panel.querySelector("[data-interview-chip]");
   const interviewStatus = panel.querySelector("[data-interview-status]");
@@ -11210,6 +12223,7 @@ function createFirmStudentConversationThread(options) {
   const interviewOutlookLink = panel.querySelector("[data-interview-outlook]");
   const interviewGoogleLink = panel.querySelector("[data-interview-google]");
   const interviewCalendarDownloadButton = panel.querySelector("[data-interview-ics]");
+  let typingStatusTimer = 0;
 
   function notifyConversationChange(action) {
     if (onConversationChange) {
@@ -11242,6 +12256,100 @@ function createFirmStudentConversationThread(options) {
       recipientFallbackName: title
     }).then(function(result) {
       handleConversationEmailDeliveryResult(result, config);
+    });
+  }
+
+  function clearTypingStatusTimer() {
+    if (typingStatusTimer) {
+      window.clearTimeout(typingStatusTimer);
+      typingStatusTimer = 0;
+    }
+  }
+
+  function clearThreadTypingStatus() {
+    clearTypingStatusTimer();
+    if (!(typingStatus instanceof HTMLElement)) return;
+    typingStatus.hidden = true;
+    typingStatus.textContent = "";
+    delete typingStatus.dataset.mode;
+  }
+
+  function setThreadTypingStatus(mode, customText) {
+    if (!(typingStatus instanceof HTMLElement)) return;
+    const nextText = String(customText || "").trim() || (function() {
+      if (mode === "typing") {
+        return senderType === "firm" ? "Sie tippen gerade ..." : "Du tippst gerade ...";
+      }
+      if (mode === "inserted") {
+        return senderType === "firm"
+          ? "Schnellantwort eingefügt. Sie können sie noch anpassen."
+          : "Schnellantwort eingefügt. Du kannst sie noch anpassen.";
+      }
+      if (mode === "sending") {
+        return "Nachricht wird gesendet ...";
+      }
+      return "";
+    })();
+
+    typingStatus.hidden = nextText === "";
+    typingStatus.textContent = nextText;
+    if (nextText === "") {
+      delete typingStatus.dataset.mode;
+      return;
+    }
+    typingStatus.dataset.mode = String(mode || "info");
+  }
+
+  function queueTypingStatusReset(delayMs) {
+    clearTypingStatusTimer();
+    if (!(delayMs > 0)) return;
+    typingStatusTimer = window.setTimeout(function() {
+      clearThreadTypingStatus();
+    }, delayMs);
+  }
+
+  function syncComposerActionState() {
+    const messagingAllowed = canFirmAndStudentMessage(studentId, firmId);
+    const hasText = textarea instanceof HTMLTextAreaElement && String(textarea.value || "").trim() !== "";
+    if (sendBtn instanceof HTMLButtonElement) {
+      sendBtn.disabled = !messagingAllowed || !hasText;
+    }
+  }
+
+  function applyQuickReplyText(text) {
+    if (!(textarea instanceof HTMLTextAreaElement) || textarea.disabled) return;
+    textarea.value = String(text || "").trim();
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    syncComposerActionState();
+    setThreadTypingStatus("inserted");
+    queueTypingStatusReset(1800);
+  }
+
+  function renderQuickReplies(messages) {
+    if (!(quickReplies instanceof HTMLElement)) return;
+
+    const replyOptions = getFirmStudentQuickReplies(messages, viewerType, senderType);
+    panel.__quickReplyOptions = replyOptions;
+    if (!replyOptions.length) {
+      quickReplies.hidden = true;
+      quickReplies.innerHTML = "";
+      return;
+    }
+
+    quickReplies.hidden = false;
+    quickReplies.innerHTML = replyOptions.map(function(option, index) {
+      return `<button class='student-contact-thread__quick-reply' type='button' data-thread-quick-reply='${index}'>${escapeHtml(option.label)}</button>`;
+    }).join("");
+
+    Array.from(quickReplies.querySelectorAll("[data-thread-quick-reply]")).forEach(function(button) {
+      button.disabled = panel.dataset.messagingLocked === "true";
+      button.onclick = function() {
+        const optionIndex = Number(button.getAttribute("data-thread-quick-reply"));
+        const options = Array.isArray(panel.__quickReplyOptions) ? panel.__quickReplyOptions : [];
+        if (!Number.isFinite(optionIndex) || !options[optionIndex]) return;
+        applyQuickReplyText(options[optionIndex].text);
+      };
     });
   }
 
@@ -11342,13 +12450,10 @@ function createFirmStudentConversationThread(options) {
       if (!messagingAllowed) {
         textarea.value = "";
         textarea.placeholder = lockReason;
+        clearThreadTypingStatus();
       } else {
-        textarea.placeholder = "";
+        textarea.placeholder = "Schreibe hier deine Nachricht ...";
       }
-    }
-
-    if (sendBtn instanceof HTMLButtonElement) {
-      sendBtn.disabled = !messagingAllowed;
     }
 
     [interviewDateInput, interviewTimeInput, interviewLocationInput, interviewNoteInput].forEach(function(field) {
@@ -11365,6 +12470,17 @@ function createFirmStudentConversationThread(options) {
     }
 
     panel.dataset.messagingLocked = messagingAllowed ? "false" : "true";
+    if (composerMeta instanceof HTMLElement) {
+      composerMeta.textContent = messagingAllowed
+        ? "Antworten werden direkt im gemeinsamen Verlauf angezeigt."
+        : lockReason;
+    }
+    if (quickReplies instanceof HTMLElement) {
+      Array.from(quickReplies.querySelectorAll("[data-thread-quick-reply]")).forEach(function(button) {
+        button.disabled = !messagingAllowed;
+      });
+    }
+    syncComposerActionState();
   }
 
   function renderInterviewSyncPanel(messages) {
@@ -11456,9 +12572,16 @@ function createFirmStudentConversationThread(options) {
     const messages = getFirmStudentConversationMessages(studentId, firmId);
     renderInterviewSyncPanel(messages);
     syncMessagingLockState();
+    renderQuickReplies(messages);
     msgList.innerHTML = messages.length
-      ? renderFirmStudentConversationMessages(messages, includeDeleteMessageButtons, viewerType)
+      ? renderFirmStudentConversationMessages(messages, includeDeleteMessageButtons, viewerType, {
+          unreadTimestamp: Number(panel.dataset.unreadMarkerTimestamp || 0),
+          unreadLabel: unreadMarkerLabel
+        })
       : emptyStateHtml;
+
+    msgList.scrollTop = msgList.scrollHeight;
+    syncComposerActionState();
 
     if (!includeDeleteMessageButtons) return;
 
@@ -11486,6 +12609,24 @@ function createFirmStudentConversationThread(options) {
     };
   }
 
+  if (textarea instanceof HTMLTextAreaElement && textarea.dataset.boundThreadComposer !== "1") {
+    textarea.dataset.boundThreadComposer = "1";
+    textarea.addEventListener("input", function() {
+      syncComposerActionState();
+      if (textarea.disabled || String(textarea.value || "").trim() === "") {
+        clearThreadTypingStatus();
+        return;
+      }
+      setThreadTypingStatus("typing");
+      queueTypingStatusReset(1200);
+    });
+    textarea.addEventListener("blur", function() {
+      if (String(textarea.value || "").trim() === "") {
+        clearThreadTypingStatus();
+      }
+    });
+  }
+
   if (sendBtn && textarea) {
     sendBtn.onclick = function() {
       if (!canFirmAndStudentMessage(studentId, firmId)) {
@@ -11494,6 +12635,7 @@ function createFirmStudentConversationThread(options) {
       }
       const text = textarea.value.trim();
       if (!text) return;
+      setThreadTypingStatus("sending");
       const sentAt = new Date().toISOString();
       appendFirmStudentPortalMessage({
         studentId: studentId,
@@ -11504,6 +12646,7 @@ function createFirmStudentConversationThread(options) {
       });
       textarea.value = "";
       renderMessages();
+      queueTypingStatusReset(900);
       notifyConversationChange("send");
       queueConversationEmailNotification({
         messageType: "text",
@@ -12330,13 +13473,13 @@ function renderBerufliste() {
 function getSelectedFirmBillingPlanValue() {
   const selectedInput = document.querySelector('input[name="firmBillingPlan"]:checked');
   return normalizeFirmSelfServiceBillingPlan(
-    selectedInput ? selectedInput.value : DEFAULT_FIRM_BILLING_PLAN_KEY,
-    DEFAULT_FIRM_BILLING_PLAN_KEY
+    selectedInput ? selectedInput.value : getDefaultFirmSelfServicePlanSelection(),
+    getDefaultFirmSelfServicePlanSelection()
   );
 }
 
 function setSelectedFirmBillingPlanValue(value) {
-  const normalizedValue = normalizeFirmSelfServiceBillingPlan(value, DEFAULT_FIRM_BILLING_PLAN_KEY);
+  const normalizedValue = normalizeFirmSelfServiceBillingPlan(value, getDefaultFirmSelfServicePlanSelection());
   const inputs = document.querySelectorAll('input[name="firmBillingPlan"]');
   inputs.forEach(function(input) {
     input.checked = input.value === normalizedValue;
@@ -12346,11 +13489,13 @@ function setSelectedFirmBillingPlanValue(value) {
 function setFirmBillingPlanSelectionState(isLocked, hintText) {
   const inputs = document.querySelectorAll('input[name="firmBillingPlan"]');
   inputs.forEach(function(input) {
-    input.disabled = !!isLocked;
+    const isUnavailablePaidPlan = !FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED && doesFirmPlanChargeMonthlyBase(input.value);
+    const shouldDisable = !!isLocked || isUnavailablePaidPlan;
+    input.disabled = shouldDisable;
     const card = input.closest('.firm-plan-card');
     if (!card) return;
-    card.classList.toggle('firm-plan-card--disabled', !!isLocked);
-    if (isLocked) {
+    card.classList.toggle('firm-plan-card--disabled', shouldDisable);
+    if (shouldDisable) {
       card.setAttribute('aria-disabled', 'true');
     } else {
       card.removeAttribute('aria-disabled');
@@ -12358,8 +13503,11 @@ function setFirmBillingPlanSelectionState(isLocked, hintText) {
   });
 
   const planHint = document.getElementById('firmBillingPlanHint');
-  if (planHint && hintText) {
-    planHint.textContent = hintText;
+  if (planHint) {
+    const nextHintText = buildFirmSubscriptionBookingUnavailableHint(hintText);
+    if (nextHintText) {
+      planHint.textContent = nextHintText;
+    }
   }
 }
 
@@ -12440,6 +13588,17 @@ if (saveFirma) {
     const currentActivePlanKey = existingStoredOffer ? getFirmBillingPlanKey(existingStoredOffer) : selectedBillingPlan;
     const existingPendingPlanChange = existingStoredOffer ? getFirmPendingPlanChange(existingStoredOffer) : null;
     const selectedMatchesPendingPlan = !!(existingPendingPlanChange && existingPendingPlanChange.planKey === selectedBillingPlan);
+    const selectedPlanAllowedByAvailability = isFirmSelfServicePlanCurrentlyAvailable(selectedBillingPlan);
+    const selectedPlanAllowedByExistingState = !!(existingStoredOffer && (
+      selectedBillingPlan === currentActivePlanKey
+      || selectedMatchesPendingPlan
+    ));
+    if (!selectedPlanAllowedByAvailability && !selectedPlanAllowedByExistingState) {
+      setSelectedFirmBillingPlanValue(getDefaultFirmSelfServicePlanSelection());
+      setFirmBillingPlanSelectionState(false, buildFirmBillingPlanEditorHint(existingStoredOffer || null));
+      if (out) out.textContent = FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT;
+      return;
+    }
     const previewPlanIntent = existingStoredOffer ? getFirmPlanChangeIntent(existingStoredOffer, selectedBillingPlan, now) : null;
     const shouldRequestPaidPlanConfirmation = existingStoredOffer
       ? (!selectedMatchesPendingPlan
@@ -12619,6 +13778,8 @@ if (saveFirma) {
       gewerbeanmeldung: nextGewerbeanmeldung,
       ausbildungDerAusbilder: nextAusbildungDerAusbilder,
       firmenlogo: nextFirmenlogo,
+      branche: existingStoredOffer ? (existingStoredOffer.branche || "") : "",
+      benefits: existingStoredOffer && Array.isArray(existingStoredOffer.benefits) ? existingStoredOffer.benefits : [],
       verified: existingStoredOffer ? !!existingStoredOffer.verified : false,
       paymentApproved: existingStoredOffer
         ? !!existingStoredOffer.paymentApproved
@@ -14304,7 +15465,7 @@ function getCurrentStoredOfferForAuth() {
   if (!auth) {
     return offers.length ? offers[0] : null;
   }
-  return findFirmOfferByAuth(auth, offers) || (offers.length ? offers[0] : null);
+  return findFirmOfferByAuth(auth, offers) || null;
 }
 
 function getLatestOfferFromInputsOrStorage() {
@@ -14763,6 +15924,7 @@ function renderStudentEntryPreview(preferredAuth) {
   const previewCode = document.getElementById("shortProfilePreviewCode");
   const previewRole = document.getElementById("shortProfilePreviewRole");
   const previewLocation = document.getElementById("shortProfilePreviewLocation");
+  const previewOneLiner = document.getElementById("shortProfilePreviewOneLiner");
   const previewSchool = document.getElementById("shortProfilePreviewSchool");
   const previewQualification = document.getElementById("shortProfilePreviewQualification");
   const previewGrades = document.getElementById("shortProfilePreviewGrades");
@@ -14770,7 +15932,7 @@ function renderStudentEntryPreview(preferredAuth) {
   const previewLanguages = document.getElementById("shortProfilePreviewLanguages");
   const previewDocuments = document.getElementById("shortProfilePreviewDocuments");
   const previewStatus = document.getElementById("shortProfilePreviewStatus");
-  if (!previewName || !previewCode || !previewRole || !previewLocation || !previewSchool || !previewQualification || !previewGrades || !previewStrengths || !previewLanguages || !previewDocuments || !previewStatus) {
+  if (!previewName || !previewCode || !previewRole || !previewLocation || !previewOneLiner || !previewSchool || !previewQualification || !previewGrades || !previewStrengths || !previewLanguages || !previewDocuments || !previewStatus) {
     return;
   }
 
@@ -14799,6 +15961,7 @@ function renderStudentEntryPreview(preferredAuth) {
   const plz = getValue("plz") || (student && student.plz) || "";
   const school = getValue("schulabschluss") || (student && student.schulabschluss) || "Schulabschluss";
   const qualification = getValue("abgeschlosseneAusbildungStudium") || (student && student.abgeschlosseneAusbildungStudium) || "Keine abgeschlossene Ausbildung oder kein Studium angegeben";
+  const oneLiner = normalizeStudentShortProfileOneLiner(getValue("kurzprofilEinzeiler") || (student && student.kurzprofilEinzeiler) || "");
   const mathGrade = getValue("noteMathe") || (student && student.noteMathe) || "";
   const germanGrade = getValue("noteDeutsch") || (student && student.noteDeutsch) || "";
   const englishGrade = getValue("noteEnglisch") || (student && student.noteEnglisch) || "";
@@ -14817,6 +15980,7 @@ function renderStudentEntryPreview(preferredAuth) {
   previewName.textContent = name;
   previewRole.textContent = role;
   previewLocation.textContent = location;
+  previewOneLiner.textContent = oneLiner || "Noch kein Einzeiler hinterlegt";
   previewSchool.textContent = school;
   previewQualification.textContent = qualification;
   previewGrades.textContent = gradeParts.length ? gradeParts.join(" • ") : "Noch keine Noten hinterlegt";
@@ -14838,7 +16002,7 @@ function bindStudentEntryPreview() {
   previewPanel.dataset.previewBound = "1";
 
   [
-    "name", "beruf", "stadt", "plz", "schulabschluss", "abgeschlosseneAusbildungStudium", "besondereFaehigkeiten",
+    "name", "beruf", "stadt", "plz", "kurzprofilEinzeiler", "schulabschluss", "abgeschlosseneAusbildungStudium", "besondereFaehigkeiten",
     "grundschuleVon", "grundschuleBis", "weiterfuehrendeSchulform", "weiterfuehrendeVon",
     "weiterfuehrendeBis", "noteMathe", "noteDeutsch", "noteEnglisch", "wahlfach", "noteWahlfach",
     "lebenslaufFile", "anschreibenFile", "zeugnisFile", "weiteresDokumentFile"
@@ -16693,6 +17857,7 @@ function initStudentPortal() {
   const weiterfuehrendeBisInput = document.getElementById("weiterfuehrendeBis");
   const schulabschlussInput = document.getElementById("schulabschluss");
   const abgeschlosseneAusbildungStudiumInput = document.getElementById("abgeschlosseneAusbildungStudium");
+  const kurzprofilEinzeilerInput = document.getElementById("kurzprofilEinzeiler");
   const wahlfachInput = document.getElementById("wahlfach");
   const noteMatheInput = document.getElementById("noteMathe");
   const noteDeutschInput = document.getElementById("noteDeutsch");
@@ -16700,6 +17865,7 @@ function initStudentPortal() {
   const noteWahlfachInput = document.getElementById("noteWahlfach");
   const besondereFaehigkeitenInput = document.getElementById("besondereFaehigkeiten");
   const behinderungInput = document.getElementById("behinderung");
+  const art9ConsentInput = document.getElementById("art9ConsentCheckbox");
   const behinderungsArtInput = document.getElementById("behinderungsArt");
   const behinderungsGradInput = document.getElementById("behinderungsGrad");
   const sprachenList = document.getElementById("sprachenList");
@@ -16746,6 +17912,12 @@ function initStudentPortal() {
       syncStudentDisabilityFields({ clearWhenHidden: true });
     });
   }
+  if (art9ConsentInput && art9ConsentInput.dataset.boundStudentArt9Change !== "1") {
+    art9ConsentInput.dataset.boundStudentArt9Change = "1";
+    art9ConsentInput.addEventListener("change", function() {
+      syncStudentDisabilityFields({ clearWhenHidden: true });
+    });
+  }
 
   populateYearSelect(grundschuleVonInput, 2006, 2020);
   populateYearSelect(grundschuleBisInput, 2006, 2020);
@@ -16774,6 +17946,7 @@ function initStudentPortal() {
     weiterfuehrendeBisInput.value = student.weiterfuehrendeBis || "";
     if (schulabschlussInput) schulabschlussInput.value = student.schulabschluss || "";
     if (abgeschlosseneAusbildungStudiumInput) abgeschlosseneAusbildungStudiumInput.value = student.abgeschlosseneAusbildungStudium || "";
+    if (kurzprofilEinzeilerInput) kurzprofilEinzeilerInput.value = normalizeStudentShortProfileOneLiner(student.kurzprofilEinzeiler);
     wahlfachInput.value = student.wahlfach || "";
     noteMatheInput.value = student.noteMathe || "";
     noteDeutschInput.value = student.noteDeutsch || "";
@@ -16781,6 +17954,7 @@ function initStudentPortal() {
     noteWahlfachInput.value = student.noteWahlfach || "";
     if (besondereFaehigkeitenInput) besondereFaehigkeitenInput.value = student.besondereFaehigkeiten || "";
     if (behinderungInput) behinderungInput.value = student.behinderung || "";
+    if (art9ConsentInput) art9ConsentInput.checked = hasStudentArt9Consent(student);
     if (behinderungsArtInput) behinderungsArtInput.value = student.behinderungsArt || "";
     if (behinderungsGradInput) behinderungsGradInput.value = student.behinderungsGrad || "";
     if (sprachenList) {
@@ -16911,7 +18085,7 @@ function initFirmPortal() {
   }
 
   if (!latest) {
-    setSelectedFirmBillingPlanValue(DEFAULT_FIRM_BILLING_PLAN_KEY);
+    setSelectedFirmBillingPlanValue(getDefaultFirmSelfServicePlanSelection());
   }
   renderMatches();
   renderFirmInternshipEntry(getStoredFirmAuth());
@@ -17447,12 +18621,33 @@ function initStudentProfilePage() {
       if (profilAccordion && !profilAccordion.dataset.accordionBound) {
         profilAccordion.dataset.accordionBound = "1";
         var accordionToggle = profilAccordion.querySelector("[data-profil-accordion-toggle]");
+        var accordionBody = profilAccordion.querySelector(".profil-data-accordion__body");
+        var syncProfilAccordionState = function() {
+          var isOpenState = profilAccordion.dataset.open === "true";
+          if (accordionToggle) accordionToggle.setAttribute("aria-expanded", isOpenState ? "true" : "false");
+          if (accordionBody) {
+            accordionBody.setAttribute("aria-hidden", isOpenState ? "false" : "true");
+            if (isOpenState) {
+              accordionBody.style.maxHeight = accordionBody.scrollHeight + "px";
+            } else {
+              accordionBody.style.maxHeight = "0px";
+            }
+          }
+        };
+        syncProfilAccordionState();
         if (accordionToggle) {
           accordionToggle.addEventListener("click", function() {
             var isOpen = profilAccordion.dataset.open === "true";
             profilAccordion.dataset.open = isOpen ? "false" : "true";
-            accordionToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+            syncProfilAccordionState();
           });
+        }
+        if (accordionBody) {
+          window.addEventListener("resize", function() {
+            if (profilAccordion.dataset.open === "true") {
+              accordionBody.style.maxHeight = accordionBody.scrollHeight + "px";
+            }
+          }, { passive: true });
         }
       }
       renderStudentActivatedAlternativeProfileCard(student);
@@ -17604,10 +18799,17 @@ function initStudentProfilePage() {
       + "<p class='profil-chips-label' style='margin-top:1rem'>♿ Inklusion & Unterstützung</p>"
       + "<label class='form-label' for='pe_behinderung'>Behinderung oder Unterstützungsbedarf</label>"
       + "<select class='input' id='pe_behinderung'>"
-      + "<option value='' disabled>Bitte auswählen</option>"
+      + "<option value=''>Keine Angabe</option>"
       + "<option value='ja'>Ja</option>"
       + "<option value='nein'>Nein</option>"
       + "</select>"
+      + "<div id='pe_behinderungConsentGroup' hidden>"
+      + "<label class='bewerber-checkbox-row' for='pe_art9ConsentCheckbox'>"
+      + "<input id='pe_art9ConsentCheckbox' type='checkbox'>"
+      + "<span>Ich willige ausdrücklich ein, dass AzubiMatch diese sensiblen Angaben verarbeitet, damit passende inklusive Ausbildungsumfelder angezeigt werden können.</span>"
+      + "</label>"
+      + "<p class='status' style='margin:0 0 0.5rem;'>Ohne Einwilligung werden diese Angaben nicht gespeichert und nicht in das Matching übernommen.</p>"
+      + "</div>"
       + "<div id='pe_behinderungDetailsGroup' hidden>"
       + "<label class='form-label' for='pe_behinderungsArt'>Art der Behinderung oder des Unterstützungsbedarfs</label>"
       + "<select class='input' id='pe_behinderungsArt'>"
@@ -17726,10 +18928,27 @@ function initStudentProfilePage() {
     setSelectVal("pe_noteWahlfach", s.noteWahlfach);
 
     const peBehinderungInput = document.getElementById("pe_behinderung");
+    const peArt9ConsentInput = document.getElementById("pe_art9ConsentCheckbox");
+    if (peArt9ConsentInput) {
+      peArt9ConsentInput.checked = hasStudentArt9Consent(s);
+      peArt9ConsentInput.addEventListener("change", function() {
+        syncStudentDisabilityFields({
+          selectId: "pe_behinderung",
+          consentGroupId: "pe_behinderungConsentGroup",
+          consentId: "pe_art9ConsentCheckbox",
+          groupId: "pe_behinderungDetailsGroup",
+          artId: "pe_behinderungsArt",
+          gradeId: "pe_behinderungsGrad",
+          clearWhenHidden: true
+        });
+      });
+    }
     if (peBehinderungInput) {
       peBehinderungInput.addEventListener("change", function() {
         syncStudentDisabilityFields({
           selectId: "pe_behinderung",
+          consentGroupId: "pe_behinderungConsentGroup",
+          consentId: "pe_art9ConsentCheckbox",
           groupId: "pe_behinderungDetailsGroup",
           artId: "pe_behinderungsArt",
           gradeId: "pe_behinderungsGrad",
@@ -17739,6 +18958,8 @@ function initStudentProfilePage() {
     }
     syncStudentDisabilityFields({
       selectId: "pe_behinderung",
+      consentGroupId: "pe_behinderungConsentGroup",
+      consentId: "pe_art9ConsentCheckbox",
       groupId: "pe_behinderungDetailsGroup",
       artId: "pe_behinderungsArt",
       gradeId: "pe_behinderungsGrad",
@@ -17788,6 +19009,7 @@ function initStudentProfilePage() {
       const behinderung = getVal("pe_behinderung");
       const behinderungsArt = getVal("pe_behinderungsArt");
       const behinderungsGrad = getVal("pe_behinderungsGrad");
+      const art9ConsentGranted = !!((document.getElementById("pe_art9ConsentCheckbox") || {}).checked);
 
       if (!name || !beruf || !stadt || !plz || !gsVon || !gsBis || !wfForm || !wfVon || !wfBis || !mathe || !deutsch || !englisch) {
         if (peStatus) peStatus.textContent = "⚠️ Bitte alle Pflichtfelder ausfüllen.";
@@ -17799,8 +19021,18 @@ function initStudentProfilePage() {
         return;
       }
 
-      const needsSupportDetails = studentNeedsInclusionSupport({ behinderung: behinderung });
-      if (needsSupportDetails && (!behinderungsArt || !behinderungsGrad)) {
+      if (behinderung && !art9ConsentGranted) {
+        if (peStatus) peStatus.textContent = "⚠️ Bitte bestätige die ausdrückliche Einwilligung, bevor diese sensiblen Angaben gespeichert werden.";
+        return;
+      }
+
+      const sensitiveDataState = getStudentSensitiveDataState({
+        art9ConsentGranted: art9ConsentGranted,
+        behinderung: behinderung,
+        behinderungsArt: behinderungsArt,
+        behinderungsGrad: behinderungsGrad
+      });
+      if (sensitiveDataState.needsSupportDetails && (!sensitiveDataState.behinderungsArt || !sensitiveDataState.behinderungsGrad)) {
         if (peStatus) peStatus.textContent = "⚠️ Bitte gib Art und Schweregrad an.";
         return;
       }
@@ -17826,6 +19058,7 @@ function initStudentProfilePage() {
       });
       const now = new Date().toISOString();
       let existing = Object.assign({}, s || {});
+      const hadArt9ConsentBefore = hasStudentArt9Consent(existing);
       existing.id = existing.id || uniqueId("student");
       existing.createdAt = existing.createdAt || now;
       existing.profilCode = existing.profilCode || createProfileCode();
@@ -17843,9 +19076,12 @@ function initStudentProfilePage() {
       existing.noteEnglisch = englisch;
       existing.wahlfach = wahlfach;
       existing.noteWahlfach = noteWahlfach;
-      existing.behinderung = behinderung;
-      existing.behinderungsArt = needsSupportDetails ? behinderungsArt : "";
-      existing.behinderungsGrad = needsSupportDetails ? behinderungsGrad : "";
+      existing.behinderung = sensitiveDataState.behinderung;
+      existing.behinderungsArt = sensitiveDataState.behinderungsArt;
+      existing.behinderungsGrad = sensitiveDataState.behinderungsGrad;
+      existing.art9ConsentGranted = sensitiveDataState.hasConsent;
+      existing.art9ConsentVersion = sensitiveDataState.hasConsent ? STUDENT_ART9_CONSENT_VERSION : "";
+      existing.art9ConsentAt = sensitiveDataState.hasConsent ? ((hadArt9ConsentBefore && existing.art9ConsentAt) ? existing.art9ConsentAt : now) : "";
       existing.userId = auth.id;
       existing.userEmail = auth.email;
       if (removeFlags.lebenslauf) delete existing.lebenslauf;
@@ -18320,7 +19556,20 @@ function initFirmAuth() {
       }
       const auth = buildFirmAuthSession(existing);
       saveStoredFirmAuth(auth);
-      tryPostgresSync(input.email, input.password, 'firm').catch(function() {});
+      if (existing.postgresSyncPending) {
+        tryPostgresSync(input.email, input.password, 'firm', {
+          reportFailure: true,
+          source: 'login-retry'
+        }).then(function(result) {
+          if (result && result.ok) {
+            const _users = loadFirmUsers();
+            const _u = _users.find(function(u) { return normalizeText(u.email) === normalizeText(input.email); });
+            if (_u) { _u.postgresSyncPending = false; saveFirmUsers(_users); }
+          }
+        }).catch(function() {});
+      } else {
+        tryPostgresSync(input.email, input.password, 'firm').catch(function() {});
+      }
       if (firmAuthStatus) firmAuthStatus.textContent = "Anmeldung erfolgreich.";
       setAnimatedDisclosureOpen(firmRegisterBox, false);
       setAnimatedDisclosureOpen(firmVerifyBox, false);
@@ -18372,7 +19621,10 @@ function initFirmAuth() {
       }
       users.unshift(user);
       saveFirmUsers(users);
-      tryPostgresSync(user.email, input.password, 'firm').catch(function() {});
+      tryPostgresSync(user.email, input.password, 'firm', {
+        reportFailure: true,
+        source: 'registration'
+      }).catch(function() {});
       if (firmAuthStatus) {
         firmAuthStatus.textContent = deliveryResult && deliveryResult.userMessage
           ? "Registrierung erfolgreich. " + deliveryResult.userMessage
@@ -18538,6 +19790,15 @@ function initFirmAuth() {
         await maybeSendFirmWelcomeNotification(user, users);
       } catch (err) {
         console.warn("Willkommensmail für Firmen konnte nicht gesendet werden:", err);
+      }
+      const _firmSyncResult = await tryPostgresSync(user.email, ((firmAuthPassword || {}).value || "").trim(), 'firm', {
+        passwordRecord: user.passwordHash,
+        reportFailure: true,
+        source: 'email-confirmation'
+      });
+      if (!_firmSyncResult || !_firmSyncResult.ok) {
+        user.postgresSyncPending = true;
+        saveFirmUsers(users);
       }
       const auth = buildFirmAuthSession(user);
       saveStoredFirmAuth(auth);
@@ -19029,7 +20290,12 @@ function initStudentMobileAppPage() {
   const pendingRequestCards = snapshot.topPendingEntries.length
     ? snapshot.topPendingEntries.map((entry) => {
         const requestUrl = getStudentProfilePageUrl({ setValues: { section: "requests" } });
-        const quickProfileUrl = buildRuntimeUrl("firma_schnellprofil.html?firmId=" + encodeURIComponent(entry.request.firmId || "") + "&readonly=1");
+        const quickProfileUrl = buildRuntimeUrl(
+          "firma_schnellprofil.html?firmId="
+          + encodeURIComponent(entry.request.firmId || "")
+          + "&readonly=1&returnTo="
+          + encodeURIComponent(getStudentMobileAppPageUrl())
+        );
         return ""
           + "<article class='student-mobile-app-summary-card'>"
           + "<p class='student-mobile-app-summary-card__eyebrow'>Offene Firmenanfrage</p>"
@@ -19199,7 +20465,7 @@ function initLandingLoginPage() {
       if (student) {
         setActiveStudentId(student.id);
       }
-      navigateWithTransition(buildRuntimeUrl("bewerber_profil.html"), "Dein Profil wird geöffnet...");
+      navigateWithTransition(getStudentProfileDashboardUrl(), "Dein Profil wird geöffnet...");
       return;
     }
 
@@ -19348,6 +20614,46 @@ function shouldShowPageShareButton() {
   if (document.querySelector(".profile-shell-wrapper")) return false;
   if (document.getElementById("adminPortal") || document.getElementById("adminLoginPanel")) return false;
   return !!document.querySelector(".index-topbar-actions");
+}
+
+function initAdaptiveSiteHeader() {
+  const headers = Array.from(document.querySelectorAll(".site-header"));
+  if (!headers.length) return;
+
+  const newHeaders = headers.filter(function(header) {
+    return header.dataset.scrollCompactBound !== "true";
+  });
+  if (!newHeaders.length) return;
+
+  newHeaders.forEach(function(header) {
+    header.dataset.scrollCompactBound = "true";
+  });
+
+  let ticking = false;
+
+  function getCompactThreshold() {
+    if (window.innerWidth <= 760) return 28;
+    if (window.innerWidth <= 980) return 40;
+    return 64;
+  }
+
+  function updateHeaderState() {
+    const shouldCompact = window.scrollY > getCompactThreshold();
+    newHeaders.forEach(function(header) {
+      header.classList.toggle("is-compact", shouldCompact);
+    });
+    ticking = false;
+  }
+
+  function requestHeaderStateUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateHeaderState);
+  }
+
+  window.addEventListener("scroll", requestHeaderStateUpdate, { passive: true });
+  window.addEventListener("resize", requestHeaderStateUpdate);
+  updateHeaderState();
 }
 
 function getPageSharePayload() {
@@ -19600,6 +20906,7 @@ function runPageInitializers() {
   if (pageInitializersBound) return;
   pageInitializersBound = true;
 
+  initAdaptiveSiteHeader();
   initPageShareButton();
   initTopbarHoverPreview();
 
@@ -19651,6 +20958,380 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", runPageInitializers, { once: true });
 } else {
   runPageInitializers();
+}
+
+const LANDING_CHATBOT_QUICK_ACTIONS = [
+  "Wie funktioniert AzubiMatcher?",
+  "Ich suche einen Ausbildungsplatz",
+  "Ich bin ein Unternehmen",
+  "Wie läuft Inklusion hier?",
+  "Gibt es auch Praktika?"
+];
+
+function getLandingChatbotUrl(path) {
+  if (!path) return "#";
+  try {
+    return typeof buildRuntimeUrl === "function" ? buildRuntimeUrl(path) : path;
+  } catch (error) {
+    return path;
+  }
+}
+
+function resolveLandingChatbotRelayEndpoint() {
+  const runtimeEndpoint = String((window.AzubiMatchRuntime && window.AzubiMatchRuntime.chatbotRelayEndpoint) || "").trim();
+  if (runtimeEndpoint) {
+    return runtimeEndpoint;
+  }
+
+  const pathName = String(window.location.pathname || "");
+  if (/\.html?$/i.test(pathName) || /\.php$/i.test(pathName)) {
+    return getLandingChatbotUrl("chatbot_relay.php");
+  }
+
+  return "";
+}
+
+function canUseLandingChatbotRelayEndpoint(value) {
+  return canUseSameOriginRuntimeEndpoint(value);
+}
+
+function normalizeLandingChatbotLinks(links) {
+  if (!Array.isArray(links)) return [];
+
+  return links.map(function(link) {
+    if (!link || typeof link !== "object") return null;
+    const label = String(link.label || "").trim();
+    const href = String(link.href || "").trim();
+    if (!label || !href) return null;
+    return { label: label, href: href };
+  }).filter(Boolean);
+}
+
+function getLandingChatbotResponse(query) {
+  const normalized = typeof normalizeText === "function"
+    ? normalizeText(query)
+    : String(query || "").trim().toLowerCase();
+
+  if (!normalized) {
+    return {
+      text: "Ich helfe dir direkt beim Einstieg. Frag mich nach Matching, Registrierung, Unternehmen, Inklusion oder Praktikum.",
+      links: [
+        { label: "Zur Anmeldung", href: getLandingChatbotUrl("anmeldung.html") },
+        { label: "Zur Plattform", href: getLandingChatbotUrl("platform.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("praktik")) {
+    return {
+      text: "Ja. Schulpraktika laufen bei AzubiMatcher in einem eigenen Bereich, damit Ausbildungssuche und Praktikum sauber getrennt bleiben.",
+      links: [
+        { label: "Praktikum für Schülerinnen und Schüler", href: getLandingChatbotUrl("bewerber_praktikum.html") },
+        { label: "Praktikum für Unternehmen", href: getLandingChatbotUrl("firma_praktikum.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("inklusion") || normalized.includes("barriere") || normalized.includes("behinderung")) {
+    return {
+      text: "Inklusion ist hier kein Zusatz. Freigaben, Kommunikation und Rahmenbedingungen sollen früh transparent werden, damit Betriebe und Bewerbende realistisch planen können.",
+      links: [
+        { label: "Mehr zu Inklusion", href: getLandingChatbotUrl("inklusion.html") },
+        { label: "Wie AzubiMatcher funktioniert", href: getLandingChatbotUrl("home.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("unternehmen") || normalized.includes("firma") || normalized.includes("betrieb")) {
+    return {
+      text: "Für Unternehmen gibt es ein eigenes Portal mit Angebotsverwaltung, Match-Ansicht und gesteuerter Kontaktaufnahme zu passenden Profilen.",
+      links: [
+        { label: "Zum Unternehmensbereich", href: getLandingChatbotUrl("firma.html") },
+        { label: "Infos für Unternehmen", href: getLandingChatbotUrl("unternehmen-info.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("ausbildung") || normalized.includes("bewerb") || normalized.includes("platz") || normalized.includes("schuler") || normalized.includes("schüler")) {
+    return {
+      text: "Wenn du einen Ausbildungsplatz suchst, legst du zuerst dein Profil an. Danach siehst du passende Firmen, Freigaben und direkte Kontakte übersichtlich an einer Stelle.",
+      links: [
+        { label: "Zum Bewerberbereich", href: getLandingChatbotUrl("bewerber.html") },
+        { label: "Jetzt anmelden", href: getLandingChatbotUrl("anmeldung.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("anmeldung") || normalized.includes("login") || normalized.includes("registr") || normalized.includes("start")) {
+    return {
+      text: "Der schnellste Einstieg ist die Anmeldung. Von dort aus kommst du direkt in den passenden Bereich für Bewerbende oder Unternehmen.",
+      links: [
+        { label: "Zur Anmeldung", href: getLandingChatbotUrl("anmeldung.html") },
+        { label: "Startseite", href: getLandingChatbotUrl("index.html") }
+      ]
+    };
+  }
+
+  if (normalized.includes("match") || normalized.includes("funktion") || normalized.includes("wie") || normalized.includes("plattform")) {
+    return {
+      text: "AzubiMatcher verbindet Berufswunsch, Region und Profilinformationen mit passenden Angeboten. Der Ablauf bleibt bewusst klar: Profil anlegen, passende Treffer sehen, dann gezielt Kontakt aufnehmen.",
+      links: [
+        { label: "AzubiMatcher im Überblick", href: getLandingChatbotUrl("home.html") },
+        { label: "Plattform ansehen", href: getLandingChatbotUrl("platform.html") }
+      ]
+    };
+  }
+
+  return {
+    text: "Dazu habe ich gerade keine spezialisierte Antwort. Ich kann dir aber schnell beim Einstieg, bei Registrierung, Unternehmen, Inklusion und Praktikum weiterhelfen.",
+    links: [
+      { label: "AzubiMatcher ansehen", href: getLandingChatbotUrl("home.html") },
+      { label: "Zur Anmeldung", href: getLandingChatbotUrl("anmeldung.html") }
+    ]
+  };
+}
+
+async function requestLandingChatbotResponse(prompt) {
+  const fallback = getLandingChatbotResponse(prompt);
+  const endpoint = resolveLandingChatbotRelayEndpoint();
+
+  if (!endpoint || !canUseLandingChatbotRelayEndpoint(endpoint)) {
+    return {
+      text: fallback.text,
+      links: fallback.links,
+      source: "demo"
+    };
+  }
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Requested-With": "AzubiMatchChatbotRelay"
+      },
+      body: JSON.stringify({
+        message: String(prompt || "").trim(),
+        page: {
+          title: String(document.title || "").trim(),
+          url: String(window.location.href || "").trim(),
+          path: String(window.location.pathname || "").trim(),
+          bodyClass: String((document.body && document.body.className) || "").trim()
+        }
+      })
+    });
+  } catch (error) {
+    return {
+      text: fallback.text,
+      links: fallback.links,
+      source: "demo-error"
+    };
+  }
+
+  const raw = await response.text();
+  let parsed = null;
+  if (raw !== "") {
+    try {
+      parsed = JSON.parse(raw);
+    } catch (_error) {
+      parsed = null;
+    }
+  }
+
+  if (!response.ok || !parsed || parsed.success !== true || !String(parsed.reply || "").trim()) {
+    return {
+      text: fallback.text,
+      links: fallback.links,
+      source: "demo-error"
+    };
+  }
+
+  const remoteLinks = normalizeLandingChatbotLinks(parsed.links);
+  return {
+    text: String(parsed.reply || "").trim(),
+    links: remoteLinks.length ? remoteLinks : fallback.links,
+    source: "relay",
+    model: String(parsed.model || "").trim()
+  };
+}
+
+function initLandingChatbot() {
+  if (!document.body || document.getElementById("landingChatbot")) return;
+
+  const isLandingPage = document.body.classList.contains("index-page")
+    || document.body.classList.contains("home-landing-page");
+  if (!isLandingPage) return;
+
+  const root = document.createElement("section");
+  root.id = "landingChatbot";
+  root.className = "landing-chatbot";
+  root.innerHTML = ""
+    + "<button class='landing-chatbot__toggle' type='button' aria-expanded='false' aria-controls='landingChatbotPanel'>"
+    + "<span class='landing-chatbot__toggle-label'>Chatbot</span>"
+    + "<span class='landing-chatbot__toggle-note'>deutsch</span>"
+    + "</button>"
+    + "<div id='landingChatbotPanel' class='landing-chatbot__panel' hidden>"
+    + "<div class='landing-chatbot__header'>"
+    + "<p class='landing-chatbot__eyebrow'>AzubiMatcher Hilfe</p>"
+    + "<h2>Chatbot</h2>"
+    + "<p class='landing-chatbot__intro'>Ich beantworte dir auf Deutsch schnelle Fragen zu Einstieg, Matching, Inklusion und Praktikum.</p>"
+    + "<p class='landing-chatbot__status' role='status' aria-live='polite'></p>"
+    + "</div>"
+    + "<div class='landing-chatbot__messages' role='log' aria-live='polite' aria-label='Chatverlauf'></div>"
+    + "<div class='landing-chatbot__quick-actions' aria-label='Schnellfragen'></div>"
+    + "<form class='landing-chatbot__composer'>"
+    + "<label class='landing-chatbot__input-wrap' for='landingChatbotInput'>"
+    + "<span class='landing-chatbot__input-label'>Deine Frage</span>"
+    + "<input id='landingChatbotInput' class='landing-chatbot__input' type='text' maxlength='180' placeholder='z. B. Wie starte ich als Unternehmen?' autocomplete='off'>"
+    + "</label>"
+    + "<button class='landing-chatbot__send' type='submit'>Senden</button>"
+    + "</form>"
+    + "</div>";
+
+  document.body.appendChild(root);
+
+  const toggle = root.querySelector(".landing-chatbot__toggle");
+  const panel = root.querySelector(".landing-chatbot__panel");
+  const messages = root.querySelector(".landing-chatbot__messages");
+  const quickActions = root.querySelector(".landing-chatbot__quick-actions");
+  const form = root.querySelector(".landing-chatbot__composer");
+  const input = root.querySelector(".landing-chatbot__input");
+  const sendButton = root.querySelector(".landing-chatbot__send");
+  const status = root.querySelector(".landing-chatbot__status");
+  const relayEndpoint = resolveLandingChatbotRelayEndpoint();
+  const relayAvailable = !!relayEndpoint && canUseLandingChatbotRelayEndpoint(relayEndpoint);
+  let isSubmitting = false;
+
+  function setStatus(mode, text) {
+    if (!status) return;
+    status.dataset.mode = mode || "info";
+    status.textContent = String(text || "").trim();
+  }
+
+  function syncBusyState(nextBusy) {
+    isSubmitting = !!nextBusy;
+    root.classList.toggle("is-loading", isSubmitting);
+    input.disabled = isSubmitting;
+    sendButton.disabled = isSubmitting;
+    Array.from(quickActions.querySelectorAll("button")).forEach(function(button) {
+      button.disabled = isSubmitting;
+    });
+  }
+
+  function appendMessage(author, text, links) {
+    const item = document.createElement("article");
+    item.className = "landing-chatbot__message landing-chatbot__message--" + author;
+
+    const speaker = document.createElement("span");
+    speaker.className = "landing-chatbot__speaker";
+    speaker.textContent = author === "bot" ? "AzubiMatcher" : "Du";
+
+    const bubble = document.createElement("div");
+    bubble.className = "landing-chatbot__bubble";
+
+    const copy = document.createElement("p");
+    copy.textContent = text;
+    bubble.appendChild(copy);
+
+    if (Array.isArray(links) && links.length) {
+      const linkRow = document.createElement("div");
+      linkRow.className = "landing-chatbot__links";
+      links.forEach(function(link) {
+        if (!link || !link.href || !link.label) return;
+        const anchor = document.createElement("a");
+        anchor.className = "landing-chatbot__link";
+        anchor.href = link.href;
+        anchor.textContent = link.label;
+        linkRow.appendChild(anchor);
+      });
+      if (linkRow.childNodes.length) {
+        bubble.appendChild(linkRow);
+      }
+    }
+
+    item.appendChild(speaker);
+    item.appendChild(bubble);
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function handlePrompt(prompt) {
+    const text = String(prompt || "").trim();
+    if (!text || isSubmitting) return;
+    appendMessage("user", text);
+    syncBusyState(true);
+    if (relayAvailable) {
+      setStatus("loading", "Verbinde mit dem KI-Relay ...");
+    } else {
+      setStatus("demo", "Demo-Antworten aktiv.");
+    }
+
+    const response = await requestLandingChatbotResponse(text);
+    appendMessage("bot", response.text, response.links);
+
+    if (response.source === "relay") {
+      setStatus("relay", response.model ? "KI-Relay aktiv: " + response.model : "KI-Relay aktiv.");
+    } else if (relayAvailable) {
+      setStatus("demo", "KI-Relay derzeit nicht erreichbar. Demo-Antwort aktiv.");
+    } else {
+      setStatus("demo", "Demo-Antworten aktiv.");
+    }
+
+    syncBusyState(false);
+  }
+
+  LANDING_CHATBOT_QUICK_ACTIONS.forEach(function(prompt) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "landing-chatbot__chip";
+    button.textContent = prompt;
+    button.addEventListener("click", function() {
+      if (panel.hidden) {
+        toggle.click();
+      }
+      handlePrompt(prompt);
+    });
+    quickActions.appendChild(button);
+  });
+
+  appendMessage(
+    "bot",
+    "Hallo. Ich bin der AzubiMatcher-Chatbot und helfe dir auf Deutsch beim schnellen Einstieg.",
+    [
+      { label: "Zur Anmeldung", href: getLandingChatbotUrl("anmeldung.html") },
+      { label: "AzubiMatcher ansehen", href: getLandingChatbotUrl("home.html") }
+    ]
+  );
+
+  setStatus(relayAvailable ? "relay" : "demo", relayAvailable ? "KI-Relay grundsätzlich verfügbar." : "Demo-Antworten aktiv.");
+
+  toggle.addEventListener("click", function() {
+    const isOpen = !panel.hidden;
+    panel.hidden = isOpen;
+    root.classList.toggle("is-open", !isOpen);
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+    toggle.querySelector(".landing-chatbot__toggle-label").textContent = !isOpen ? "Chat schließen" : "Chatbot";
+    if (!isOpen) {
+      input.focus();
+    }
+  });
+
+  form.addEventListener("submit", function(event) {
+    event.preventDefault();
+    const value = input.value;
+    input.value = "";
+    handlePrompt(value).finally(function() {
+      input.focus();
+    });
+  });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && !panel.hidden) {
+      toggle.click();
+    }
+  });
 }
 
 function initBerufsCarousel() {
@@ -20573,6 +22254,19 @@ function initStudentAuth() {
     document.body.classList.toggle("bewerber-entry-page--auth-only", authOnlyEntryRequested);
   }
 
+  function syncStudentAuthEntryLinks() {
+    document.querySelectorAll("a[href='anmeldung.html']").forEach(function(link) {
+      const startMode = link.classList.contains("index-login-btn") ? "register" : "login";
+      link.href = getStudentPortalStartUrl({ start: startMode });
+    });
+
+    document.querySelectorAll("a[href='?forgot=1']").forEach(function(link) {
+      link.href = getStudentPortalForgotPasswordUrl();
+    });
+  }
+
+  syncStudentAuthEntryLinks();
+
   function updateStudentRegStepper(step) {
     if (!authRegStepper) return;
     authRegStepper.removeAttribute("hidden");
@@ -21060,7 +22754,20 @@ function initStudentAuth() {
         loggedInAt: new Date().toISOString()
       };
       saveAuth(auth);
-      tryPostgresSync(existing.email, input.password, 'student').catch(function() {});
+      if (existing.postgresSyncPending) {
+        tryPostgresSync(existing.email, input.password, 'student', {
+          reportFailure: true,
+          source: 'login-retry'
+        }).then(function(result) {
+          if (result && result.ok) {
+            const _users = loadUsers();
+            const _u = _users.find(function(u) { return normalizeText(u.email) === normalizeText(existing.email); });
+            if (_u) { _u.postgresSyncPending = false; saveUsers(_users); }
+          }
+        }).catch(function() {});
+      } else {
+        tryPostgresSync(existing.email, input.password, 'student').catch(function() {});
+      }
       if (authStatus) authStatus.textContent = "Anmeldung erfolgreich.";
       setAnimatedDisclosureOpen(registerBox, false);
       setAnimatedDisclosureOpen(verifyBox, false);
@@ -21131,7 +22838,10 @@ function initStudentAuth() {
 
       users.unshift(user);
       saveUsers(users);
-      tryPostgresSync(user.email, input.password, 'student').catch(function() {});
+      tryPostgresSync(user.email, input.password, 'student', {
+        reportFailure: true,
+        source: 'registration'
+      }).catch(function() {});
 
       if (authStatus) {
         authStatus.textContent = deliveryResult && deliveryResult.userMessage
@@ -21297,6 +23007,15 @@ function initStudentAuth() {
         await maybeSendStudentWelcomeNotification(user, users);
       } catch (err) {
         console.warn("Willkommensmail für Bewerbende konnte nicht gesendet werden:", err);
+      }
+      const _studentSyncResult = await tryPostgresSync(user.email, ((authPassword || {}).value || "").trim(), 'student', {
+        passwordRecord: user.passwordHash,
+        reportFailure: true,
+        source: 'email-confirmation'
+      });
+      if (!_studentSyncResult || !_studentSyncResult.ok) {
+        user.postgresSyncPending = true;
+        saveUsers(users);
       }
 
       if (authPanel.classList.contains("is-registering")) {
@@ -21470,6 +23189,7 @@ function initFirmProfilePage() {
   const quickProfileButton = document.getElementById("btnCreateQuickProfile");
   const firmMatchRadiusSelect = document.getElementById("firmMatchRadiusSelect");
   const firmNotificationBanner = document.getElementById("firmNotificationBanner");
+  const firmMessagesCollapsePanel = document.getElementById("firmMessagesPanel");
   const firmInterviewCalendarOverview = document.getElementById("firmInterviewCalendarOverview");
   const firmProfileGreeting = document.getElementById("firmProfileGreeting");
   const firmReleaseNotice = document.getElementById("firmReleaseNotice");
@@ -21498,7 +23218,7 @@ function initFirmProfilePage() {
   window.__azubiMatchFirmQuickProfileStatusMessage = "";
 
   const offers = loadOffers();
-  const currentOffer = findFirmOfferByAuth(auth, offers) || (offers.length ? offers[0] : null);
+  const currentOffer = findFirmOfferByAuth(auth, offers) || null;
   
   if (!currentOffer) {
     if (firmProfileContent) {
@@ -21509,6 +23229,72 @@ function initFirmProfilePage() {
 
   const firmAccessLocked = !isFirmAccountReleased(currentOffer);
   const firmMainProfileLocked = isFirmMainProfileLocked(currentOffer);
+
+  function getFirmMessagesSeenStorageKey() {
+    const firmKey = String((currentOffer && (currentOffer.id || currentOffer.userId || currentOffer.userEmail)) || (auth && (auth.id || auth.email)) || "firm").trim();
+    return "azubimatch_seen_firm_messages_" + normalizeText(firmKey || "firm");
+  }
+
+  function getFirmMessagesSeenTimestamp() {
+    try {
+      return parseInt(localStorage.getItem(getFirmMessagesSeenStorageKey()) || "0", 10) || 0;
+    } catch (_error) {
+      return 0;
+    }
+  }
+
+  function markFirmMessagesSeen() {
+    try {
+      localStorage.setItem(getFirmMessagesSeenStorageKey(), String(Date.now()));
+    } catch (_error) {
+      // Ignore localStorage write failures.
+    }
+  }
+
+  function getFirmUnreadMessageMeta() {
+    const seenAt = getFirmMessagesSeenTimestamp();
+    const messageLookup = buildFirmMessageLookup(auth, currentOffer);
+    const students = loadStudents();
+    const unreadPortalMessages = loadMessages().filter(function(message) {
+      if (!message || message.toType !== "firm") return false;
+      const messageTimestamp = getMessageTimestampValue(message);
+      if (!(messageTimestamp > seenAt)) return false;
+      const messageId = String(message.toId || "").trim();
+      const messageEmail = normalizeText(message.toEmail);
+      return messageLookup.idKeys.includes(messageId)
+        || (messageEmail && messageLookup.emailKeys.includes(messageEmail));
+    });
+
+    const unreadDirectByStudentId = new Map();
+    sortConversationMessages(
+      loadFirmStudentMessages().filter(function(message) {
+        return message
+          && message.firmId === currentOffer.id
+          && message.from === "student"
+          && getMessageTimestampValue(message) > seenAt;
+      }),
+      "desc"
+    ).forEach(function(message) {
+      const studentId = String(message.studentId || "").trim();
+      if (!studentId || unreadDirectByStudentId.has(studentId)) return;
+      const student = students.find(function(entry) {
+        return entry.id === studentId || entry.profilCode === studentId;
+      });
+      unreadDirectByStudentId.set(studentId, {
+        studentId: studentId,
+        counterpartLabel: student ? (student.name || studentId) : (message.studentName || studentId),
+        sentAt: getMessageTimestampValue(message)
+      });
+    });
+
+    return {
+      seenAt: seenAt,
+      unreadPortalCount: unreadPortalMessages.length,
+      unreadDirectCount: unreadDirectByStudentId.size,
+      unreadTotal: unreadPortalMessages.length + unreadDirectByStudentId.size,
+      unreadDirectItems: Array.from(unreadDirectByStudentId.values())
+    };
+  }
 
   function syncFirmProfileEntryLinks() {
     const portalUrl = getFirmPortalEditUrl();
@@ -21571,15 +23357,16 @@ function initFirmProfilePage() {
 
     const existingStoredOffer = offersList[offerIndex];
     const currentActivePlanKey = getFirmBillingPlanKey(existingStoredOffer);
+    const existingPendingPlanChange = getFirmPendingPlanChange(existingStoredOffer);
     if (
       normalizedSelectedPlan !== currentActivePlanKey
-      && !FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedSelectedPlan)
+      && !(existingPendingPlanChange && existingPendingPlanChange.planKey === normalizedSelectedPlan)
+      && (!FIRM_SELF_SERVICE_BILLING_PLAN_KEYS.includes(normalizedSelectedPlan) || !isFirmSelfServicePlanCurrentlyAvailable(normalizedSelectedPlan))
     ) {
-      firmBillingActionStatusMessage = "Dieser Tarif ist für Firmen derzeit nicht als Selbstbedienungsoption verfügbar.";
+      firmBillingActionStatusMessage = FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT;
       renderFirmBillingOverview();
       return;
     }
-    const existingPendingPlanChange = getFirmPendingPlanChange(existingStoredOffer);
     const now = new Date();
     const nowIso = now.toISOString();
     const nowMonthKey = formatBillingMonthKey(now);
@@ -21700,6 +23487,13 @@ function initFirmProfilePage() {
       }
     }
 
+    // Abo-Wechsel ist keine Neu-Registrierung: Verifizierungsstatus bleibt unverändert.
+    nextOffer.verified = !!existingStoredOffer.verified;
+    nextOffer.paymentApproved = !!existingStoredOffer.paymentApproved;
+    if (nextOffer.paymentApproved) {
+      nextOffer.paymentApprovedAt = existingStoredOffer.paymentApprovedAt || nextOffer.paymentApprovedAt || nowIso;
+    }
+
     const nextOffers = offersList.slice();
     nextOffers[offerIndex] = nextOffer;
     persistOffers(nextOffers);
@@ -21802,24 +23596,28 @@ function initFirmProfilePage() {
       const planIntent = getFirmPlanChangeIntent(liveBillingOffer, plan.key, new Date());
       const isCurrentPlan = billing.plan.key === plan.key;
       const isPendingTarget = !!(contractState.pendingChange && contractState.pendingChange.planKey === plan.key);
+      const isUnavailable = !isCurrentPlan && !isPendingTarget && !isFirmSelfServicePlanCurrentlyAvailable(plan.key);
       const cardBadgeLabel = isCurrentPlan ? "Aktiv" : (isPendingTarget ? "Vorgemerkt" : "");
       const cardBadgeClass = isCurrentPlan
         ? "firm-billing-plan-card__badge firm-billing-plan-card__badge--active"
         : "firm-billing-plan-card__badge firm-billing-plan-card__badge--pending";
-      const cardNote = isPendingTarget
-        ? buildFirmPendingPlanChangeDetail(contractState.pendingChange)
-        : (planIntent.mode === "scheduled"
-          ? buildFirmPendingPlanChangeDetail({
-              planKey: plan.key,
-              contractEndAt: planIntent.contractEndAt,
-              effectiveAt: planIntent.effectiveAt,
-              changeKind: planIntent.changeKind
-            })
-          : "");
+      let cardNote = "";
+      if (isPendingTarget) {
+        cardNote = buildFirmPendingPlanChangeDetail(contractState.pendingChange);
+      } else if (isUnavailable) {
+        cardNote = FIRM_SUBSCRIPTION_BOOKING_DISABLED_CARD_NOTE;
+      } else if (planIntent.mode === "scheduled") {
+        cardNote = buildFirmPendingPlanChangeDetail({
+          planKey: plan.key,
+          contractEndAt: planIntent.contractEndAt,
+          effectiveAt: planIntent.effectiveAt,
+          changeKind: planIntent.changeKind
+        });
+      }
       const buttonLabel = isCurrentPlan
         ? "Aktiv"
-        : (isPendingTarget ? "Vorgemerkt" : buildFirmBillingDashboardActionLabel(planIntent));
-      const disabledAttr = isCurrentPlan || isPendingTarget ? " disabled" : "";
+        : (isPendingTarget ? "Vorgemerkt" : (isUnavailable ? "Aktuell nicht buchbar" : buildFirmBillingDashboardActionLabel(planIntent)));
+      const disabledAttr = isCurrentPlan || isPendingTarget || isUnavailable ? " disabled" : "";
       return ""
         + "<article class='firm-billing-month-card firm-billing-plan-card'>"
         + "<div class='firm-billing-plan-card__head'>"
@@ -21833,7 +23631,7 @@ function initFirmProfilePage() {
         + "<p class='firm-billing-entry__meta'>" + escapeHtml(getFirmBillingPlanRuleSummary(plan)) + "</p>"
         + "<p class='firm-billing-entry__meta'>" + escapeHtml(getFirmBillingPlanAvailabilityCopy(plan)) + "</p>"
         + (cardNote ? ("<p class='firm-billing-plan-card__note'>" + escapeHtml(cardNote) + "</p>") : "")
-        + "<button class='btn " + (isCurrentPlan || isPendingTarget ? "ghost" : "primary") + " small firm-billing-plan-card__button' type='button' data-billing-plan-change='" + escapeHtml(plan.key) + "'" + disabledAttr + ">" + escapeHtml(buttonLabel) + "</button>"
+        + "<button class='btn " + (isCurrentPlan || isPendingTarget || isUnavailable ? "ghost" : "primary") + " small firm-billing-plan-card__button' type='button' data-billing-plan-change='" + escapeHtml(plan.key) + "'" + disabledAttr + ">" + escapeHtml(buttonLabel) + "</button>"
         + "</article>";
     }).join("");
     const monthlyHistoryHtml = billing.months.length
@@ -21878,7 +23676,10 @@ function initFirmProfilePage() {
     const cancellationActionHtml = contractState.hasMonthlySubscription && cancellationHintCopy && !isCancellationPending
       ? ("<div class='firm-billing-action-note firm-billing-action-note--warning'><div><strong>Abo kündigen</strong><p class='firm-billing-action-note__text'>" + escapeHtml(cancellationHintCopy) + "</p><p class='firm-billing-action-note__text'>Kündigungen ohne Monatstarif sind aktuell nicht als Selbstbedienung verfügbar. Bitte wenden Sie sich an den Support.</p></div></div>")
       : "";
-    const billingActionNotesHtml = (firmBillingActionStatusMessage || contractState.pendingChange || cancellationActionHtml)
+    const subscriptionBookingUnavailableHtml = !FIRM_SUBSCRIPTION_SELF_SERVICE_ENABLED
+      ? ("<div class='firm-billing-action-note firm-billing-action-note--info'><div><strong>Abo-Buchung aktuell inaktiv</strong><p class='firm-billing-action-note__text'>" + escapeHtml(FIRM_SUBSCRIPTION_BOOKING_DISABLED_HINT) + "</p></div></div>")
+      : "";
+    const billingActionNotesHtml = (firmBillingActionStatusMessage || contractState.pendingChange || cancellationActionHtml || subscriptionBookingUnavailableHtml)
       ? ("<div class='firm-billing-actions'>"
         + (firmBillingActionStatusMessage
           ? ("<div class='firm-billing-action-note firm-billing-action-note--success'><p class='firm-billing-action-note__text'>" + escapeHtml(firmBillingActionStatusMessage) + "</p></div>")
@@ -21886,6 +23687,7 @@ function initFirmProfilePage() {
         + (contractState.pendingChange
           ? ("<div class='firm-billing-action-note firm-billing-action-note--info'><div><strong>Vorgemerkte Tarifänderung</strong><p class='firm-billing-action-note__text'>" + escapeHtml(buildFirmPendingPlanChangeDetail(contractState.pendingChange)) + "</p></div><button class='btn ghost small' type='button' data-billing-plan-reset='1'>Vormerkung zurücknehmen</button></div>")
           : "")
+        + subscriptionBookingUnavailableHtml
         + cancellationActionHtml
         + "</div>")
       : "";
@@ -21975,6 +23777,136 @@ function initFirmProfilePage() {
     return Array.from(appointmentByStudentId.values());
   }
 
+  function getFirmCalendarAppointmentsForMonth() {
+    if (firmAccessLocked) return [];
+    const students = loadStudents();
+    const appointmentByStudentId = new Map();
+    sortConversationMessages(
+      loadFirmStudentMessages().filter(function(message) {
+        return message && message.firmId === currentOffer.id;
+      }),
+      "desc"
+    ).forEach(function(message) {
+      const appointment = getFirmStudentInterviewAppointment(message);
+      if (!appointment) return;
+      const studentId = String(message.studentId || "").trim();
+      if (!studentId || appointmentByStudentId.has(studentId)) return;
+      const student = students.find(function(entry) {
+        return entry.id === studentId || entry.profilCode === studentId;
+      });
+      appointmentByStudentId.set(studentId, {
+        counterpartLabel: student ? (student.name || studentId) : studentId,
+        appointment: appointment
+      });
+    });
+    return Array.from(appointmentByStudentId.values());
+  }
+
+  var firmCalendarMonthView = document.getElementById("firmCalendarMonthView");
+  var firmCalendarNavState = { year: new Date().getFullYear(), month: new Date().getMonth() };
+
+  function renderFirmCalendarMonthView(calendarAppointmentsArg) {
+    if (!firmCalendarMonthView) return;
+    var appointments = Array.isArray(calendarAppointmentsArg) ? calendarAppointmentsArg : [];
+
+    // Build a map of appointment dates → status counts
+    var apptDateMap = {};
+    appointments.forEach(function(entry) {
+      var appt = normalizeFirmStudentInterviewAppointment(entry && entry.appointment);
+      var dateStr = String(appt.date || "").trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        if (!apptDateMap[dateStr]) {
+          apptDateMap[dateStr] = { total: 0, confirmed: 0, proposed: 0 };
+        }
+        apptDateMap[dateStr].total += 1;
+        if (String(appt.status || "").toLowerCase() === "confirmed") {
+          apptDateMap[dateStr].confirmed += 1;
+        } else {
+          apptDateMap[dateStr].proposed += 1;
+        }
+      }
+    });
+
+    var year = firmCalendarNavState.year;
+    var month = firmCalendarNavState.month;
+    var today = new Date();
+    var todayStr = today.getFullYear() + "-"
+      + String(today.getMonth() + 1).padStart(2, "0") + "-"
+      + String(today.getDate()).padStart(2, "0");
+
+    var monthLabel = new Date(year, month, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+    var firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+    var leadingBlanks = (firstDow + 6) % 7; // Monday-first
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var dayNames = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+
+    var cellsHtml = dayNames.map(function(n) {
+      return "<div class='firm-cal-day-name'>" + n + "</div>";
+    }).join("");
+
+    for (var b = 0; b < leadingBlanks; b++) {
+      cellsHtml += "<div class='firm-cal-cell firm-cal-cell--empty'></div>";
+    }
+    for (var d = 1; d <= daysInMonth; d++) {
+      var dateKey = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+      var dayMeta = apptDateMap[dateKey] || { total: 0, confirmed: 0, proposed: 0 };
+      var count = dayMeta.total;
+      var cls = "firm-cal-cell";
+      var extraAttrs = "";
+      if (dateKey === todayStr) cls += " firm-cal-cell--today";
+      if (count > 0) {
+        if (dayMeta.confirmed > 0) {
+          cls += " firm-cal-cell--has-appt";
+        } else {
+          cls += " firm-cal-cell--has-proposed";
+        }
+        extraAttrs += " title='" + dayMeta.confirmed + " bestätigt, " + dayMeta.proposed + " vorgeschlagen am " + d + "." + (month + 1) + ".' data-cal-date='" + escapeHtml(dateKey) + "'";
+      }
+      var badgeHtml = count > 1 ? "<span class='firm-cal-badge'>" + count + "</span>" : "";
+      cellsHtml += "<div class='" + cls + "'" + extraAttrs + ">" + d + badgeHtml + "</div>";
+    }
+
+    firmCalendarMonthView.innerHTML = "<div class='firm-cal-nav'>"
+      + "<button class='firm-cal-nav-btn' id='firmCalPrev' aria-label='Vormonat'>&#8249;</button>"
+      + "<span class='firm-cal-nav-title'>" + escapeHtml(monthLabel) + "</span>"
+      + "<button class='firm-cal-nav-btn' id='firmCalNext' aria-label='Nächster Monat'>&#8250;</button>"
+      + "</div>"
+      + "<div class='firm-cal-grid'>" + cellsHtml + "</div>"
+      + (Object.keys(apptDateMap).length
+        ? "<div class='firm-cal-legend'><span><span class='firm-cal-legend-dot'></span>Termin bestätigt</span><span><span class='firm-cal-legend-dot firm-cal-legend-dot--proposed'></span>Terminvorschlag offen</span></div>"
+        : "");
+
+    var prevBtn = document.getElementById("firmCalPrev");
+    var nextBtn = document.getElementById("firmCalNext");
+    if (prevBtn) {
+      prevBtn.addEventListener("click", function() {
+        firmCalendarNavState.month -= 1;
+        if (firmCalendarNavState.month < 0) {
+          firmCalendarNavState.month = 11;
+          firmCalendarNavState.year -= 1;
+        }
+        renderFirmCalendarMonthView(appointments);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener("click", function() {
+        firmCalendarNavState.month += 1;
+        if (firmCalendarNavState.month > 11) {
+          firmCalendarNavState.month = 0;
+          firmCalendarNavState.year += 1;
+        }
+        renderFirmCalendarMonthView(appointments);
+      });
+    }
+    // Clicking on an appointment date scrolls to the list below
+    firmCalendarMonthView.querySelectorAll(".firm-cal-cell--has-appt").forEach(function(cell) {
+      cell.addEventListener("click", function() {
+        var overview = document.getElementById("firmInterviewCalendarOverview");
+        if (overview) overview.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
   function renderFirmInterviewCalendarOverview(confirmedAppointmentsArg) {
     if (!firmInterviewCalendarOverview) return;
 
@@ -21983,6 +23915,9 @@ function initFirmProfilePage() {
     const confirmedAppointments = Array.isArray(confirmedAppointmentsArg)
       ? confirmedAppointmentsArg
       : getFirmConfirmedInterviewAppointments();
+    const calendarAppointments = getFirmCalendarAppointmentsForMonth();
+
+    renderFirmCalendarMonthView(calendarAppointments);
 
     if (firmAccessLocked) {
       firmInterviewCalendarOverview.innerHTML = "<p class='status'>Die Terminübersicht wird nach vollständiger Freigabe Ihres Firmenkontos aktiv.</p>";
@@ -22063,12 +23998,14 @@ function initFirmProfilePage() {
   }
 
   function renderFirmNotificationBanner() {
+    const proposalNotifications = getFirmOpenInterviewProposalNotifications(currentOffer);
+    const unreadMeta = getFirmUnreadMessageMeta();
     const confirmedAppointments = getFirmConfirmedInterviewAppointments();
     renderFirmInterviewCalendarOverview(confirmedAppointments);
     if (!firmNotificationBanner) return;
     const liveOffer = getCurrentStoredOfferForAuth() || currentOffer;
     const calendarCapabilities = getFirmCalendarCapabilities(liveOffer);
-    if (!confirmedAppointments.length) {
+    if (!confirmedAppointments.length && !proposalNotifications.length && !unreadMeta.unreadTotal) {
       firmNotificationBanner.classList.remove("has-notifications");
       firmNotificationBanner.innerHTML = "";
       return;
@@ -22076,7 +24013,39 @@ function initFirmProfilePage() {
     const calendarNoteHtml = !calendarCapabilities.interviewExternalLinksEnabled
       ? "<p class='firm-profile-hint'>" + escapeHtml(buildFirmCalendarUpgradeHint("interview-links", liveOffer)) + "</p>"
       : "";
-    firmNotificationBanner.innerHTML = calendarNoteHtml + buildInterviewAppointmentNotificationItems(confirmedAppointments, {
+    const proposalItemsHtml = proposalNotifications.map(function(entry) {
+      const counterpartLabel = String(entry && entry.counterpartLabel || "Kontakt").trim() || "Kontakt";
+      return ""
+        + "<div class='student-notif-alert student-notif-alert--info' role='button' tabindex='0'"
+        + " data-notif-section='firmDirectContactsPanel'"
+        + " data-notif-thread-id='firm-student-msg-" + escapeHtml(String(entry.studentId || "").trim()) + "'"
+        + " data-focus-interview-actions='1'>"
+        + "<div class='student-notif-alert__icon' aria-hidden='true'>📩</div>"
+        + "<div class='student-notif-alert__body'>"
+        + "<p class='student-notif-alert__title'>Neuer Terminvorschlag von " + escapeHtml(counterpartLabel) + "</p>"
+        + "<p class='student-notif-alert__sub'>Direkt zum Feld \"Bestätigen oder anderen Vorschlag senden\" springen.</p>"
+        + "</div>"
+        + "<span class='student-notif-alert__cta' aria-hidden='true'>Jetzt öffnen →</span>"
+        + "</div>";
+    }).join("");
+    const unreadMessageHintHtml = unreadMeta.unreadTotal
+      ? ""
+        + "<div class='student-notif-alert student-notif-alert--info' role='button' tabindex='0'"
+        + " data-notif-section='firmMessages'"
+        + " data-notif-panel-id='firmMessagesPanel'"
+        + (unreadMeta.unreadDirectItems.length
+          ? (" data-notif-thread-id='firm-student-msg-" + escapeHtml(String(unreadMeta.unreadDirectItems[0].studentId || "").trim()) + "'")
+          : "")
+        + ">"
+        + "<div class='student-notif-alert__icon' aria-hidden='true'>💬</div>"
+        + "<div class='student-notif-alert__body'>"
+        + "<p class='student-notif-alert__title'>" + unreadMeta.unreadTotal + " ungelesene " + (unreadMeta.unreadTotal === 1 ? "Nachricht" : "Nachrichten") + "</p>"
+        + "<p class='student-notif-alert__sub'>Im Bereich \"Nachrichten\" werden neue Einträge hervorgehoben.</p>"
+        + "</div>"
+        + "<span class='student-notif-alert__cta' aria-hidden='true'>Jetzt öffnen →</span>"
+        + "</div>"
+      : "";
+    firmNotificationBanner.innerHTML = calendarNoteHtml + unreadMessageHintHtml + proposalItemsHtml + buildInterviewAppointmentNotificationItems(confirmedAppointments, {
       itemTitleBuilder: function(counterpartLabel) {
         return 'Vorstellungstermin mit ' + counterpartLabel + ' bestätigt';
       },
@@ -22087,6 +24056,7 @@ function initFirmProfilePage() {
     });
     firmNotificationBanner.classList.add("has-notifications");
     bindInterviewAppointmentNotificationActions(firmNotificationBanner);
+    bindNotificationThreadJumpActions(firmNotificationBanner);
   }
 
   function syncFirmRadiusControl() {
@@ -22191,6 +24161,8 @@ function initFirmProfilePage() {
   // ---- Ende Suchfilter ----
   function renderFirmDashboardMessages() {
     if (!firmMessagesPanel) return;
+    const unreadMeta = getFirmUnreadMessageMeta();
+    const unreadSeenAt = unreadMeta.seenAt;
 
     let allMessages = loadMessages();
     const messageLookup = buildFirmMessageLookup(auth, currentOffer);
@@ -22221,7 +24193,9 @@ function initFirmProfilePage() {
       return;
     }
 
-    renderFirmNotificationBanner();
+    if (typeof renderFirmNotificationBanner === 'function') {
+      renderFirmNotificationBanner();
+    }
 
     const requestById = new Map();
     loadFullProfileRequests().forEach(function(request) {
@@ -22336,8 +24310,33 @@ function initFirmProfilePage() {
         + "<p class='firm-message-card__footer'>Die Unterlagen stehen Ihnen zusätzlich sicher im AzubiMatch-Portal zur Verfügung.</p>";
     }
 
+    const unreadDirectPreviewHtml = unreadMeta.unreadDirectItems.length
+      ? "<section class='firm-message-unread-preview'>"
+        + "<p class='firm-message-unread-preview__title'>Ungelesene Direktnachrichten</p>"
+        + unreadMeta.unreadDirectItems.map(function(entry) {
+            const counterpartLabel = String(entry && entry.counterpartLabel || "Kontakt").trim() || "Kontakt";
+            const sentAtLabel = entry && entry.sentAt ? new Date(entry.sentAt).toLocaleString("de-DE") : "Gerade eben";
+            return ""
+              + "<article class='panel firm-message-card firm-message-card--unread' role='button' tabindex='0'"
+              + " data-notif-panel-id='firmDirectContactsPanel'"
+              + " data-notif-thread-id='firm-student-msg-" + escapeHtml(String(entry.studentId || "").trim()) + "'"
+              + " data-notif-section='firmDirectContactsBoard'>"
+              + "<div class='firm-message-card__header'>"
+              + "<div class='firm-message-card__header-main'>"
+              + "<div class='firm-message-card__meta'><span class='firm-priority-badge firm-priority-badge--high'>Ungelesen</span></div>"
+              + "<div class='firm-message-card__title-row'><h3 class='firm-message-card__title'>Neue Nachricht von " + escapeHtml(counterpartLabel) + "</h3></div>"
+              + "</div>"
+              + "<span class='firm-message-card__time'>" + escapeHtml(sentAtLabel) + "</span>"
+              + "</div>"
+              + "<div class='firm-message-card__copy'>Zum Direktkontakt springen und sofort antworten.</div>"
+              + "</article>";
+          }).join("")
+        + "</section>"
+      : "";
+
     if (!filteredMessages.length) {
-      firmMessagesPanel.innerHTML = "<div class='panel' style='background:#f1f5fa;color:#64748b;'>Keine Nachrichten vorhanden.</div>";
+      firmMessagesPanel.innerHTML = unreadDirectPreviewHtml || "<div class='panel' style='background:#f1f5fa;color:#64748b;'>Keine Nachrichten vorhanden.</div>";
+      bindNotificationThreadJumpActions(firmMessagesPanel);
       return;
     }
 
@@ -22369,12 +24368,14 @@ function initFirmProfilePage() {
       + "</div>";
 
     if (!filteredByCategory.length) {
-      firmMessagesPanel.innerHTML = tabsHtml + "<div class='panel' style='background:#f8fafc;color:#64748b;'>Keine Nachrichten in dieser Kategorie.</div>";
+      firmMessagesPanel.innerHTML = unreadDirectPreviewHtml + tabsHtml + "<div class='panel' style='background:#f8fafc;color:#64748b;'>Keine Nachrichten in dieser Kategorie.</div>";
+      bindNotificationThreadJumpActions(firmMessagesPanel);
       return;
     }
 
-    firmMessagesPanel.innerHTML = tabsHtml + filteredByCategory.map((message, index) => {
+    firmMessagesPanel.innerHTML = unreadDirectPreviewHtml + tabsHtml + filteredByCategory.map((message, index) => {
       const isRejection = message.title && String(message.title).toLowerCase().includes("abgelehnt");
+      const isUnread = getMessageTimestampValue(message) > unreadSeenAt;
       const messageCategory = getFirmMessageCategory(message);
       const messageCategoryClass = getFirmMessageCategoryClass(messageCategory);
       const priorityMeta = messageCategory === "confirmed"
@@ -22402,10 +24403,10 @@ function initFirmProfilePage() {
           + buildFirmMessageDocumentsHtml(documents, "Dokumente"));
 
       return ""
-        + `<article class='panel firm-message-card ${messageCategoryClass}${isRejection ? " firm-message-card--rejection" : ""}'>`
+        + `<article class='panel firm-message-card ${messageCategoryClass}${isUnread ? " firm-message-card--unread" : ""}${isRejection ? " firm-message-card--rejection" : ""}'>`
         + "<div class='firm-message-card__header'>"
         + "<div class='firm-message-card__header-main'>"
-        + `<div class='firm-message-card__meta'><span class='firm-priority-badge ${priorityMeta.className}'>Priorität: ${priorityMeta.label}</span></div>`
+        + `<div class='firm-message-card__meta'><span class='firm-priority-badge ${priorityMeta.className}'>Priorität: ${priorityMeta.label}</span>${isUnread ? " <span class='firm-priority-badge firm-priority-badge--high'>Ungelesen</span>" : ""}</div>`
         + `<div class='firm-message-card__title-row'><h3 class='firm-message-card__title'>${escapeHtml(message.title || 'Nachricht')}</h3></div>`
         + subtitle
         + "</div>"
@@ -22449,6 +24450,8 @@ function initFirmProfilePage() {
         renderFirmDashboardMessages();
       });
     }
+
+    bindNotificationThreadJumpActions(firmMessagesPanel);
   }
 
   function parseFirmQuickProfileList(value) {
@@ -22794,7 +24797,9 @@ function initFirmProfilePage() {
   }
 
   renderFirmDashboardMessages();
-  renderFirmNotificationBanner();
+  if (typeof renderFirmNotificationBanner === 'function') {
+    renderFirmNotificationBanner();
+  }
   renderFirmBillingOverview();
   renderFirmQuickProfilePanel();
   updateFirmQuickProfileCallToAction();
@@ -22804,6 +24809,48 @@ function initFirmProfilePage() {
   setupFirmProfileLogoUpload();
   renderFirmInternshipEntry(auth);
   renderFirmInternshipMatches();
+
+  function scheduleFirmMessagesSeenMark() {
+    window.setTimeout(function() {
+      if (!firmMessagesCollapsePanel || firmMessagesCollapsePanel.classList.contains("is-collapsed")) return;
+      const unreadMeta = getFirmUnreadMessageMeta();
+      if (!unreadMeta.unreadTotal) return;
+      markFirmMessagesSeen();
+      renderFirmDashboardMessages();
+      if (typeof renderFirmNotificationBanner === "function") {
+        renderFirmNotificationBanner();
+      }
+    }, 180);
+  }
+
+  const firmMessagesToggle = document.querySelector('[data-collapse-toggle="firmMessagesPanel"]');
+  if (firmMessagesToggle && firmMessagesToggle.dataset.boundFirmSeenMark !== "1") {
+    firmMessagesToggle.dataset.boundFirmSeenMark = "1";
+    firmMessagesToggle.addEventListener("click", function() {
+      scheduleFirmMessagesSeenMark();
+    });
+  }
+
+  if (firmMessagesPanel && firmMessagesPanel.dataset.boundFirmSeenInteraction !== "1") {
+    firmMessagesPanel.dataset.boundFirmSeenInteraction = "1";
+    firmMessagesPanel.addEventListener("click", function() {
+      scheduleFirmMessagesSeenMark();
+    });
+    firmMessagesPanel.addEventListener("focusin", function() {
+      scheduleFirmMessagesSeenMark();
+    });
+  }
+
+  if (firmNotificationBanner && firmNotificationBanner.dataset.boundFirmSeenFromBanner !== "1") {
+    firmNotificationBanner.dataset.boundFirmSeenFromBanner = "1";
+    firmNotificationBanner.addEventListener("click", function(event) {
+      const trigger = event.target && event.target.closest
+        ? event.target.closest("[data-notif-panel-id='firmMessagesPanel']")
+        : null;
+      if (!trigger) return;
+      scheduleFirmMessagesSeenMark();
+    });
+  }
 
   // Update statistics
   const messages = loadMessages().filter(function(msg) { return msg.fromCompany === currentOffer.firma; });
@@ -23078,6 +25125,7 @@ function initFirmProfilePage() {
           const student = entry.student;
           const format = v => v && v !== '' ? v : '–';
           const scoreMeta = getMatchScoreMeta(entry);
+          const oneLiner = normalizeStudentShortProfileOneLiner(student.kurzprofilEinzeiler);
           const sprachen = Array.isArray(student.sprachen) ? student.sprachen.filter(Boolean).join(', ') : format(student.sprachen);
           const gradeLabels = [
             ['Mathe', student.noteMathe],
@@ -23157,6 +25205,7 @@ function initFirmProfilePage() {
                 </div>
                 ${entry.isInclusionMatch && (student.behinderungsArt || student.behinderungsGrad) ? `<div class="firm-match-tile__inclusion-detail"><span class="firm-match-tile__inclusion-label">Inklusion</span><span class="firm-match-tile__inclusion-value">${[getBehinderungsArtLabel(student.behinderungsArt), student.behinderungsGrad].filter(Boolean).map(v => escapeHtml(v)).join(' · ')}</span></div>` : ''}
                 <div class="firm-match-detail-grid">
+                  ${oneLiner ? `<div class="firm-match-detail-grid__full"><strong>Ein Satz über das Profil</strong><span>${escapeHtml(oneLiner)}</span></div>` : ''}
                   <div><strong>PLZ</strong><span>${format(student.plz)}</span></div>
                   <div><strong>Distanz</strong><span>${format(entry.distanceLabel)}</span></div>
                   <div><strong>Grundschule</strong><span>${format(student.grundschuleVon)} – ${format(student.grundschuleBis)}</span></div>
@@ -23573,7 +25622,9 @@ if (window.location.pathname.endsWith('firma_profil.html')) {
             statusChipClass: contact.progress.chipClass,
             onConversationChange: function(change) {
               renderFirmDirectContacts();
-              renderFirmNotificationBanner();
+              if (typeof renderFirmNotificationBanner === 'function') {
+                renderFirmNotificationBanner();
+              }
               if (change && change.action === 'delete-thread') {
                 renderStudentCommunicationFeed();
               }
@@ -23649,6 +25700,145 @@ function getStudentSeenTimestamp(key) {
 function markStudentSectionSeen(key) {
   try { localStorage.setItem('azubimatch_seen_' + key, String(Date.now())); } catch(e) {}
 }
+
+function openNotificationInterviewActionTarget(options) {
+  const config = options && typeof options === "object" ? options : {};
+  const sectionId = String(config.sectionId || "").trim();
+  const threadId = String(config.threadId || "").trim();
+  const panelId = String(config.panelId || "").trim();
+  const panel = panelId ? document.getElementById(panelId) : null;
+
+  if (panel && panel.classList.contains("is-collapsed")) {
+    panel.classList.remove("is-collapsed");
+    panel.removeAttribute("aria-hidden");
+    const toggle = document.querySelector('[data-collapse-toggle="' + panelId + '"]');
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.textContent = toggle.getAttribute("data-close-label") || "Bereich schließen";
+    }
+  }
+
+  const section = sectionId ? document.getElementById(sectionId) : null;
+  const thread = threadId ? document.getElementById(threadId) : null;
+
+  if (thread) {
+    const threadToggle = thread.querySelector("[data-thread-toggle]");
+    const threadBody = thread.querySelector(".student-contact-thread__body");
+    if (threadToggle instanceof HTMLButtonElement && threadBody instanceof HTMLElement && threadBody.hidden) {
+      threadBody.hidden = false;
+      threadToggle.setAttribute("aria-expanded", "true");
+      threadToggle.textContent = "Kontakt schließen";
+    }
+
+    thread.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const confirmButton = thread.querySelector("[data-interview-confirm]");
+    const proposeButton = thread.querySelector("[data-interview-propose]");
+    const preferredButton = confirmButton instanceof HTMLButtonElement && !confirmButton.hidden && !confirmButton.disabled
+      ? confirmButton
+      : (proposeButton instanceof HTMLButtonElement ? proposeButton : null);
+
+    if (preferredButton instanceof HTMLButtonElement) {
+      window.setTimeout(function() {
+        preferredButton.focus();
+      }, 180);
+    }
+    return;
+  }
+
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (panel) {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function bindNotificationThreadJumpActions(container) {
+  if (!(container instanceof HTMLElement) || container.dataset.boundThreadNotifJumps === "1") return;
+  container.dataset.boundThreadNotifJumps = "1";
+
+  function handleActivate(target) {
+    const trigger = target && target.closest ? target.closest("[data-notif-thread-id], [data-notif-panel-id]") : null;
+    if (!trigger) return false;
+    openNotificationInterviewActionTarget({
+      sectionId: String(trigger.getAttribute("data-notif-section") || "").trim(),
+      threadId: String(trigger.getAttribute("data-notif-thread-id") || "").trim(),
+      panelId: String(trigger.getAttribute("data-notif-panel-id") || "").trim()
+    });
+    return true;
+  }
+
+  container.addEventListener("click", function(event) {
+    handleActivate(event.target);
+  });
+
+  container.addEventListener("keydown", function(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (handleActivate(event.target)) {
+      event.preventDefault();
+    }
+  });
+}
+
+function getStudentOpenInterviewProposalNotifications(auth) {
+  if (!auth || !auth.id) return [];
+  const student = findStudentByAuth(auth) || loadStudents().find(function(entry) {
+    return entry.id === auth.id || entry.profilCode === auth.id;
+  });
+  const studentIds = collectStudentIdentityKeys(student, auth);
+  const offers = loadOffers();
+  const proposalByFirmId = new Map();
+
+  sortConversationMessages(
+    loadFirmStudentMessages().filter(function(message) {
+      return message && studentIds.includes(message.studentId);
+    }),
+    "desc"
+  ).forEach(function(message) {
+    const firmId = String(message.firmId || "").trim();
+    if (!firmId || proposalByFirmId.has(firmId)) return;
+    const appointment = getFirmStudentInterviewAppointment(message);
+    if (!appointment || appointment.status !== "proposed" || appointment.proposedBy !== "firm") return;
+    const firm = offers.find(function(entry) {
+      return entry.id === firmId || entry.userId === firmId || entry.userEmail === message.firmEmail || entry.email === message.firmEmail;
+    });
+    proposalByFirmId.set(firmId, {
+      firmId: firmId,
+      counterpartLabel: firm ? (firm.firma || firmId) : (message.firmName || "Firma")
+    });
+  });
+
+  return Array.from(proposalByFirmId.values());
+}
+
+function getFirmOpenInterviewProposalNotifications(offerArg) {
+  const sourceOffer = offerArg || null;
+  if (!sourceOffer || !sourceOffer.id) return [];
+  const students = loadStudents();
+  const proposalByStudentId = new Map();
+
+  sortConversationMessages(
+    loadFirmStudentMessages().filter(function(message) {
+      return message && message.firmId === sourceOffer.id;
+    }),
+    "desc"
+  ).forEach(function(message) {
+    const studentId = String(message.studentId || "").trim();
+    if (!studentId || proposalByStudentId.has(studentId)) return;
+    const appointment = getFirmStudentInterviewAppointment(message);
+    if (!appointment || appointment.status !== "proposed" || appointment.proposedBy !== "student") return;
+    const student = students.find(function(entry) {
+      return entry.id === studentId || entry.profilCode === studentId;
+    });
+    proposalByStudentId.set(studentId, {
+      studentId: studentId,
+      counterpartLabel: student ? (student.name || studentId) : studentId
+    });
+  });
+
+  return Array.from(proposalByStudentId.values());
+}
+
 function getStudentConfirmedInterviewAppointments(auth) {
   if (!auth || !auth.id) return [];
   const student = findStudentByAuth(auth) || loadStudents().find(function(entry) {
@@ -23696,6 +25886,7 @@ function renderStudentNotificationBanner() {
   if (!banner) return;
   const auth = getStoredStudentAuth();
   const counts = getStudentNotificationCounts(auth);
+  const proposalNotifications = getStudentOpenInterviewProposalNotifications(auth);
   const confirmedAppointments = getStudentConfirmedInterviewAppointments(auth);
 
   // Update badge on requests section label
@@ -23761,6 +25952,20 @@ function renderStudentNotificationBanner() {
     }
   }
 
+  proposalNotifications.forEach(function(entry) {
+    const counterpartLabel = String(entry && entry.counterpartLabel || "Firma").trim() || "Firma";
+    items.push({
+      urgent: false,
+      icon: '📩',
+      title: 'Neuer Terminvorschlag von ' + counterpartLabel,
+      sub: 'Direkt zum Feld „Bestätigen oder anderen Vorschlag senden“ springen.',
+      sectionId: 'studentMessagesPanel',
+      panelId: 'studentMessagesPanel',
+      threadId: 'student-firm-msg-' + String(entry.firmId || '').trim(),
+      key: 'messages'
+    });
+  });
+
   // Build banner items
   const items = [];
   if (counts.pendingRequests > 0) {
@@ -23790,7 +25995,7 @@ function renderStudentNotificationBanner() {
 
   const alertItemsHtml = items.map(item => {
     const urgentClass = item.urgent ? '' : ' student-notif-alert--info';
-    return `<div class="student-notif-alert${urgentClass}" role="button" tabindex="0" data-notif-section="${item.sectionId || ''}" data-notif-seen-key="${item.key || ''}">
+    return `<div class="student-notif-alert${urgentClass}" role="button" tabindex="0" data-notif-section="${item.sectionId || ''}" data-notif-seen-key="${item.key || ''}" data-notif-panel-id="${item.panelId || ''}" data-notif-thread-id="${item.threadId || ''}">
       <div class="student-notif-alert__icon" aria-hidden="true">${item.icon}</div>
       <div class="student-notif-alert__body">
         <p class="student-notif-alert__title">${escapeHtml(item.title)}</p>
@@ -23804,6 +26009,7 @@ function renderStudentNotificationBanner() {
 
   banner.classList.add('has-notifications');
   bindInterviewAppointmentNotificationActions(banner);
+  bindNotificationThreadJumpActions(banner);
 
   // Bind click: scroll to section + open panel + mark seen
   if (!banner.dataset.boundNotifClicks) {
@@ -23966,8 +26172,6 @@ function renderStudentFullProfileRequests() {
           }));
           if (delivery.emailResult && delivery.emailResult.userMessage && !delivery.emailResult.sent) {
             alert('Freigabe gespeichert. Die Firma wurde im Portal informiert. Zusätzlicher Hinweis zur Mail: ' + delivery.emailResult.userMessage);
-          } else if (delivery.emailResult && delivery.emailResult.mode === 'emailjs-without-attachments') {
-            alert('Freigabe gespeichert. Die Firma wurde per Mail informiert. Die Dokumente stehen zusätzlich im AzubiMatch-Portal bereit; E-Mail-Anhänge sind erst mit einem Mail-Relay-Endpunkt möglich.');
           }
         } catch (err) {
           requests[idx].deliveryChannels = ['portal'];
@@ -24803,12 +27007,16 @@ function initAdminPortal() {
   if (!adminLoginPanel || !adminPortal) return;
 
   function showAdminPortal() {
+    adminLoginPanel.hidden = true;
+    adminPortal.hidden = false;
     adminLoginPanel.style.display = "none";
     adminPortal.style.display = "grid";
     initAdminDashboard();
   }
 
   function showAdminLoginPanel(message, isError) {
+    adminLoginPanel.hidden = false;
+    adminPortal.hidden = true;
     adminLoginPanel.style.display = "flex";
     adminPortal.style.display = "none";
     updateAdminLoginMode();
@@ -26000,6 +28208,12 @@ function persistAdminStudentUserManagementRecord(record, draft, fileUpdates) {
   });
   if (profileIndex !== -1) {
     const existing = students[profileIndex];
+    const sensitiveDataState = getStudentSensitiveDataState({
+      art9ConsentGranted: existing.art9ConsentGranted,
+      behinderung: draft.behinderung,
+      behinderungsArt: draft.behinderungsArt,
+      behinderungsGrad: draft.behinderungsGrad
+    });
     existing.name = String(draft.name || "").trim();
     existing.userEmail = String(draft.userEmail || "").trim().toLowerCase();
     existing.beruf = String(draft.beruf || "").trim();
@@ -26008,9 +28222,12 @@ function persistAdminStudentUserManagementRecord(record, draft, fileUpdates) {
     existing.matchUmkreis = normalizeMatchRadiusValue(draft.matchUmkreis || existing.matchUmkreis);
     existing.schulabschluss = String(draft.schulabschluss || "").trim();
     existing.abgeschlosseneAusbildungStudium = String(draft.abgeschlosseneAusbildungStudium || "").trim();
-    existing.behinderung = String(draft.behinderung || "").trim();
-    existing.behinderungsArt = existing.behinderung === "ja" ? String(draft.behinderungsArt || "").trim() : "";
-    existing.behinderungsGrad = existing.behinderung === "ja" ? String(draft.behinderungsGrad || "").trim() : "";
+    existing.behinderung = sensitiveDataState.behinderung;
+    existing.behinderungsArt = sensitiveDataState.behinderungsArt;
+    existing.behinderungsGrad = sensitiveDataState.behinderungsGrad;
+    existing.art9ConsentGranted = sensitiveDataState.hasConsent;
+    existing.art9ConsentVersion = sensitiveDataState.hasConsent ? (existing.art9ConsentVersion || STUDENT_ART9_CONSENT_VERSION) : "";
+    existing.art9ConsentAt = sensitiveDataState.hasConsent ? (existing.art9ConsentAt || now) : "";
     existing.grundschuleVon = String(draft.grundschuleVon || "").trim();
     existing.grundschuleBis = String(draft.grundschuleBis || "").trim();
     existing.weiterfuehrendeSchulform = String(draft.weiterfuehrendeSchulform || "").trim();
@@ -26087,6 +28304,46 @@ function persistAdminUserManagementRecord(type, record, draftValues, fileUpdates
   persistAdminFirmUserManagementRecord(record, draftValues, fileUpdates);
 }
 
+async function deleteAdminUserManagementRecord(type, recordId) {
+  const state = getAdminUserManagementState();
+  const record = findAdminUserManagementRecord(type, recordId);
+  if (!record) {
+    renderAdminUserManagement();
+    return;
+  }
+
+  const label = String((type === "firm" ? record.firma : record.name) || record.userEmail || record.userId || record.profileId || "Konto").trim();
+  const confirmed = confirm('Soll "' + label + '" wirklich dauerhaft gelöscht werden? Konto, Profil und verknüpfte lokale Daten werden entfernt.');
+  if (!confirmed) {
+    return;
+  }
+
+  const apiDelete = await deleteAdminUserFromApiById(record.userId);
+  if (!apiDelete.ok) {
+    setAdminUserManagementEditorMessage(apiDelete.message || "Nutzer konnte nicht gelöscht werden.", true);
+    return;
+  }
+
+  const didCleanup = cleanupLocalAdminUserByIdentity(type, record.userId, record.userEmail);
+  if (!didCleanup && shouldAttemptAdminApiDelete(record.userId)) {
+    setAdminUserManagementEditorMessage('Railway-Konto wurde gelöscht, aber im lokalen WordPress-State wurde kein passender Datensatz gefunden.', false);
+  } else {
+    setAdminUserManagementEditorMessage('Konto wurde gelöscht.', false);
+  }
+
+  if (state.editor && state.editor.type === type && String(state.editor.id) === String(recordId)) {
+    state.editor = null;
+  }
+
+  renderAdminUserManagement();
+  updateAdminStats();
+  renderStudentsList("unverified");
+  renderFirmsList("unverified");
+  if (typeof window.loadDatabaseData === 'function') {
+    window.loadDatabaseData();
+  }
+}
+
 function renderAdminUserManagementTable(type, records) {
   const state = getAdminUserManagementState();
   const wrap = document.getElementById(getAdminUserManagementWrapId(type));
@@ -26113,6 +28370,7 @@ function renderAdminUserManagementTable(type, records) {
     html += '<tr data-record-id="' + escapeHtml(recordId) + '"' + (isSelected ? ' class="is-selected"' : '') + '>';
     html += '<td><div class="admin-users-actions-cell">';
     html += '<button class="admin-users-btn edit" data-admin-users-action="edit" data-admin-users-type="' + type + '" data-admin-users-id="' + escapeHtml(recordId) + '">' + (isSelected ? 'Im Editor' : 'Bearbeiten') + '</button>';
+    html += '<button class="admin-users-btn delete" data-admin-users-action="delete" data-admin-users-type="' + type + '" data-admin-users-id="' + escapeHtml(recordId) + '">Löschen</button>';
     html += '</div></td>';
 
     columns.forEach(function(column) {
@@ -26230,6 +28488,11 @@ function handleAdminUserManagementAction(event) {
 
   if (action === "edit") {
     openAdminUserManagementEditor(target.getAttribute("data-admin-users-type"), target.getAttribute("data-admin-users-id"));
+    return;
+  }
+
+  if (action === "delete") {
+    void deleteAdminUserManagementRecord(target.getAttribute("data-admin-users-type"), target.getAttribute("data-admin-users-id"));
     return;
   }
 
@@ -26562,6 +28825,25 @@ function sortAdminDashboardStatCards(stats) {
   cards.forEach((card) => container.appendChild(card));
 }
 
+function filterAdminDashboardStats(filter) {
+  const container = document.getElementById("adminDashboardStats");
+  if (!container) return;
+
+  const cards = container.querySelectorAll(".admin-stat-card");
+  cards.forEach((card) => {
+    const category = card.getAttribute("data-stat-category") || "verified";
+    if (filter === "all") {
+      card.style.display = "";
+    } else if (filter === "pending" && category === "pending") {
+      card.style.display = "";
+    } else if (filter === "verified" && category === "verified") {
+      card.style.display = "";
+    } else {
+      card.style.display = "none";
+    }
+  });
+}
+
 function renderAdminDashboardPriorityList(stats) {
   const list = document.getElementById("adminDashboardPriorityList");
   if (!list) return;
@@ -26766,7 +29048,7 @@ function initAdminDashboard() {
   const navBtns = document.querySelectorAll(".admin-nav-btn");
   const tabDivs = document.querySelectorAll(".admin-tab");
   const filterBtns = document.querySelectorAll(".admin-filter-btn");
-  const allowedTabs = new Set(["dashboard", "students", "firms", "users", "match", "contact", "billing", "settings"]);
+  const allowedTabs = new Set(["dashboard", "students", "firms", "users", "match", "contact", "billing", "settings", "database"]);
 
   function activateAdminTab(tabName) {
     const safeTabName = allowedTabs.has(tabName) ? tabName : "dashboard";
@@ -26786,6 +29068,7 @@ function initAdminDashboard() {
       if (safeTabName === "match") renderAdminMatchTab();
       if (safeTabName === "contact") renderContactRequestsList();
       if (safeTabName === "billing") renderAdminBillingTab();
+      if (safeTabName === "database") { setTimeout(function() { if (typeof loadDatabaseData === 'function') loadDatabaseData(); }, 80); }
     }
   }
 
@@ -26820,7 +29103,9 @@ function initAdminDashboard() {
       siblings.forEach(s => s.classList.remove("admin-filter-active"));
       this.classList.add("admin-filter-active");
 
-      if (parentTabs.closest("#studentsTab")) {
+      if (parentTabs.closest("#dashboardTab")) {
+        filterAdminDashboardStats(filterValue);
+      } else if (parentTabs.closest("#studentsTab")) {
         renderStudentsList(filterValue);
       } else if (parentTabs.closest("#firmsTab")) {
         renderFirmsList(filterValue);
@@ -27088,6 +29373,474 @@ function initAdminDashboard() {
       runApiDiagBtn.textContent = "Tiefentest starten";
     });
   }
+
+  // -------------------------------------------------------------------------
+  // Traffic-Belastungstest
+  // -------------------------------------------------------------------------
+  const runTrafficProbeBtn = document.getElementById("runTrafficProbeBtn");
+  const trafficProbeResults = document.getElementById("trafficProbeResults");
+
+  function trafficProbeStep(label, status, detail) {
+    if (!trafficProbeResults) return;
+    const icon = status === "ok" ? "✅" : status === "running" ? "⏳" : status === "skip" ? "⚪" : "❌";
+    const color = status === "ok" ? "#15803d" : status === "running" ? "#b45309" : status === "skip" ? "#64748b" : "#dc2626";
+    const existing = trafficProbeResults.querySelector('[data-traffic-probe-label="' + label + '"]');
+    const html = '<span style="font-weight:600;color:' + color + '">' + icon + ' ' + escapeHtml(label) + '</span>'
+      + (detail ? '<span style="color:#64748b;margin-left:0.5rem;font-size:0.9em">' + escapeHtml(detail) + '</span>' : '');
+
+    if (existing) {
+      existing.innerHTML = html;
+    } else {
+      const li = document.createElement("li");
+      li.setAttribute("data-traffic-probe-label", label);
+      li.style.cssText = "padding:0.35rem 0;border-bottom:1px solid #f1f5f9;font-size:0.95em";
+      li.innerHTML = html;
+      trafficProbeResults.appendChild(li);
+    }
+  }
+
+  function getAdminApiTokenFromStorage() {
+    try {
+      return String(localStorage.getItem("azubimatch_admin_api_token") || "").trim();
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  if (runTrafficProbeBtn) {
+    runTrafficProbeBtn.addEventListener("click", async function() {
+      runTrafficProbeBtn.disabled = true;
+      runTrafficProbeBtn.textContent = "Läuft...";
+      if (trafficProbeResults) trafficProbeResults.innerHTML = "";
+
+      const base = getPostgresApiBase();
+      if (!base) {
+        trafficProbeStep("API-Endpunkt", "fail", "window.AzubiMatchRuntime.apiEndpoint nicht gesetzt.");
+        runTrafficProbeBtn.disabled = false;
+        runTrafficProbeBtn.textContent = "Belastungstest starten";
+        return;
+      }
+
+      const adminToken = getAdminApiTokenFromStorage();
+      if (!adminToken) {
+        trafficProbeStep("Admin-Token", "fail", "Kein Admin-Token gefunden. Bitte im Datenbank-Tab speichern.");
+        runTrafficProbeBtn.disabled = false;
+        runTrafficProbeBtn.textContent = "Belastungstest starten";
+        return;
+      }
+
+      const targetKey = String(document.getElementById("trafficProbeTarget")?.value || "themeCss").trim();
+      const connections = Math.max(1, Math.min(30, Number(document.getElementById("trafficProbeConnections")?.value || 8) || 8));
+      const durationSeconds = Math.max(5, Math.min(60, Number(document.getElementById("trafficProbeDuration")?.value || 12) || 12));
+
+      trafficProbeStep("1. Konfiguration", "running", targetKey + " | " + connections + " Verbindungen | " + durationSeconds + " Sekunden");
+
+      try {
+        const response = await fetch(base + "/api/admin/traffic-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + adminToken
+          },
+          body: JSON.stringify({
+            targetKey: targetKey,
+            connections: connections,
+            durationSeconds: durationSeconds
+          })
+        });
+
+        if (!response.ok) {
+          let detail = "HTTP " + response.status;
+          try {
+            const errorData = await response.json();
+            if (errorData && errorData.error) {
+              detail += " | " + errorData.error;
+            }
+          } catch (_error) {
+            // ignore JSON parse errors
+          }
+          trafficProbeStep("2. Ergebnis", "fail", detail);
+          return;
+        }
+
+        const data = await response.json();
+        const result = data && data.result ? data.result : null;
+        if (!result) {
+          trafficProbeStep("2. Ergebnis", "fail", "Keine Ergebnisdaten erhalten.");
+          return;
+        }
+
+        const targetLabel = data.target && data.target.label ? data.target.label : targetKey;
+        trafficProbeStep("2. Ergebnis", "ok", targetLabel + " | " + result.requestCount + " Requests | " + result.requestsPerSecond + " Req/s");
+
+        const statusCounts = result.statusCounts && typeof result.statusCounts === "object"
+          ? Object.entries(result.statusCounts)
+          : [];
+        const statusSummary = statusCounts.length
+          ? statusCounts.map(function(entry) { return entry[0] + ": " + entry[1]; }).join(" | ")
+          : "Keine Statusdaten";
+        trafficProbeStep("3. Statuscodes", "ok", statusSummary);
+
+        const latency = result.latencyMs || {};
+        trafficProbeStep(
+          "4. Latenz",
+          "ok",
+          "avg " + (latency.avg ?? "-") + " ms | p50 " + (latency.p50 ?? "-") + " ms | p95 " + (latency.p95 ?? "-") + " ms | p99 " + (latency.p99 ?? "-") + " ms"
+        );
+
+        if (Number(result.errorCount || 0) > 0) {
+          trafficProbeStep("5. Netzwerkfehler", "skip", String(result.errorCount) + " Fehler/Timeouts gemessen.");
+        }
+      } catch (error) {
+        trafficProbeStep("2. Ergebnis", "fail", error && error.message ? error.message : "Unbekannter Fehler");
+      } finally {
+        runTrafficProbeBtn.disabled = false;
+        runTrafficProbeBtn.textContent = "Belastungstest starten";
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Registrierungsburst-Test
+  // -------------------------------------------------------------------------
+  const runRegistrationBurstBtn = document.getElementById("runRegistrationBurstBtn");
+  const registrationBurstResults = document.getElementById("registrationBurstResults");
+
+  function registrationBurstStep(label, status, detail) {
+    if (!registrationBurstResults) return;
+    const icon = status === "ok" ? "✅" : status === "running" ? "⏳" : status === "skip" ? "⚪" : "❌";
+    const color = status === "ok" ? "#15803d" : status === "running" ? "#b45309" : status === "skip" ? "#64748b" : "#dc2626";
+    const existing = registrationBurstResults.querySelector('[data-registration-burst-label="' + label + '"]');
+    const html = '<span style="font-weight:600;color:' + color + '">' + icon + ' ' + escapeHtml(label) + '</span>'
+      + (detail ? '<span style="color:#64748b;margin-left:0.5rem;font-size:0.9em">' + escapeHtml(detail) + '</span>' : '');
+
+    if (existing) {
+      existing.innerHTML = html;
+    } else {
+      const li = document.createElement("li");
+      li.setAttribute("data-registration-burst-label", label);
+      li.style.cssText = "padding:0.35rem 0;border-bottom:1px solid #f1f5f9;font-size:0.95em";
+      li.innerHTML = html;
+      registrationBurstResults.appendChild(li);
+    }
+  }
+
+  if (runRegistrationBurstBtn) {
+    runRegistrationBurstBtn.addEventListener("click", async function() {
+      runRegistrationBurstBtn.disabled = true;
+      runRegistrationBurstBtn.textContent = "Läuft...";
+      if (registrationBurstResults) registrationBurstResults.innerHTML = "";
+
+      const base = getPostgresApiBase();
+      if (!base) {
+        registrationBurstStep("API-Endpunkt", "fail", "window.AzubiMatchRuntime.apiEndpoint nicht gesetzt.");
+        runRegistrationBurstBtn.disabled = false;
+        runRegistrationBurstBtn.textContent = "Registrierungsburst starten";
+        return;
+      }
+
+      const adminToken = getAdminApiTokenFromStorage();
+      if (!adminToken) {
+        registrationBurstStep("Admin-Token", "fail", "Kein Admin-Token gefunden. Bitte im Datenbank-Tab speichern.");
+        runRegistrationBurstBtn.disabled = false;
+        runRegistrationBurstBtn.textContent = "Registrierungsburst starten";
+        return;
+      }
+
+      const totalRequests = Math.max(5, Math.min(120, Number(document.getElementById("registrationBurstCount")?.value || 20) || 20));
+      const parallelism = Math.max(1, Math.min(20, Number(document.getElementById("registrationBurstParallelism")?.value || 5) || 5));
+      registrationBurstStep("1. Konfiguration", "running", totalRequests + " Registrierungen | Parallelität " + parallelism);
+
+      try {
+        const response = await fetch(base + "/api/admin/registration-burst-test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + adminToken
+          },
+          body: JSON.stringify({
+            totalRequests: totalRequests,
+            parallelism: parallelism
+          })
+        });
+
+        if (!response.ok) {
+          let detail = "HTTP " + response.status;
+          try {
+            const errorData = await response.json();
+            if (errorData && errorData.error) {
+              detail += " | " + errorData.error;
+            }
+          } catch (_error) {
+            // ignore JSON parse errors
+          }
+          registrationBurstStep("2. Ergebnis", "fail", detail);
+          return;
+        }
+
+        const data = await response.json();
+        const result = data && data.result ? data.result : null;
+        if (!result) {
+          registrationBurstStep("2. Ergebnis", "fail", "Keine Ergebnisdaten erhalten.");
+          return;
+        }
+
+        registrationBurstStep(
+          "2. Ergebnis",
+          "ok",
+          (result.successCount || 0) + " erfolgreich | " + (result.completedRequests || 0) + " abgeschlossen | " + (result.requestsPerSecond || 0) + " Req/s"
+        );
+
+        const statusCounts = result.statusCounts && typeof result.statusCounts === "object"
+          ? Object.entries(result.statusCounts)
+          : [];
+        const statusSummary = statusCounts.length
+          ? statusCounts.map(function(entry) { return entry[0] + ": " + entry[1]; }).join(" | ")
+          : "Keine Statusdaten";
+        registrationBurstStep("3. Statuscodes", "ok", statusSummary);
+
+        const latency = result.latencyMs || {};
+        registrationBurstStep(
+          "4. Latenz",
+          "ok",
+          "avg " + (latency.avg ?? "-") + " ms | p50 " + (latency.p50 ?? "-") + " ms | p95 " + (latency.p95 ?? "-") + " ms | p99 " + (latency.p99 ?? "-") + " ms"
+        );
+
+        const cleanup = result.cleanup || {};
+        registrationBurstStep(
+          "5. Bereinigung",
+          "ok",
+          "Gelöschte Testkonten: " + (cleanup.deletedUsers ?? 0) + " von " + (cleanup.attemptedEmails ?? 0)
+        );
+
+        if (Number(result.errorCount || 0) > 0) {
+          registrationBurstStep("6. Netzwerkfehler", "skip", String(result.errorCount) + " Fehler/Timeouts gemessen.");
+        }
+      } catch (error) {
+        registrationBurstStep("2. Ergebnis", "fail", error && error.message ? error.message : "Unbekannter Fehler");
+      } finally {
+        runRegistrationBurstBtn.disabled = false;
+        runRegistrationBurstBtn.textContent = "Registrierungsburst starten";
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Profil-Erinnerungen fuer "Nur Konto"
+  // -------------------------------------------------------------------------
+  const runProfileReminderBtn = document.getElementById("runProfileReminderBtn");
+  const runProfileReminderPreviewBtn = document.getElementById("runProfileReminderPreviewBtn");
+  const profileReminderPreviewMeta = document.getElementById("profileReminderPreviewMeta");
+  const profileReminderPreviewList = document.getElementById("profileReminderPreviewList");
+  const profileReminderResults = document.getElementById("profileReminderResults");
+
+  function setProfileReminderPreviewMeta(text, isError) {
+    if (!profileReminderPreviewMeta) return;
+    profileReminderPreviewMeta.textContent = text || "";
+    profileReminderPreviewMeta.style.color = isError ? "#b91c1c" : "#64748b";
+  }
+
+  function formatProfileReminderPreviewDate(value) {
+    if (!value) return "-";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "-";
+    return parsed.toLocaleString("de-DE");
+  }
+
+  function formatProfileReminderPreviewRole(role) {
+    return role === "firm" ? "Firma" : "Bewerber";
+  }
+
+  function renderProfileReminderPreview(result) {
+    if (!profileReminderPreviewList) return;
+
+    const entries = Array.isArray(result && result.entries) ? result.entries : [];
+    const students = Number(result && result.students) || 0;
+    const firms = Number(result && result.firms) || 0;
+
+    if (!entries.length) {
+      setProfileReminderPreviewMeta("Keine Kandidaten gefunden.", false);
+      profileReminderPreviewList.innerHTML = '<li style="padding:0.65rem 0;color:#64748b;border-bottom:1px solid #e2e8f0;">Aktuell gibt es keine Konten ohne angelegtes Profil.</li>';
+      return;
+    }
+
+    setProfileReminderPreviewMeta(entries.length + " Kandidaten gefunden | Bewerbende: " + students + " | Firmen: " + firms, false);
+    profileReminderPreviewList.innerHTML = entries.map(function(candidate) {
+      const profileName = candidate && candidate.profile_name ? escapeHtml(String(candidate.profile_name)) : "<span style=\"color:#94a3b8\">Ohne Profilname</span>";
+      const reasonLabels = Array.isArray(candidate && candidate.reason_labels)
+        ? candidate.reason_labels.map(function(label) { return escapeHtml(String(label)); }).join(" · ")
+        : "";
+      const reasonText = reasonLabels || "Profil noch nicht angelegt";
+  profileReminderStep("1. Versand starten", "running", "Alle aktuellen Konten ohne angelegtes Profil werden geprüft.");
+
+      return '<li style="padding:0.8rem 0;border-bottom:1px solid #e2e8f0;">'
+        + '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:0.6rem;align-items:baseline;">'
+        + '<strong style="color:#0f172a;">' + escapeHtml(String((candidate && candidate.email) || "-")) + '</strong>'
+        + '<span style="font-size:0.85rem;color:#475569;">' + escapeHtml(formatProfileReminderPreviewRole(candidate && candidate.role)) + ' | ID ' + escapeHtml(String((candidate && candidate.id) || "-")) + '</span>'
+        + '</div>'
+        + '<div style="margin-top:0.25rem;color:#334155;">' + profileName + '</div>'
+        + '<div style="margin-top:0.28rem;font-size:0.9rem;color:#64748b;line-height:1.5;">Angelegt: ' + escapeHtml(formatProfileReminderPreviewDate(candidate && candidate.created_at)) + ' | Grund: ' + reasonText + '</div>'
+        + '</li>';
+    }).join("");
+  }
+
+  function profileReminderStep(label, status, detail) {
+    if (!profileReminderResults) return;
+    const icon = status === "ok" ? "✅" : status === "running" ? "⏳" : status === "skip" ? "⚪" : "❌";
+    const color = status === "ok" ? "#15803d" : status === "running" ? "#b45309" : status === "skip" ? "#64748b" : "#dc2626";
+    const existing = profileReminderResults.querySelector('[data-profile-reminder-label="' + label + '"]');
+    const html = '<span style="font-weight:600;color:' + color + '">' + icon + ' ' + escapeHtml(label) + '</span>'
+      + (detail ? '<span style="color:#64748b;margin-left:0.5rem;font-size:0.9em">' + escapeHtml(detail) + '</span>' : '');
+
+    if (existing) {
+      existing.innerHTML = html;
+    } else {
+      const li = document.createElement("li");
+      li.setAttribute("data-profile-reminder-label", label);
+      li.style.cssText = "padding:0.35rem 0;border-bottom:1px solid #f1f5f9;font-size:0.95em";
+      li.innerHTML = html;
+      profileReminderResults.appendChild(li);
+    }
+  }
+
+  if (runProfileReminderPreviewBtn) {
+    runProfileReminderPreviewBtn.addEventListener("click", async function() {
+      runProfileReminderPreviewBtn.disabled = true;
+      runProfileReminderPreviewBtn.textContent = "Prüfe...";
+      if (profileReminderPreviewList) profileReminderPreviewList.innerHTML = "";
+      setProfileReminderPreviewMeta("Kandidaten werden geprüft ...", false);
+
+      const base = getPostgresApiBase();
+      if (!base) {
+        setProfileReminderPreviewMeta("API-Endpunkt nicht gesetzt.", true);
+        runProfileReminderPreviewBtn.disabled = false;
+        runProfileReminderPreviewBtn.textContent = "Kandidaten prüfen";
+        return;
+      }
+
+      const adminToken = getAdminApiTokenFromStorage();
+      if (!adminToken) {
+        setProfileReminderPreviewMeta("Kein Admin-Token gefunden. Bitte im Datenbank-Tab speichern.", true);
+        runProfileReminderPreviewBtn.disabled = false;
+        runProfileReminderPreviewBtn.textContent = "Kandidaten prüfen";
+        return;
+      }
+
+      try {
+        const response = await fetch(base + "/api/admin/profile-reminders/preview", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + adminToken
+          }
+        });
+
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (_error) {
+          payload = null;
+        }
+
+        if (!response.ok) {
+          const detail = payload && payload.error
+            ? String(payload.error)
+            : ("HTTP " + response.status);
+          setProfileReminderPreviewMeta(detail, true);
+          return;
+        }
+
+        const result = payload && payload.result ? payload.result : null;
+        if (!result) {
+          setProfileReminderPreviewMeta("Keine Vorschau-Daten erhalten.", true);
+          return;
+        }
+
+        renderProfileReminderPreview(result);
+      } catch (error) {
+        setProfileReminderPreviewMeta(error && error.message ? error.message : "Unbekannter Fehler", true);
+      } finally {
+        runProfileReminderPreviewBtn.disabled = false;
+        runProfileReminderPreviewBtn.textContent = "Kandidaten prüfen";
+      }
+    });
+  }
+
+  if (runProfileReminderBtn) {
+    runProfileReminderBtn.addEventListener("click", async function() {
+      runProfileReminderBtn.disabled = true;
+      runProfileReminderBtn.textContent = "Läuft...";
+      if (profileReminderResults) profileReminderResults.innerHTML = "";
+
+      const base = getPostgresApiBase();
+      if (!base) {
+        profileReminderStep("API-Endpunkt", "fail", "window.AzubiMatchRuntime.apiEndpoint nicht gesetzt.");
+        runProfileReminderBtn.disabled = false;
+        runProfileReminderBtn.textContent = "Erinnerungen jetzt senden";
+        return;
+      }
+
+      const adminToken = getAdminApiTokenFromStorage();
+      if (!adminToken) {
+        profileReminderStep("Admin-Token", "fail", "Kein Admin-Token gefunden. Bitte im Datenbank-Tab speichern.");
+        runProfileReminderBtn.disabled = false;
+        runProfileReminderBtn.textContent = "Erinnerungen jetzt senden";
+        return;
+      }
+
+      profileReminderStep("1. Versand starten", "running", "Alle aktuellen Konten im Status 'Nur Konto' werden geprüft.");
+
+      try {
+        const response = await fetch(base + "/api/admin/profile-reminders/run", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + adminToken
+          }
+        });
+
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (_error) {
+          payload = null;
+        }
+
+        if (!response.ok) {
+          const detail = payload && payload.error
+            ? String(payload.error)
+            : ("HTTP " + response.status);
+          profileReminderStep("2. Ergebnis", "fail", detail);
+          return;
+        }
+
+        const result = payload && payload.result ? payload.result : null;
+        if (!result) {
+          profileReminderStep("2. Ergebnis", "fail", "Keine Ergebnisdaten erhalten.");
+          return;
+        }
+
+        if (result.skipped) {
+          profileReminderStep("2. Ergebnis", "skip", "Job übersprungen: " + (result.reason || "unbekannt"));
+          return;
+        }
+
+        profileReminderStep("2. Ergebnis", "ok", "Kandidaten: " + (result.candidates || 0) + " | Gesendet: " + (result.sent || 0) + " | Fehler: " + (result.failed || 0));
+
+        if (Array.isArray(result.failures) && result.failures.length) {
+          const firstFailure = result.failures[0] || {};
+          const firstDetail = [firstFailure.email || "", firstFailure.error || ""].filter(Boolean).join(" | ");
+          profileReminderStep("3. Fehlversuche", "skip", result.failures.length + " Einträge" + (firstDetail ? " | z. B. " + firstDetail : ""));
+        } else {
+          profileReminderStep("3. Fehlversuche", "ok", "Keine Fehlversuche gemeldet.");
+        }
+      } catch (error) {
+        profileReminderStep("2. Ergebnis", "fail", error && error.message ? error.message : "Unbekannter Fehler");
+      } finally {
+        runProfileReminderBtn.disabled = false;
+        runProfileReminderBtn.textContent = "Erinnerungen jetzt senden";
+      }
+    });
+  }
 }
 
 function updateAdminStats() {
@@ -27102,6 +29855,11 @@ function updateAdminStats() {
   renderAdminDashboardPriorityList(stats);
   renderAdminDashboardActivityList();
   renderAdminDashboardHealthList();
+
+  // Beibehalten des aktuellen Filters für das Dashboard
+  const dashboardFilterBtn = document.querySelector("#dashboardTab .admin-filter-btn.admin-filter-active");
+  const currentFilter = dashboardFilterBtn ? dashboardFilterBtn.getAttribute("data-filter") : "all";
+  filterAdminDashboardStats(currentFilter);
 
   if (document.getElementById("dashboardMatchBox")) {
     renderAdminDashboardMatchBox();
@@ -27540,14 +30298,32 @@ async function rejectStudent(btn) {
   }
 }
 
-function deleteStudentAccount(btn) {
+async function deleteStudentAccount(btn) {
   const studentId = btn.getAttribute("data-student-id");
   if (!studentId) return;
 
   const confirmed = confirm("Sind Sie sicher, dass Sie dieses Profil vollständig löschen möchten? Registrierung, Profil und Nachrichten werden dauerhaft entfernt.");
   if (!confirmed) return;
 
-  if (deleteStudentAccountById(studentId)) {
+  const student = loadStudents().find((entry) => entry.id === studentId) || null;
+  const apiUserId = resolveStudentAdminUserId(student);
+  let deleted = false;
+
+  btn.disabled = true;
+
+  try {
+    const apiDelete = await deleteAdminUserFromApiById(apiUserId);
+    if (!apiDelete.ok) {
+      alert(apiDelete.message || "Das Konto konnte nicht gelöscht werden.");
+      return;
+    }
+
+    deleted = deleteStudentAccountById(studentId);
+    if (!deleted) {
+      alert("Profil konnte lokal nicht entfernt werden.");
+      return;
+    }
+
     const item = btn.closest(".admin-item");
     if (item) item.style.opacity = "0.5";
     setTimeout(() => {
@@ -27556,23 +30332,46 @@ function deleteStudentAccount(btn) {
       renderStudentsList(activeFilter || "unverified");
       updateAdminStats();
     }, 300);
+  } finally {
+    if (!deleted) {
+      btn.disabled = false;
+    }
   }
 }
 
-function deleteStudentRegistration(btn) {
+async function deleteStudentRegistration(btn) {
   const userId = btn.getAttribute("data-student-user-id");
   if (!userId) return;
 
   const confirmed = confirm("Sind Sie sicher, dass Sie diese Profil-Registrierung vollständig löschen möchten? Die Mailadresse und ein eventuell zugehöriger Login werden dauerhaft entfernt.");
   if (!confirmed) return;
 
-  if (deleteStudentRegistrationByUserId(userId)) {
+  let deleted = false;
+  btn.disabled = true;
+
+  try {
+    const apiDelete = await deleteAdminUserFromApiById(userId);
+    if (!apiDelete.ok) {
+      alert(apiDelete.message || "Die Registrierung konnte nicht gelöscht werden.");
+      return;
+    }
+
+    deleted = deleteStudentRegistrationByUserId(userId);
+    if (!deleted) {
+      alert("Registrierung konnte lokal nicht entfernt werden.");
+      return;
+    }
+
     const item = btn.closest(".admin-item");
     if (item) item.style.opacity = "0.5";
     setTimeout(() => {
       renderStudentsList("unverified");
       updateAdminStats();
     }, 300);
+  } finally {
+    if (!deleted) {
+      btn.disabled = false;
+    }
   }
 }
 
@@ -27629,14 +30428,32 @@ async function rejectFirm(btn) {
   }
 }
 
-function deleteFirmAccount(btn) {
+async function deleteFirmAccount(btn) {
   const offerId = btn.getAttribute("data-offer-id");
   if (!offerId) return;
 
   const confirmed = confirm("Sind Sie sicher, dass Sie diese Firma vollständig löschen möchten? Registrierung, Firmenprofil und zugehörige Nachrichten werden dauerhaft entfernt.");
   if (!confirmed) return;
 
-  if (deleteFirmAccountById(offerId)) {
+  const offer = loadOffers().find((entry) => entry.id === offerId) || null;
+  const apiUserId = resolveFirmAdminUserId(offer);
+  let deleted = false;
+
+  btn.disabled = true;
+
+  try {
+    const apiDelete = await deleteAdminUserFromApiById(apiUserId);
+    if (!apiDelete.ok) {
+      alert(apiDelete.message || "Die Firma konnte nicht gelöscht werden.");
+      return;
+    }
+
+    deleted = deleteFirmAccountById(offerId);
+    if (!deleted) {
+      alert("Firmeneintrag konnte lokal nicht entfernt werden.");
+      return;
+    }
+
     const item = btn.closest(".admin-item");
     if (item) item.style.opacity = "0.5";
     setTimeout(() => {
@@ -27645,23 +30462,46 @@ function deleteFirmAccount(btn) {
       renderFirmsList(activeFilter || "unverified");
       updateAdminStats();
     }, 300);
+  } finally {
+    if (!deleted) {
+      btn.disabled = false;
+    }
   }
 }
 
-function deleteFirmRegistration(btn) {
+async function deleteFirmRegistration(btn) {
   const userId = btn.getAttribute("data-firm-user-id");
   if (!userId) return;
 
   const confirmed = confirm("Sind Sie sicher, dass Sie diese Firmen-Registrierung vollständig löschen möchten? Die Mailadresse und ein eventuell zugehöriger Login werden dauerhaft entfernt.");
   if (!confirmed) return;
 
-  if (deleteFirmRegistrationByUserId(userId)) {
+  let deleted = false;
+  btn.disabled = true;
+
+  try {
+    const apiDelete = await deleteAdminUserFromApiById(userId);
+    if (!apiDelete.ok) {
+      alert(apiDelete.message || "Die Firmen-Registrierung konnte nicht gelöscht werden.");
+      return;
+    }
+
+    deleted = deleteFirmRegistrationByUserId(userId);
+    if (!deleted) {
+      alert("Firmen-Registrierung konnte lokal nicht entfernt werden.");
+      return;
+    }
+
     const item = btn.closest(".admin-item");
     if (item) item.style.opacity = "0.5";
     setTimeout(() => {
       renderFirmsList("unverified");
       updateAdminStats();
     }, 300);
+  } finally {
+    if (!deleted) {
+      btn.disabled = false;
+    }
   }
 }
 
