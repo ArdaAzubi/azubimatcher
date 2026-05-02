@@ -84,7 +84,7 @@
           <div class="free-callout" aria-label="Kostenhinweis zur Plattform">
             <span class="free-callout__badge">Kostenlos starten</span>
             <p class="free-callout__text">Bewerbende nutzen AzubiMatcher kostenlos. Unternehmen können Profile anlegen und Ausbildungsplätze kostenlos einstellen.</p>
-            <a href="unternehmen-info.html" class="free-callout__link">Konditionen für Unternehmen</a>
+            <a href="unternehmen-info.html" class="free-callout__link" id="firmenInfoLink" hidden>Konditionen für Unternehmen</a>
           </div>
           <p class="home-hero-text">AzubiMatcher macht den Einstieg in Ausbildung einfacher: Jugendliche entdecken passende Ausbildungsplätze, lernen Berufsfelder realistischer kennen und kommen schneller mit passenden Betrieben ins Gespräch. Unternehmen erreichen motivierte Talente strukturierter und inklusiver. Dahinter steht ein klarer Anspruch: Azubi-Recruiting fair, inklusiv und intelligent zu gestalten, damit Menschen mit Potenzial nicht an fehlender Sichtbarkeit, unsicherer Berufswahl, instabilen ersten Monaten oder Barrieren scheitern.</p>
           <div class="home-hero-actions">
@@ -202,5 +202,22 @@
   <script src="privacy-settings.js"></script>
   <script src="discovery.js"></script>
   <script src="script.js"></script>
+  <script>
+    (function () {
+      function readRaw(key) {
+        try { return localStorage.getItem(key) || sessionStorage.getItem(key); } catch (e) { return null; }
+      }
+      function parseJson(raw) {
+        if (!raw) return null;
+        try { return JSON.parse(raw); } catch (e) { return null; }
+      }
+      var auth = parseJson(readRaw('azubimatch_firm_auth'));
+      var expired = auth && auth.sessionExpiresAt && (isNaN(new Date(auth.sessionExpiresAt).getTime()) || Date.now() > new Date(auth.sessionExpiresAt).getTime());
+      if (auth && !expired) {
+        var link = document.getElementById('firmenInfoLink');
+        if (link) link.hidden = false;
+      }
+    })();
+  </script>
 </body>
 </html>

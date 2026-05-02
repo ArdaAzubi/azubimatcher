@@ -6,6 +6,19 @@
     <meta name="description" content="Anmeldung bei AzubiMatcher für Bewerbende und Betriebe. Melde dich an, um passende Ausbildungsplätze zu finden oder offene Stellen gezielt zu besetzen.">
     <title>AzubiMatcher – Anmeldung</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+      .auth-restricted-notice {
+        max-width: 480px;
+        margin: 1.5rem auto 0;
+        padding: 1rem 1.25rem;
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        color: #78350f;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+    </style>
 </head>
 <body class="auth-page startseite-page auth-landing-page">
     <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
@@ -55,6 +68,9 @@
         </header>
 
         <main id="main-content" class="auth-main auth-main--solo">
+            <div id="authRestrictedNotice" class="auth-restricted-notice" role="alert" hidden>
+                Diese Seite ist nur für registrierte Unternehmen verfügbar. Bitte melden Sie sich als Unternehmen an oder registrieren Sie sich.
+            </div>
             <section class="auth-panel-surface auth-panel-surface--solo">
                 <div class="login-container auth-login-card auth-login-card--solo">
                     <div class="auth-login-head">
@@ -355,6 +371,15 @@
             errorBox.classList.add('is-visible');
         });
     });
+    </script>
+    <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('restricted') === 'company') {
+        var notice = document.getElementById('authRestrictedNotice');
+        if (notice) notice.hidden = false;
+      }
+    })();
     </script>
 </body>
 </html>
